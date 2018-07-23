@@ -1,5 +1,5 @@
-# HEG_ESP32
-Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming schematics, app, and how-to's.
+# HEG_ESP32 - Open Source
+Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming schematics, app, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
 
 ## Materials
 - Arduino Huzzah32 Feather. There are at least a dozen alternatives, this one has a battery. I'm also doing a Lolin32 Lite build.
