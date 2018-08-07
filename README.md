@@ -20,6 +20,7 @@ HEGs typically cost hundreds or thousands on the market, so this is a much bette
 
 Placeholder...
 ## Schematics
+![Schematic](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEG_ESP32Arduino_BP.png?raw=true)
 
 ## App Features
 
