@@ -5,7 +5,7 @@ See also:
 [Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
 
 ## Materials
-- Arduino Huzzah32 Feather. There are at least a dozen alternatives, this one has a battery. I'm also doing a Lolin32 Lite build.
+- Arduino Huzzah32 Feather. There are at least a dozen alternatives, this one has a battery. I'm also doing a Lolin32 build
 - ADS 1115 w/ PGA, 16-bit ADC
 - OPT101 Photodiode
 - 1 AN1102W Infrared LED
