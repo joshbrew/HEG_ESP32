@@ -1,6 +1,7 @@
 Patched HEGstudio for HEGduino on Windows!
 ******************************************
 EXE package available here: https://files.fm/f/78ufkvzy
+Resources and Media folders available here: https://sourceforge.net/projects/hegstudio/
 
 Make sure the HEG is plugged in before starting up the program. 
 
