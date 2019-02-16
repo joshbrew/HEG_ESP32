@@ -18,6 +18,7 @@ See also:
 - OPT101 Photodiode
 - 1 HAN1102W Infrared LED
 - 1 BR1102W Red LED
+- 6 pin SOT23 socket (for mounting LEDs)
 - MicroUSB cable. 
 
 You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
@@ -37,7 +38,7 @@ We used cheap protoboard to mount our DIY prototypes. For the sensor we used a p
 
 1. Cut your wire leads to be the desired length between the sensor, which goes on your forehead, and the receiver. Sensor-only or ADC to ESP32 leads should be the shortest distance, which will vary for different setups so use your judgment.
 
-2. Wire it up based on the above schematics diagram.
+2. Wire it up based on the above schematics diagram. The anode marks on the LEDs are green. Use a 6 pin SOT23 socket to mount the SMT LEDs, they should only be a few cents. Use electrical tape to cover any pins or wires exposed so they do not contact your forehead.
 
 3. Install ESP32 firmware on device via Arduino IDE. Requires [ADS1x15 library](https://github.com/adafruit/Adafruit_ADS1X15) and [arduino ESP32 library](https://github.com/espressif/arduino-esp32) 
 
@@ -47,14 +48,27 @@ We used cheap protoboard to mount our DIY prototypes. For the sensor we used a p
 
 We'll soon be adding free Windows and Android apps, including compatibility with the original HEGstudio by Jonathan Toomim!
 
+### Testing Notes
+The photodiode is very sensitive. Any moisture or stray light will throw off the readings. Block off any light in-between and around the LEDs and the photodiode to ensure no leaks.
+
+The maximum ADC reading is 32768 (15 bits) and each step is 0.125mV at the maximum 16X gain on the ADS1115. This is plenty sensitive for blood-oxygen detection. The range for real data is in the 200-3000 range. The script will not set the baseline unless it is below a specified light threshold.
+
+Be sure to cover the photodiode pins and the LED contacts with electrical tape so your forehead doesn't complete the circuit and throw off readings.
+
+If there is moisture expect ADC or score readings to decline to zero and even negative values.
+
+If your IR LED is not working the ratio will be positive as the red LED has a lower intensity. Ratio = Red / Infrared. You can reduce the flash rate in the arduino script to test conclusively via the ADC.
+
+
+
 ## App Features
-React Native with SPP or custom BLE support
-Still bare-bones at this point.
-Packaged project incoming!
+React Native with SPP or custom BLE support.
+Still bare-bones at this point. Working on multi-threading.
+Packages for Android and iOS incoming!
 
 ## Example Data
 Graph 1 is about 1 min of ratio data.
-Graph 2 is about 4 min of scoring data (ratio - baseline)
+Graph 2 is about 4 min of scoring data (a simple ratio - baseline, will be changed to the cumulative change in the SMA)
 Graph 3 is about 3 seconds of ADC data at 20hz LED flash frequency.
 ![data](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/Screenshot_2019-01-23-21-18-36.jpg?raw=true)
 
