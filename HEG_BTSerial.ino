@@ -1,11 +1,11 @@
 // Joshua Brewster - HEG BTSerial
 // Requires arduino ADS1x15 library and arduino esp32 library
 /*
- * TODO
- * - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable)
- * - Optimize memory usage. Take better advantage of ESP32.
- * - More data modes, transmitter modes (e.g. wifi vs bluetooth) might have to stay in separate sketches to preserve esp32 memory. The 16MB ESP32 might not have any trouble there.
- */
+   TODO
+   - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable)
+   - Optimize memory usage. Take better advantage of ESP32.
+   - More data modes, transmitter modes (e.g. wifi vs bluetooth) might have to stay in separate sketches to preserve esp32 memory. The 16MB ESP32 might not have any trouble there.
+*/
 
 #include "BluetoothSerial.h"
 
@@ -13,7 +13,7 @@
 #include <Adafruit_ADS1015.h>
 //#include <esp_bt.h>
 //#include <ArduinoJson.h>
- 
+
 BluetoothSerial SerialBT;
 
 bool USE_USB = true; // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
@@ -107,52 +107,56 @@ void startADS() {
   ledMillis = millis();
 }
 
-void commandESP32(char received){
-  if(received == 't'){
+void commandESP32(char received) {
+  if (received == 't') {
     sensorEnabled = true;
-    digitalWrite(LED,LOW);
+    digitalWrite(LED, LOW);
   }
-  if(received == 'f'){
+  if (received == 'f') {
     sensorEnabled = false;
-    digitalWrite(LED,HIGH); 
-    digitalWrite(RED,LOW);
-    digitalWrite(IR,LOW); 
+    digitalWrite(LED, HIGH);
+    digitalWrite(RED, LOW);
+    digitalWrite(IR, LOW);
     reset = true;
   }
-  if(received == 'r'){
+  if (received == 'r') {
     reset = true;
   }
-  if(received == 'p'){
+  if (received == 'p') {
     pIR_MODE = true;
-    digitalWrite(RED,LOW);
+    digitalWrite(RED, LOW);
     reset = true;
   }
-  if(received == 'u'){
-    if(USE_USB == false){
+  if (received == 'u') {
+    if (USE_USB == false) {
       USE_USB = true;
       Serial.begin(115200);
     }
-    else { USE_USB = false; } // Serial.end()?
+    else {
+      USE_USB = false;  // Serial.end()?
+    }
   }
-  if(received == 'b') {
-    if(USE_BLUETOOTH == false){
+  if (received == 'b') {
+    if (USE_BLUETOOTH == false) {
       USE_BLUETOOTH = true;
       SerialBT.begin("My_HEG");
     }
-    else { USE_BLUETOOTH = false; }
+    else {
+      USE_BLUETOOTH = false;
+    }
   }
   delay(2000);
 }
 
 void setup() {
-  if(USE_USB == true) {
+  if (USE_USB == true) {
     Serial.begin(115200);
   }
   pinMode(IR, OUTPUT);
   pinMode(RED, OUTPUT);
   //LOLIN32 ONLY
-  pinMode(LED,OUTPUT);
-  digitalWrite(LED,HIGH);
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, HIGH);
 
   //esp_bt_sleep_disable(); // Disables sleep mode (debugging)
   SerialBT.begin("My_HEG");
@@ -160,13 +164,13 @@ void setup() {
 }
 
 void core_program() {
-  if(sensorEnabled == true) {
-    if(adcEnabled == false) {
+  if (sensorEnabled == true) {
+    if (adcEnabled == false) {
       startADS();
       adcEnabled = true;
     }
-    if(SEND_DUMMY_VALUE != true) {    
-      if(currentMillis - startMillis >= sampleRate) {
+    if (SEND_DUMMY_VALUE != true) {
+      if (currentMillis - startMillis >= sampleRate) {
         // read the analog in value:
         adc0 = ads.readADC_SingleEnded(0);
         //Voltage = (adc0 * bits2mv);
@@ -174,19 +178,19 @@ void core_program() {
         if (VIEW_ADC_VALUE == true) {
           //Serial.println("ADC Value: ");
           //Serial.println(adc0);
-          //Serial.println("\tVoltage: "); 
+          //Serial.println("\tVoltage: ");
           //Serial.println(Voltage,7);
         }
         if (DEBUG_ADC == false) {
-          if((adc0 >= 3000) || (reset == true)) { // The gain is high but anything over 7000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
+          if ((adc0 >= 3000) || (reset == true)) { // The gain is high but anything over 7000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
             //Serial.println("\nBad Read ");
             badSignal = true;
-      
+
             //Temp: reset baseline on bad read
             signalDetermined = false;
             reset = false;
             baseline = 0;
-      
+
             ticks0 = 0; // Reset counter
             ticks1 = 0;
             ticks2 = 0;
@@ -198,15 +202,15 @@ void core_program() {
             posAvg = 0;
           }
           else {
-            if(badSignal == true){
+            if (badSignal == true) {
               badSignal = false;
             }
-            if(signalDetermined == false){
+            if (signalDetermined == false) {
               ticks0++;
-              if(ticks0 > 500) { // Wait for 500 samples of good signal before getting baseline
+              if (ticks0 > 500) { // Wait for 500 samples of good signal before getting baseline
                 // IR IN 12, RED IN 13
-                if((ticks1 < 500) && (ticks2 < 500)) { // Accumulate samples for baseline
-                  if(red_led == true) { // RED
+                if ((ticks1 < 500) && (ticks2 < 500)) { // Accumulate samples for baseline
+                  if (red_led == true) { // RED
                     redValue += adc0;
                     ticks1++;
                   }
@@ -220,16 +224,17 @@ void core_program() {
                   signalDetermined = true;
                   redAvg = redValue * 100 / ticks1;
                   irAvg = irValue / ticks2;
-      
+
                   baseline = redAvg / irAvg; // Set baseline ratio
                   ratio = baseline;
                   ticks0 = 0; // Reset counters
                   ticks1 = 0;
                   ticks2 = 0;
                   ticks3++;
+                  bticks3++;
                   redValue = 0; // Reset values
                   irValue = 0;
-                  
+
                   //Uncomment this
                   //Serial.println("\tBaseline R: ");
                   //Serial.print(baseline,4);
@@ -238,7 +243,7 @@ void core_program() {
             }
             else {
               ticks0++;
-              if(red_led == true) { // RED
+              if (red_led == true) { // RED
                 redValue += adc0;
                 ticks1++;
               }
@@ -246,13 +251,13 @@ void core_program() {
                 irValue += adc0;
                 ticks2++;
               }
-              if((ticks2 > samplesPerRatio) && (ticks1 > samplesPerRatio)) { // Accumulate 50 samples per LED before taking reading
+              if ((ticks2 > samplesPerRatio) && (ticks1 > samplesPerRatio)) { // Accumulate 50 samples per LED before taking reading
                 redAvg = redValue * 100 / ticks1; // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
                 irAvg = irValue / ticks2;
                 ratio = redAvg / irAvg; // Get ratio
                 ratioAvg += ratio;
                 bratioAvg += ratio;
-                
+
                 p1 = p2;
                 p2 = ratio - baseline; // Position
                 posAvg += p2 - p1;
@@ -260,31 +265,31 @@ void core_program() {
                 //v1 = v2;
                 //v2 = (p2 - p1) * ticks0 * 0.001; // Velocity in ms
                 //velAvg += v2;
-                
+
                 //accel = (v2 - v1) * ticks0 * 0.001; // Acceleration in ms^2
                 //accelAvg += accel;
-                
+
                 //score += ratio-baseline; // Simple scoring method. Better is to compare current and last SMA
                 //scoreAvg += score;
-                
+
                 /*
-                Serial.print("\tBaseline R: ");
-                Serial.print(baseline,4);
-                //Serial.print("\tRed: ");
-                //Serial.print(redAvg);
-                //Serial.print("\tIR: ");
-                //Serial.print(irAvg);
-                Serial.print("\tCurrent R: ");
-                Serial.print(ratio,4);
-                Serial.print("\trPosition: ");
-                Serial.print(p2,4);
-                Serial.print("\trVelocity: ");
-                Serial.print(v2,4);
-                Serial.print("\trAcceleration: ");
-                Serial.print(accel,4);
-                Serial.print("\trScore: ");
-                Serial.print(score);
-                Serial.print("\n");
+                  Serial.print("\tBaseline R: ");
+                  Serial.print(baseline,4);
+                  //Serial.print("\tRed: ");
+                  //Serial.print(redAvg);
+                  //Serial.print("\tIR: ");
+                  //Serial.print(irAvg);
+                  Serial.print("\tCurrent R: ");
+                  Serial.print(ratio,4);
+                  Serial.print("\trPosition: ");
+                  Serial.print(p2,4);
+                  Serial.print("\trVelocity: ");
+                  Serial.print(v2,4);
+                  Serial.print("\trAcceleration: ");
+                  Serial.print(accel,4);
+                  Serial.print("\trScore: ");
+                  Serial.print(score);
+                  Serial.print("\n");
                 */
                 ticks0 = 0; //Reset Counters
                 ticks1 = 0;
@@ -292,124 +297,121 @@ void core_program() {
 
                 ticks3++;
                 bticks3++;
-                
+
                 redValue = 0; //Reset values to get next average
                 irValue = 0;
               }
             }
           }
-          
+
           startMillis = currentMillis;
         }
       }
-    
+
       // Switch LEDs back and forth.
       // PUT IR IN 13, AND RED IN 12
-      if(currentMillis - ledMillis >= ledRate) {
-        if(red_led == false) {
-          if(pIR_MODE == false){ // no LEDs in pIR mode, just raw IR from body heat emission.
-            digitalWrite(RED,HIGH);
-            digitalWrite(IR,LOW);
+      if (currentMillis - ledMillis >= ledRate) {
+        if (red_led == false) {
+          if (pIR_MODE == false) { // no LEDs in pIR mode, just raw IR from body heat emission.
+            digitalWrite(RED, HIGH);
+            digitalWrite(IR, LOW);
           }
           red_led = true;
         }
         else {
-          if(pIR_MODE == false) {
-            digitalWrite(RED,LOW);
-            digitalWrite(IR,HIGH);
+          if (pIR_MODE == false) {
+            digitalWrite(RED, LOW);
+            digitalWrite(IR, HIGH);
           }
           red_led = false;
         }
         ledMillis = currentMillis;
       }
-      
+
       adcAvg += adc0;
       ticks4++;
 
       badcAvg += adc0;
       bticks4++;
-      
+
     }
   }
- //DEBUG
- if(DEBUG == true){
-  if(USE_USB == true){
-    Serial.println("Heap after core_program cycle: ");
-    Serial.println(ESP.getFreeHeap());
+  //DEBUG
+  if (DEBUG == true) {
+    if (USE_USB == true) {
+      Serial.println("Heap after core_program cycle: ");
+      Serial.println(ESP.getFreeHeap());
+    }
+    else {
+      SerialBT.println("Heap after core_program cycle: ");
+      SerialBT.println(ESP.getFreeHeap());
+    }
   }
-  else {
-    SerialBT.println("Heap after core_program cycle: ");
-    SerialBT.println(ESP.getFreeHeap());
-  }
- }
 }
 
 void bluetooth() {
-  if(currentMillis - BLEMillis >= BTRate) { //SerialBT bitrate: ?/s. 100ms works, 50ms does cause hangups (which the LED flashes will reflect) - use smarter buffering.
-      SerialBT.flush();
-      if(SEND_DUMMY_VALUE != true) {
-        if(bticks4 > 0) {
-          if(USE_USB == false){
-            badcAvg = badcAvg / ticks4;
-          }
-          /*
+  if (currentMillis - BLEMillis >= BTRate) { //SerialBT bitrate: ?/s. 100ms works, 50ms does cause hangups (which the LED flashes will reflect) - use smarter buffering.
+    SerialBT.flush();
+    if (SEND_DUMMY_VALUE != true) {
+      if (bticks4 > 0) {
+          badcAvg = badcAvg / ticks4;
+        /*
           memset(txString,0,sizeof(txString));
-          dtostrf(adcAvg, 1, 0, adcString); 
+          dtostrf(adcAvg, 1, 0, adcString);
           strcpy(txString,adcString);
-          */
-          if(bticks3 > 0) {
-            if(USE_USB == false) {
-              bratioAvg = bratioAvg / ticks3;
-              bposAvg = bposAvg / ticks3;
-              //bvelAvg = bvelAvg / ticks3;
-              //baccelAvg = baccelAvg / tick3;
-            
-              //bscoreAvg = bscoreAvg / ticks3;
-            }
-    
-            /*
+        */
+        if (bticks3 > 0) {
+            bratioAvg = bratioAvg / ticks3;
+            bposAvg = bposAvg / ticks3;
+            //bvelAvg = bvelAvg / ticks3;
+            //baccelAvg = baccelAvg / tick3;
+
+            //bscoreAvg = bscoreAvg / ticks3;
+          
+
+          /*
             dtostrf(bratioAvg, 1, 5, ratioString);
             dtostrf(bposAvg, 1, 5, posString);
-            
+
             strcat(txString,",");
             strcat(txString,ratioString);
             strcat(txString,",");
             strcat(txString,posString);
             strcat(txString,"\r\n");
-            
+
             SerialBT.print(txString); // Should be faster.
-            */
-            //Using String is ill-advised yet this works better than separate print calls as far as I can tell. Above strcat method should be faster.
-            SerialBT.print(String(badcAvg,0) + "," + String(bratioAvg,4) + "," + String(bposAvg,4)+"\r\n"); 
-          }
-          else {
-            //strcat(txString,",WAIT\r\n");
-            //SerialBT.print(txString);
-            SerialBT.print(String(badcAvg,0) + ",WAIT\r\n");
-          }
-          
-          //String strToSend = "{ratio:"+String(ratioAvg)+",adc:"+String(adc)+"}";
-          //SerialBT.write((uint8_t*) buffer, strToSend*sizeof(int32_t)); //Faster to use a binary buffer
-          //SerialBT.println(count);
-          //count++;
-          
-          bratioAvg = 0;
-          bposAvg = 0;
-          badcAvg = 0;
-          adc0 = 0;
-          bticks3 = 0;
-          bticks4 = 0;
-          
-          BLEMillis = currentMillis;
+          */
+          //Using String is ill-advised yet this works better than separate print calls as far as I can tell. Above strcat method should be faster.
+          SerialBT.print(String(badcAvg, 0) + "," + String(bratioAvg, 4) + "," + String(bposAvg, 4) + "\r\n");
         }
+        else {
+          //strcat(txString,",WAIT\r\n");
+          //SerialBT.print(txString);
+          SerialBT.print(String(badcAvg, 0) + ",WAIT\r\n");
+        }
+
+        //String strToSend = "{ratio:"+String(ratioAvg)+",adc:"+String(adc)+"}";
+        //SerialBT.write((uint8_t*) buffer, strToSend*sizeof(int32_t)); //Faster to use a binary buffer
+        //SerialBT.println(count);
+        //count++;
+
+        bratioAvg = 0;
+        bposAvg = 0;
+        badcAvg = 0;
+        adc0 = 0;
+        bticks3 = 0;
+        bticks4 = 0;
+
+        BLEMillis = currentMillis;
       }
-      else { 
-        SerialBT.print("DUMMY,"+String(random(0,100))+","+String(random(0,100))+"\r\n");   
-        }
-      delay(10);
+    }
+    else {
+      SerialBT.print("DUMMY," + String(random(0, 100)) + "," + String(random(0, 100)) + "\r\n");
+    }
+    delay(10);
   }
-  if(DEBUG == true){
-     if(USE_USB == true){
+  if (DEBUG == true) {
+    if (USE_USB == true) {
       Serial.println("Heap after core_program cycle: ");
       Serial.println(ESP.getFreeHeap());
     }
@@ -420,69 +422,69 @@ void bluetooth() {
   }
 }
 
-void usbSerial(){
+void usbSerial() {
   Serial.flush();
-  if(SEND_DUMMY_VALUE != true) {
-      if(ticks4 > 0) {
-        adcAvg = adcAvg / ticks4;
-        /*
+  if (SEND_DUMMY_VALUE != true) {
+    if (ticks4 > 0) {
+      adcAvg = adcAvg / ticks4;
+      /*
         memset(txString,0,sizeof(txString));
-        dtostrf(adcAvg, 1, 0, adcString); 
+        dtostrf(adcAvg, 1, 0, adcString);
         strcpy(txString,adcString);
-        */
-        if(ticks3 > 0) {
-          ratioAvg = ratioAvg / ticks3;
-          posAvg = posAvg / ticks3;
-          
-          //velAvg = velAvg / ticks3;
-          //accelAvg = accelAvg / tick3;
-          
-          //scoreAvg = scoreAvg / ticks3;
-          /*
-  
+      */
+      if (ticks3 > 0) {
+        ratioAvg = ratioAvg / ticks3;
+        posAvg = posAvg / ticks3;
+
+        //velAvg = velAvg / ticks3;
+        //accelAvg = accelAvg / tick3;
+
+        //scoreAvg = scoreAvg / ticks3;
+        /*
+
           dtostrf(ratioAvg, 1, 5, ratioString);
           dtostrf(posAvg, 1, 5, posString);
-          
+
           strcat(txString,",");
           strcat(txString,ratioString);
           strcat(txString,",");
           strcat(txString,posString);
           strcat(txString,"\r\n");
-          
+
           SerialBT.print(txString); // Should be faster.
-          */
-          Serial.print(adcAvg,0);
-          Serial.print(',');
-          Serial.print(ratioAvg,4);
-          Serial.print(',');
-          Serial.println(posAvg,4);
-        }
-        else {
-          //strcat(txString,",WAIT\r\n");
-          //Serial.print(txString);
-          Serial.print(adcAvg,0);
-          Serial.println(",WAIT");
-        }
-        
-        //String strToSend = "{ratio:"+String(ratioAvg)+",adc:"+String(adc)+"}";
-        //Serial.write((uint8_t*) buffer, strToSend*sizeof(int32_t)); //Faster to use a binary buffer
-        //Serial.println(count);
-        //count++;
-        
-        ratioAvg = 0;
-        posAvg = 0;
-        adcAvg = 0;
-        adc0 = 0;
-        ticks3 = 0;
-        ticks4 = 0;
-        
+        */
+        Serial.print(adcAvg, 0);
+        Serial.print(',');
+        Serial.print(ratioAvg, 4);
+        Serial.print(',');
+        Serial.println(posAvg, 4);
       }
+      else {
+        //strcat(txString,",WAIT\r\n");
+        //Serial.print(txString);
+        Serial.print(adcAvg, 0);
+        Serial.println(",WAIT");
+      }
+
+      //String strToSend = "{ratio:"+String(ratioAvg)+",adc:"+String(adc)+"}";
+      //Serial.write((uint8_t*) buffer, strToSend*sizeof(int32_t)); //Faster to use a binary buffer
+      //Serial.println(count);
+      //count++;
+
+      ratioAvg = 0;
+      posAvg = 0;
+      adcAvg = 0;
+      adc0 = 0;
+      ticks3 = 0;
+      ticks4 = 0;
+
     }
-    else { 
-      Serial.print("DUMMY,"+String(random(0,100))+","+String(random(0,100))+"\r\n");   
-      }
-  if(DEBUG == true){
-     if(USE_USB == true){
+  }
+  else {
+    Serial.print("DUMMY," + String(random(0, 100)) + "," + String(random(0, 100)) + "\r\n");
+  }
+  if (DEBUG == true) {
+    if (USE_USB == true) {
       Serial.println("Heap after core_program cycle: ");
       Serial.println(ESP.getFreeHeap());
     }
@@ -493,16 +495,16 @@ void usbSerial(){
   }
 }
 
-void checkInput(){
-  if(USE_BLUETOOTH == true) {
-    if(SerialBT.available()){
+void checkInput() {
+  if (USE_BLUETOOTH == true) {
+    if (SerialBT.available()) {
       received = SerialBT.read();
       SerialBT.println(received);
       commandESP32(received);
     }
   }
-  if(USE_USB == true) {
-    if(Serial.available()){
+  if (USE_USB == true) {
+    if (Serial.available()) {
       received = Serial.read();
       Serial.println(received);
       commandESP32(received);
@@ -514,11 +516,11 @@ void loop() {
   currentMillis = millis();
   checkInput();
   core_program();
-  if(USE_USB == true){
+  if (USE_USB == true) {
     usbSerial();
   }
-  if(USE_BLUETOOTH == true){
-    if(SerialBT.hasClient() == true) {
+  if (USE_BLUETOOTH == true) {
+    if (SerialBT.hasClient() == true) {
       bluetooth();
     }
   }
