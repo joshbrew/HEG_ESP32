@@ -17,7 +17,7 @@
 BluetoothSerial SerialBT;
 
 bool USE_USB = true; // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
-bool USE_BLUETOOTH = false; // WRITE 'b' TO TOGGLE
+bool USE_BLUETOOTH = true; // WRITE 'b' TO TOGGLE
 bool pIR_MODE = false; // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 
 bool DEBUG = false;
@@ -86,10 +86,10 @@ unsigned long ledMillis;
 unsigned long BLEMillis;
 
 //Make sure these divide without remainders for best results
-const unsigned long ledRate = 50; // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
-const unsigned long sampleRate = 1.5; // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms
-const unsigned long samplesPerRatio = 5; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
-const unsigned long BTRate = 100; // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
+const int ledRate = 50; // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
+const int sampleRate = 1.5; // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms
+const int samplesPerRatio = 5; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
+const int BTRate = 100; // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 
 void startADS() {
   // Begin ADS
@@ -117,6 +117,7 @@ void commandESP32(char received){
     digitalWrite(LED,HIGH); 
     digitalWrite(RED,LOW);
     digitalWrite(IR,LOW); 
+    reset = true;
   }
   if(received == 'r'){
     reset = true;
@@ -136,6 +137,7 @@ void commandESP32(char received){
   if(received == 'b') {
     if(USE_BLUETOOTH == false){
       USE_BLUETOOTH = true;
+      SerialBT.begin("My_HEG");
     }
     else { USE_BLUETOOTH = false; }
   }
@@ -158,9 +160,6 @@ void setup() {
 }
 
 void core_program() {
-
-  currentMillis = millis();
-
   if(sensorEnabled == true) {
     if(adcEnabled == false) {
       startADS();
@@ -179,7 +178,7 @@ void core_program() {
           //Serial.println(Voltage,7);
         }
         if (DEBUG_ADC == false) {
-          if((adc0 >= 7000) || (reset == true)) { // The gain is high but anything over 7000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
+          if((adc0 >= 3000) || (reset == true)) { // The gain is high but anything over 7000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
             //Serial.println("\nBad Read ");
             badSignal = true;
       
@@ -199,7 +198,9 @@ void core_program() {
             posAvg = 0;
           }
           else {
-            badSignal = false;
+            if(badSignal == true){
+              badSignal = false;
+            }
             if(signalDetermined == false){
               ticks0++;
               if(ticks0 > 500) { // Wait for 500 samples of good signal before getting baseline
@@ -493,10 +494,12 @@ void usbSerial(){
 }
 
 void checkInput(){
-  if(SerialBT.available()){
-    received = SerialBT.read();
-    SerialBT.println(received);
-    commandESP32(received);
+  if(USE_BLUETOOTH == true) {
+    if(SerialBT.available()){
+      received = SerialBT.read();
+      SerialBT.println(received);
+      commandESP32(received);
+    }
   }
   if(USE_USB == true) {
     if(Serial.available()){
@@ -508,17 +511,17 @@ void checkInput(){
 }
 
 void loop() {
+  currentMillis = millis();
   checkInput();
   core_program();
   if(USE_USB == true){
     usbSerial();
   }
-  else {
-    if(USE_BLUETOOTH == true){
-      if(SerialBT.hasClient() == true) {
-        bluetooth();
-      }
+  if(USE_BLUETOOTH == true){
+    if(SerialBT.hasClient() == true) {
+      bluetooth();
     }
   }
   delay(1);
 }
+
