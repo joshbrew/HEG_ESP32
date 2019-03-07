@@ -55,6 +55,8 @@ The photodiode is very sensitive. Any moisture or stray light will throw off the
 
 The maximum ADC reading is 32768 (15 bits) and each step is 0.125mV at the maximum 16X gain on the ADS1115. This is plenty sensitive for blood-oxygen detection. The range for real data is in the 200-3000 range. The script will not set the baseline unless it is below a specified light threshold.
 
+An ADC read of -1 means the ADC might be unpowered or fried. If you are just receiving random values with no responsiveness your A0 pin connection to the photodiode needs to be checked.
+
 Be sure to cover the photodiode pins and the LED contacts with electrical tape so your forehead doesn't complete the circuit and throw off readings.
 
 If there is moisture expect ADC or score readings to decline to zero and even negative values.
