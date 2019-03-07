@@ -1157,7 +1157,12 @@ class AutoHEG(threading.Thread):
                     if sma < self.heg_sma[dataLength - 1] + 0.0001 and sma > self.heg_sma[dataLength-1] - 0.0001: # if ratio not changing, don't change score. Change tolerance for sensitivity.
                         score = self.hegdata[dataLength - 1]
                     else:
-                        dy = sma - self.heg_sma[dataLength - 1]
+                        fastSMA = 0
+                        for data in itertools.islice(self.heg_raw, length - 6, length - 1):
+                            fastSMA += data
+                        fastSMA = fastSMA / 5
+
+                        dy = fastSMA - self.heg_sma[dataLength - 1]
                         score = self.hegdata[dataLength - 1] + dy * 10 # smoke and mirrors
 
                 self.hegdata.append(score)
