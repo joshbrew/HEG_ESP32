@@ -52,7 +52,9 @@ float gain = 0.256; // +/- V
 float bits2mv = gain / range;
 
 //Signal flags
-bool red_led = false; // Bool to alternate LEDS
+bool red_led = false; // Bools to alternate LEDS
+bool ir_led = false;
+bool no_led = true; // Both LEDS begin off so default is true
 bool badSignal = false; // Bool for too high of an ADC reading
 bool signalDetermined = false; // Bool for whether the ADC reading is within desired range
 
