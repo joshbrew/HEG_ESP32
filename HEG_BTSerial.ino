@@ -1,8 +1,8 @@
 // Joshua Brewster - HEG BTSerial
 // Requires Arduino ADS1x15 library and Arduino ESP32 library, as well as a compatible ESP32 board
 
-// TEST 0.90
-// 3/5/2019
+// TEST 0.91
+// 3/7/2019
 /*
    TODO
    - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable)
@@ -24,8 +24,9 @@ bool USE_USB = true; // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWER
 bool USE_BLUETOOTH = true; // WRITE 'b' TO TOGGLE
 bool pIR_MODE = false; // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 
-bool DEBUG = false;
+bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false; // FOR USE IN ARDUINO IDE WITH VIEW_ADC_VALUE
+bool DEBUG_LEDS = false;
 bool SEND_DUMMY_VALUE = false;
 
 // HEG VARIABLES
@@ -86,7 +87,7 @@ float bratioAvg, badcAvg, bposAvg; //bvelAvg, baccelAvg;
 //char scoreString[10]
 
 //Timing variables
-unsigned long startMillis;
+unsigned long sampleMillis;
 unsigned long currentMillis;
 unsigned long ledMillis;
 unsigned long BLEMillis;
@@ -182,11 +183,10 @@ void core_program() {
     if (adcEnabled == false) {
       startADS();
       //Start timers
-      startMillis = millis();
+      sampleMillis = millis();
       ledMillis = millis();
     }
     if (SEND_DUMMY_VALUE != true) {
-
       // Switch LEDs back and forth.
       // PUT IR IN 13, AND RED IN 12
       if (currentMillis - ledMillis >= ledRate) {
@@ -194,7 +194,9 @@ void core_program() {
           if (pIR_MODE == false) {
             digitalWrite(RED, LOW);
             digitalWrite(IR, HIGH);
-            //Serial.println("IR ON");
+            if(DEBUG_LEDS == true) {
+              Serial.println("IR ON");
+            }
           }
           red_led = false;
           ir_led = true;
@@ -204,17 +206,20 @@ void core_program() {
           if (pIR_MODE == false) { // no LEDs in pIR mode, just raw IR from body heat emission.
             digitalWrite(RED, HIGH);
             digitalWrite(IR, LOW);
-            //Serial.println("RED ON");
+            if(DEBUG_LEDS == true){
+              Serial.println("RED ON");
+            }
           }
           red_led = true;
           ir_led = false;
           no_led = false;
-          
         }
         else { // No LEDs
           digitalWrite(RED,LOW);
           digitalWrite(IR,LOW);
-          //Serial.println("NO LED");
+          if(DEBUG_LEDS == true){
+            Serial.println("NO LED");
+          }
           red_led = false;
           ir_led = false;
           no_led = true;
@@ -222,7 +227,7 @@ void core_program() {
         ledMillis = currentMillis;
       }
       
-      if (currentMillis - startMillis >= sampleRate) {
+      if (currentMillis - sampleMillis >= sampleRate) {
         // read the analog in value:
         adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC
         //Voltage = (adc0 * bits2mv);
@@ -376,8 +381,8 @@ void core_program() {
               }
             }
           }
-          startMillis = currentMillis;
         }
+        sampleMillis = currentMillis;
       }
 
       adcAvg += adc0;
@@ -387,8 +392,9 @@ void core_program() {
       bticks4++;
     }
   }
-  //DEBUG
-  if (DEBUG == true) {
+
+  //DEBUG_ESP32
+  if (DEBUG_ESP32 == true) {
     if (USE_USB == true) {
       Serial.println("Heap after core_program cycle: ");
       Serial.println(ESP.getFreeHeap());
@@ -457,7 +463,7 @@ void bluetooth() {
     else {
       SerialBT.print("DUMMY," + String(random(0, 100)) + "," + String(random(0, 100)) + "\r\n");
     }
-  if (DEBUG == true) {
+  if (DEBUG_ESP32 == true) {
     if (USE_USB == true) {
       Serial.println("Heap after core_program cycle: ");
       Serial.println(ESP.getFreeHeap());
@@ -535,7 +541,7 @@ void usbSerial() {
     else {
       Serial.print("DUMMY," + String(random(0, 100)) + "," + String(random(0, 100)) + "\r\n");
     }
-    if (DEBUG == true) {
+    if (DEBUG_ESP32 == true) {
       if (USE_USB == true) {
         Serial.println("Heap after core_program cycle: ");
         Serial.println(ESP.getFreeHeap());
@@ -567,6 +573,7 @@ void checkInput() {
 }
 
 void loop() {
+  delay(1); // temp, figure out why getting rid of this blocks serial inputs
   currentMillis = millis();
   checkInput();
   core_program();
@@ -578,6 +585,5 @@ void loop() {
       bluetooth();
     }
   }
-  delay(1); // temp, figure out why getting rid of this blocks serial inputs
 }
 
