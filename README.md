@@ -5,9 +5,9 @@ Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming sc
 
 We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! 
 
-v0.1.3 with EXE, Tested for Windows 7, 8, and 10: https://files.fm/u/cvv4vtd2
+v0.1.3 with EXE, Tested for Windows 7, 8, and 10 available in this repo.
 
-Source and exe available in this repo, but requires the resources and media files available from the original sourceforge: https://sourceforge.net/projects/hegstudio/
+Source and exe available in this repo, but requires the media files available from the original sourceforge: https://sourceforge.net/projects/hegstudio/
 
 See also:
 [Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
