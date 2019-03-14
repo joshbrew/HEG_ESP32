@@ -111,7 +111,6 @@ class HEGMovie(InstrumentsPanel):
         self.sizer.Layout()
         self.InitMediaCtrl(attach=self.app.userprofile['mcattached'])
         
-    
     def SliderSeek(self, evt=None):
         if self.mc.paused:
             self.mc.Pause()
@@ -123,6 +122,7 @@ class HEGMovie(InstrumentsPanel):
     def UpdateMovie(self, data=[], times=[]):
         if len(data) < 20:
             return
+    
         data, times = (numpy.array(data), numpy.array(times))
         delta = mean(data[-5:]) - mean(data[-50:])
         sigma = max(numpy.std(data[-300:]), .001)
@@ -141,8 +141,7 @@ class HEGMovie(InstrumentsPanel):
         
         trend = 1./(1+math.e**(-delta/sigma)) * 2 - 1
         if math.isnan(trend):
-            if DEBUG:
-                print "trend was NaN in hegmovie.UpdateMovie. delta, sigma, trend = ", delta, sigma, trend
+            print "trend was NaN in hegmovie.UpdateMovie. delta, sigma, trend = ", delta, sigma, trend
         r = int((1-max(-trend, 0))*64)
         g = int((1-math.fabs(trend))*64)
         b = int((1-max( trend, 0))*64)
@@ -150,7 +149,7 @@ class HEGMovie(InstrumentsPanel):
             b = 95 + int(-trend*160)
         else:
             r = 95 + int(trend*160)
-        self.trendmeter.SetColor(wx.Color(r,g,b))
+        self.trendmeter.SetColor(wx.Colour(r,g,b))
         self.trendmeter.SetValue(trend)
         
         if   delta > -sigma/5:#-0.25:
@@ -158,13 +157,13 @@ class HEGMovie(InstrumentsPanel):
                 self.mc.paused = False
                 self.mc.pausing = False
                 self.mc.Pause()
-                #if DEBUG: print "Now unpaused, %10.3f, %3.3f" % (time.time(), contrast)
+                print "Now unpaused, %10.3f, %3.3f" % (time.time(), contrast)
         elif delta < -sigma/4:
             if not self.mc.paused:
                 self.mc.paused = True
                 self.mc.pausing = True
                 self.mc.Pause()
-                #if DEBUG: print "Now paused,   %10.3f" % time.time()
+                print "Now paused,   %10.3f" % time.time()
 
         #self.mc.OnUpdate(data, times)
         if not hasattr(self, 'update_count'):
@@ -196,11 +195,13 @@ class HEGMovie(InstrumentsPanel):
                 
                 
             except ValueError:
-                pass#if DEBUG: print "Got bad value from MplayerCtrl.GetPercentPos(). It was %s." % (str(t))
+                print "Got bad value from MplayerCtrl.GetPercentPos(). It was %s." % (str(t))
+                pass
             except TypeError:
-                pass#print "Got bad type from MplayerCtrl.GetPercentPos(). It was %s, %s." % (`type(t)`, str(t))
+                print "Got bad type from MplayerCtrl.GetPercentPos(). It was %s, %s." % (`type(t)`, str(t))
+                pass
             except:
-                if DEBUG: traceback.print_exc()
+                traceback.print_exc()
                 
 
     def InitMediaCtrl(self, attach=True):
@@ -349,9 +350,9 @@ class HEGMovie(InstrumentsPanel):
             self.mc.pausing = True
             self.mc.Pause()
         
-        wx.FutureCall(500, self.OnResize, self)
-        wx.FutureCall(1500, self.OnResize, self)
-        wx.FutureCall(4500, self.OnResize, self)
+        wx.CallLater(500, self.OnResize, self)
+        wx.CallLater(1500, self.OnResize, self)
+        wx.CallLater(4500, self.OnResize, self)
         return False
  
     def OnMediaLoaded(self, evt=None):
