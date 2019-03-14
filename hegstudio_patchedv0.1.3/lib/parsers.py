@@ -91,7 +91,7 @@ def enumerate_serial_ports():
     if sys.platform == 'win32':
         import _winreg as winreg
 
-        path = 'HARDWARE\\\\DEVICEMAP\\SERIALCOMM'
+        path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
         try:
             key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
         except WindowsError:
@@ -255,8 +255,8 @@ class ProtocolDetector(threading.Thread):
             try: s.close()
             except: pass
             return
-        data = []
         if self.baudrate == 115200:
+            data = []
             while(len(self.data) < 10):
                 temp = s.readline()
                 if temp.find(','):
