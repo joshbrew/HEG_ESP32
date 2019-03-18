@@ -25,9 +25,19 @@ bool USE_BLUETOOTH = true; // WRITE 'b' TO TOGGLE
 bool pIR_MODE = false; // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 
 bool DEBUG_ESP32 = false;
-bool DEBUG_ADC = false; // FOR USE IN ARDUINO IDE WITH VIEW_ADC_VALUE
-bool DEBUG_LEDS = false;
+bool DEBUG_ADC = true; // FOR USE IN ARDUINO IDE
+bool DEBUG_LEDS = true;
 bool SEND_DUMMY_VALUE = false;
+
+// PUT IR IN 13, RED IN 12
+const int IR = 13;
+const int RED = 12;
+const int LED = 5; // Lolin32 V1.0.0 LED on Pin 5
+//const int PWR = 14; // Powers ADC and OPT101
+
+//SET CUSTOM SDA AND SCL PINS
+//#define SDA_PIN 16
+//#define SCL_PIN 4
 
 // HEG VARIABLES
 int count = 0;
@@ -37,14 +47,10 @@ bool reset = false;
 
 char received;
 
-// PUT IR IN 13, RED IN 12
-const int IR = 13;
-const int RED = 12;
-const int LED = 5; // Lolin32 V1.0.0 LED on Pin 5
 int16_t adc0; // Resulting 15 bit integer.
 
 //Setup ADS1115
-Adafruit_ADS1115 ads;
+Adafruit_ADS1115 ads(0x48); //0x48 default address. Up to 4 ADCs (4x4 channels) can run in parallel via addressing.
 long adcChannel = 0; //Channel on the ADC to read. Default 0.
 
 float Voltage = 0.0;
@@ -162,11 +168,17 @@ void commandESP32(char received) {
 }
 
 void setup() {
+  //Wire.begin(SDA_PIN,SCL_PIN); //Use in case of non-default SDA/SCL pins
+  
   if (USE_USB == true) {
     Serial.begin(115200);
   }
   pinMode(IR, OUTPUT);
   pinMode(RED, OUTPUT);
+  
+  pinMode(PWR, OUTPUT);
+  digitalWrite(PWR, HIGH);
+  
   //LOLIN32 ONLY
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
@@ -586,4 +598,5 @@ void loop() {
     }
   }
 }
+
 
