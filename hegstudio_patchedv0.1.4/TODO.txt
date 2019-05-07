@@ -1,0 +1,17 @@
+JToomim's Notes
+
+Graphs including IR and red; context menu
+Do something with the metadata from NewSession
+Make NewSession less ugly - Check!
+HEG Asteroids integration
+Debugging HEGMovie
+Sounds
+    - threshold-based mode
+    - continuously-variable mode
+    * will probably have os portability issues
+Separate main modes (which use MainFrame; there can be only one) and supplementary modes (checkbox for each)
+In-program help; mode descriptions
+Portable mode
+
+Pulse detection - lower priority, since it's going to be hard to do well
+Signal quality analysis
