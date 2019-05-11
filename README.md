@@ -5,7 +5,7 @@ Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming sc
 
 We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! 
 
-v0.1.3 with EXE, Tested for Windows 7, 8, and 10 available in this repo.
+v0.1.4 with EXE, Tested for Windows 7, 8, and 10 available in this repo. Bugs are definitely present but the main HEGflight mode works fine.
 
 Source and exe available in this repo, but requires the media files available from the original sourceforge: https://sourceforge.net/projects/hegstudio/
 
@@ -48,7 +48,7 @@ We used cheap perfboard to mount our DIY prototypes. For the sensor we used a pr
 
 5. The data output via serial USB or bluetooth (toggleable in the script or via serial) is structured as: "ADC_READ, RATIO_READ, POSITION_FROM_BASELINE" The Ratio section will transmit "WAIT" when it is still gathering samples, including when getting the initial baseline. 
 
-We'll soon be adding free Windows and Android apps, including compatibility with the original HEGstudio by Jonathan Toomim!
+We'll soon be adding free Windows and Android apps. We have compatibility with the original HEGstudio by Jonathan Toomim! It's hacky but the feedback outputs more or less are identical to the Peanut.
 
 ### Testing Notes
 The photodiode is very sensitive. Any moisture or stray light will throw off the readings. Block off any light in-between and around the LEDs and the photodiode to ensure no leaks.
