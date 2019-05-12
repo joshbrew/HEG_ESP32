@@ -33,7 +33,7 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 
 Placeholder...
 ## Schematics
-![Schematic](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEG_ESP32Arduino_BP.png?raw=true)
+![Schematic](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEG_ESP32Arduino_BP.PNG?raw=true)
 
 ## Assembly
 We used cheap perfboard to mount our DIY prototypes. For the sensor we used a protoboard snapped in half and taped together for a pseudo flexible circuit.
