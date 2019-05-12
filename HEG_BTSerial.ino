@@ -1,13 +1,14 @@
 // Joshua Brewster - HEG BTSerial
 // Requires Arduino ADS1x15 library and Arduino ESP32 library, as well as a compatible ESP32 board
 
-// TEST 0.91
-// 3/7/2019
+// TEST 0.93
+// 3/29/2019
 /*
    TODO
-   - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable)
-   - Accurate SpO2 reading?
+   - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable) Alternatively, use MAX30102 on 2nd i2c?
+   - Accurate SpO2 reading? Can re-appropriate examples from Sparkfun MAX30105 library
    - Optimize memory usage. Take better advantage of ESP32.
+   - Switch to hardware ISR timer. esp_timer_get_time() in microseconds.
    - More data modes, transmitter modes (e.g. wifi vs bluetooth) might have to stay in separate sketches to preserve esp32 memory. The 16MB ESP32 might not have any trouble there.
 */
 
@@ -15,29 +16,45 @@
 
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
+#include <esp_timer.h>
 //#include <esp_bt.h>
 //#include <ArduinoJson.h>
+
 
 BluetoothSerial SerialBT;
 
 bool USE_USB = true; // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
-bool USE_BLUETOOTH = true; // WRITE 'b' TO TOGGLE
+bool USE_BLUETOOTH = true; // WRITE 'b' TO TOGGLE. 
 bool pIR_MODE = false; // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 
 bool DEBUG_ESP32 = false;
-bool DEBUG_ADC = true; // FOR USE IN ARDUINO IDE
-bool DEBUG_LEDS = true;
+bool DEBUG_ADC = false; // FOR USE IN ARDUINO IDE
+bool DEBUG_LEDS = false;
 bool SEND_DUMMY_VALUE = false;
 
-// PUT IR IN 13, RED IN 12
-const int IR = 13;
-const int RED = 12;
-const int LED = 5; // Lolin32 V1.0.0 LED on Pin 5
-//const int PWR = 14; // Powers ADC and OPT101
+//Make sure ledRate and sampleRate divide without remainders for best results
+const int8_t ledRate = 25; // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
+const int8_t sampleRate = 1.5; // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. Bluetooth limits it.
+const int8_t samplesPerRatio = 3; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
+const int8_t BTRate = 100; // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
+const int8_t USBRate = 0; // No need to delay USB unless on old setups.
 
-//SET CUSTOM SDA AND SCL PINS
-//#define SDA_PIN 16
-//#define SCL_PIN 4
+// PUT IR IN 13, RED IN 12
+int IR = 13;
+int RED = 12;
+
+//int IR2 = 33;
+//int RED2 = 32;
+
+const int LED = 5; // Lolin32 V1.0.0 LED on Pin 5
+const int PWR = 14; // Powers ADC and OPT101
+
+//SET NON-DEFAULT SDA AND SCL PINS
+#define SDA0_PIN 16
+#define SCL0_PIN 4
+
+//#define SDA1_PIN ?
+//#define SCL1_PIN ?
 
 // HEG VARIABLES
 int count = 0;
@@ -50,7 +67,7 @@ char received;
 int16_t adc0; // Resulting 15 bit integer.
 
 //Setup ADS1115
-Adafruit_ADS1115 ads(0x48); //0x48 default address. Up to 4 ADCs (4x4 channels) can run in parallel via addressing.
+Adafruit_ADS1115 ads(0x48);
 long adcChannel = 0; //Channel on the ADC to read. Default 0.
 
 float Voltage = 0.0;
@@ -66,8 +83,9 @@ bool badSignal = false; // Bool for too high of an ADC reading
 bool signalDetermined = false; // Bool for whether the ADC reading is within desired range
 
 //Counters
-int ticks0, ticks1, ticks2, ticks3, ticks4, ticks5 = 0;
-int bticks3, bticks4 = 0;
+int ticks0, redTicks, irTicks, ratioTicks, adcTicks, noLEDTicks = 0;
+int bratioTicks, badcTicks = 0; //BT signal on separate counters 
+
 //Scoring variables
 long redValue = 0;
 long irValue = 0;
@@ -77,7 +95,6 @@ float irAvg = 0;
 float rawAvg = 0;
 float ratio = 0;
 float baseline = 0;
-//float score = 0;
 
 float p1, p2 = 0;
 float v1, v2 = 0;
@@ -85,12 +102,34 @@ float accel = 0;
 
 float ratioAvg, adcAvg, posAvg; //velAvg, accelAvg;
 float bratioAvg, badcAvg, bposAvg; //bvelAvg, baccelAvg;
-//float scoreAvg;
-//float bscoreAvg;
 
 //TX Variables
-//char adcString[10], ratioString[10], posString[10], txString[40]; //Should be faster.
+//char adcString[10], ratioString[10], posString[10], txString[40]; // Faster in BLE mode
 //char scoreString[10]
+
+//Scoring variables
+/*
+int smaTicks;
+float slowSMA[20], lastSlow[20];
+float fastSMA[5], lastFast[5];
+float score = 0;
+float scoreAvg;
+float bscoreAvg;
+
+void score(){
+  slowSMA += ratio;
+  smaTicks++;
+  if(smaTicks >= 15) {
+    fastSMA += ratio;
+  }
+  if(smaTicks >= 20){
+    slowSMA = slowSMA/20;
+    fastSMA = fastSMA/5;
+    score = fastSMA - slowSMA;
+    scoreAvg += score;
+  }
+}
+*/
 
 //Timing variables
 unsigned long sampleMillis;
@@ -99,12 +138,6 @@ unsigned long ledMillis;
 unsigned long BLEMillis;
 unsigned long USBMillis;
 
-//Make sure these divide without remainders for best results
-const int ledRate = 50; // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
-const int sampleRate = 1.5; // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms
-const int samplesPerRatio = 5; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
-const int BTRate = 100; // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
-const int USBRate = 0; // No need to delay USB unless on old setups.
 
 //Start ADC and set gain. Starts timers
 void startADS() {
@@ -163,13 +196,31 @@ void commandESP32(char received) {
   }
   if ((received == '0') || (received == '1') || (received == '2') || (received == '3')){
     adcChannel = received - '0';
+    reset = true;
+  }
+  if (received == 'd'){ // Dual Sensor toggle, changes LED pinouts and adcChannel.
+    digitalWrite(RED,LOW);
+    digitalWrite(IR,LOW);
+    if(adcChannel == 0){
+      IR = 33;
+      RED = 32;
+      adcChannel = 1;
+      pinMode(IR,OUTPUT);
+      pinMode(RED,OUTPUT);
+    }
+    else {
+      IR = 12;
+      RED = 13;
+      adcChannel = 0;
+    }
+    reset = true;
   }
   delay(2000);
 }
 
 void setup() {
-  //Wire.begin(SDA_PIN,SCL_PIN); //Use in case of non-default SDA/SCL pins
-  
+  Wire.begin(SDA0_PIN,SCL0_PIN); //Use in case of non-default SDA/SCL pins
+  //Wire1.begin(SDA1_PIN,SCL1_PIN);
   if (USE_USB == true) {
     Serial.begin(115200);
   }
@@ -252,7 +303,7 @@ void core_program() {
           //Serial.println(Voltage,7);
         }
         else {
-          if ((adc0 >= 3000) || (reset == true)) { // The gain is high but anything over 3000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
+          if ((adc0 >= 6000) || (reset == true)) { // The gain is high but anything over 3000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
             //Serial.println("\nBad Read ");
             badSignal = true;
 
@@ -262,9 +313,9 @@ void core_program() {
             baseline = 0;
 
             ticks0 = 0; // Reset counter
-            ticks1 = 0;
-            ticks2 = 0;
-            ticks5 = 0;
+            redTicks = 0;
+            irTicks = 0;
+            noLEDTicks = 0;
             redValue = 0; // Reset values
             irValue = 0;
             rawValue = 0;
@@ -280,29 +331,29 @@ void core_program() {
             }
             if (signalDetermined == false) { // GET BASELINE
               ticks0++;
-              if (ticks0 > 250) { // Wait for 500 samples of good signal before getting baseline
+              if (ticks0 > 100) { // Wait n samples of good signal before getting baseline
                 // IR IN 12, RED IN 13
-                if ((ticks1 < 250) && (ticks2 < 250)){// && (ticks5 < 250)) { // Accumulate samples for baseline
+                if ((redTicks < 30) && (irTicks < 30)){// && (noLEDTicks < 250)) { // Accumulate samples for baseline
                   if (red_led == true) { // RED
                     redValue += adc0;
-                    ticks1++;
+                    redTicks++;
                   }
                   else if (ir_led == true) { // IR
                     irValue += adc0;
-                    ticks2++;
+                    irTicks++;
                   }
                   else {
                     rawValue += adc0;
-                    ticks5++;
+                    noLEDTicks++;
                   }
                   //Serial.println("\nGetting Baseline. . .");
                 }
                 else {
                   signalDetermined = true;
                   
-                  //rawAvg = rawValue / ticks5;
-                  redAvg = log10((redValue / ticks1));// - rawAvg);
-                  irAvg = log10((irValue / ticks2));// - rawAvg);
+                  //rawAvg = rawValue / noLEDTicks;
+                  redAvg = log10((redValue / redTicks));// - rawAvg);
+                  irAvg = log10((irValue / irTicks));// - rawAvg);
 
                   baseline = (redAvg / irAvg) * 100; // Set baseline ratio, multiply by 100 for scaling.
                   ratioAvg += baseline; // First ratio sent via serial will be baseline.
@@ -312,11 +363,11 @@ void core_program() {
                   irValue = 0;
                   rawValue = 0;
                   ticks0 = 0; // Reset counters
-                  ticks1 = 0;
-                  ticks2 = 0;
-                  ticks5 = 0;
-                  ticks3++;
-                  bticks3++;
+                  redTicks = 0;
+                  irTicks = 0;
+                  noLEDTicks = 0;
+                  ratioTicks++;
+                  bratioTicks++;
                   
                   //Uncomment this for baseline printing
                   //Serial.println("\tBaseline R: ");
@@ -328,24 +379,23 @@ void core_program() {
               ticks0++;
               if (red_led == true) { // RED
                 redValue += adc0;
-                ticks1++;
+                redTicks++;
               }
               else if (ir_led == true) { // IR
                 irValue += adc0;
-                ticks2++;
+                irTicks++;
               }
               else {
                 rawValue += adc0;
-                ticks5++;
+                noLEDTicks++;
               }
-              if ((ticks1 >= samplesPerRatio) && (ticks2 >= samplesPerRatio)){// && (ticks5 >= samplesPerRatio)) { // Accumulate 50 samples per LED before taking reading
-                //rawAvg = rawValue / ticks5;
-                redAvg = log10((redValue / ticks1));// - rawAvg); // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
-                irAvg = log10((irValue / ticks2));// - rawAvg);
+              if ((redTicks >= samplesPerRatio) && (irTicks >= samplesPerRatio)){// && (noLEDTicks >= samplesPerRatio)) { // Accumulate 50 samples per LED before taking reading
+                //rawAvg = rawValue / noLEDTicks;
+                redAvg = log10((redValue / redTicks));// - rawAvg); // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
+                irAvg = log10((irValue / irTicks));// - rawAvg);
                 ratio = (redAvg / irAvg) * 100; // Get ratio, multiply by 100 for scaling.
                 ratioAvg += ratio;
                 bratioAvg += ratio;
-
                 p1 = p2;
                 p2 = ratio - baseline; // Position
                 posAvg += p2 - p1;
@@ -380,12 +430,12 @@ void core_program() {
                   Serial.print("\n");
                 */
                 ticks0 = 0; //Reset Counters
-                ticks1 = 0;
-                ticks2 = 0;
-                ticks5 = 0;
+                redTicks = 0;
+                irTicks = 0;
+                noLEDTicks = 0;
 
-                ticks3++;
-                bticks3++;
+                ratioTicks++;
+                bratioTicks++;
 
                 redValue = 0; //Reset values to get next average
                 irValue = 0;
@@ -398,10 +448,10 @@ void core_program() {
       }
 
       adcAvg += adc0;
-      ticks4++;
+      adcTicks++;
 
       badcAvg += adc0;
-      bticks4++;
+      badcTicks++;
     }
   }
 
@@ -423,20 +473,20 @@ void bluetooth() {
   if (currentMillis - BLEMillis >= BTRate) { //SerialBT bitrate: ?/s. 100ms works, 50ms does cause hangups (which the LED flashes will reflect) - use smarter buffering.
     SerialBT.flush();
     if (SEND_DUMMY_VALUE != true) {
-      if (bticks4 > 0) {
-          badcAvg = badcAvg / ticks4;
+      if (badcTicks > 0) {
+          badcAvg = badcAvg / badcTicks;
         /*
           memset(txString,0,sizeof(txString));
           dtostrf(adcAvg, 1, 0, adcString);
           strcpy(txString,adcString);
         */
-        if (bticks3 > 0) {
-            bratioAvg = bratioAvg / ticks3;
-            bposAvg = bposAvg / ticks3;
-            //bvelAvg = bvelAvg / ticks3;
-            //baccelAvg = baccelAvg / tick3;
+        if (bratioTicks > 0) {
+            bratioAvg = bratioAvg / bratioTicks;
+            bposAvg = bposAvg / bratioTicks;
+            //bvelAvg = bvelAvg / bratioTicks;
+            //baccelAvg = baccelAvg / bratioTicks;
 
-            //bscoreAvg = bscoreAvg / ticks3;
+            //bscoreAvg = bscoreAvg / bratioTicks;
           /*
             dtostrf(bratioAvg, 1, 5, ratioString);
             dtostrf(bposAvg, 1, 5, posString);
@@ -467,8 +517,8 @@ void bluetooth() {
         bposAvg = 0;
         badcAvg = 0;
         adc0 = 0;
-        bticks3 = 0;
-        bticks4 = 0;
+        bratioTicks = 0;
+        badcTicks = 0;
 
       }
     }
@@ -495,21 +545,21 @@ void usbSerial() {
   Serial.flush();
   if(currentMillis - USBMillis >= USBRate) {
     if (SEND_DUMMY_VALUE != true) {
-      if (ticks4 > 0) {
-        adcAvg = adcAvg / ticks4;
+      if (adcTicks > 0) {
+        adcAvg = adcAvg / adcTicks;
         /*
           memset(txString,0,sizeof(txString));
           dtostrf(adcAvg, 1, 0, adcString);
           strcpy(txString,adcString);
         */
-        if (ticks3 > 0) {
-          ratioAvg = ratioAvg / ticks3;
-          posAvg = posAvg / ticks3;
+        if (ratioTicks > 0) {
+          ratioAvg = ratioAvg / ratioTicks;
+          posAvg = posAvg / ratioTicks;
 
-          //velAvg = velAvg / ticks3;
-          //accelAvg = accelAvg / tick3;
+          //velAvg = velAvg / ratioTicks;
+          //accelAvg = accelAvg / ratioTicks;
 
-          //scoreAvg = scoreAvg / ticks3;
+          //scoreAvg = scoreAvg / ratioTicks;
           /*
 
             dtostrf(ratioAvg, 1, 5, ratioString);
@@ -546,8 +596,8 @@ void usbSerial() {
         posAvg = 0;
         adcAvg = 0;
         adc0 = 0;
-        ticks3 = 0;
-        ticks4 = 0;
+        ratioTicks = 0;
+        adcTicks = 0;
       }
     }
     else {
@@ -598,5 +648,7 @@ void loop() {
     }
   }
 }
+
+
 
 
