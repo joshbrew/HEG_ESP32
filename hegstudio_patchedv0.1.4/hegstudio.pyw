@@ -13,7 +13,7 @@
 # hardware supported by this software? Please do! Email me, and I might even
 # help.
 
-# Patched by Joshua Brewster (0.4.8d) fixed hegmovie.py
+# Patched by Joshua Brewster (0.4.9) fixed hegmovie.py, updated function calls, HEGduino support
 ################################################################################
 
 __VERSION__ = version = '0.4.9'

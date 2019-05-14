@@ -771,7 +771,7 @@ class MplayerStdoutEvents(threading.Thread):
                         self.queue.put_nowait(line)
                 wx.PostEvent(self.mpc.GetEventHandler(),
                              Stdout(data=line.rstrip()))
-            except wx.PyDeadObjectError:
+            except Exception:
                 break
             if isinstance(evt, ProcessStopped):
                 break        
@@ -799,7 +799,7 @@ class MplayerStderrEvents(threading.Thread):
                 evt = Stderr(data=line)
             try:
                 wx.PostEvent(self.mpc.GetEventHandler(), evt)
-            except wx.PyDeadObjectError:
+            except Exception:
                 break
 
 
@@ -940,7 +940,7 @@ class MplayerCtrl(wx.Panel):
         try:
             _debug(repr(evt), 'posting event')
             wx.PostEvent(self.Parent.GetEventHandler(), evt)
-        except wx.PyDeadObjectError, e:
+        except Exception, e:
             _debug(repr(e), 'posting event failed')
             pass
     def _on_media_started(self, evt):
@@ -987,7 +987,7 @@ class MplayerCtrl(wx.Panel):
         try:
             self.Quit()
         # Don't forget the MplayerCtrl inherits from wx.Panel
-        except wx.PyDeadObjectError:
+        except Exception:
             pass
         sys.exit()
     def _clean_up_atexit(self):
@@ -995,7 +995,7 @@ class MplayerCtrl(wx.Panel):
         try:
             self.Quit()
         # Don't forget the MplayerCtrl inherits from wx.Panel
-        except wx.PyDeadObjectError:
+        except Exception:
             pass
         
     def _clear_queue(self):

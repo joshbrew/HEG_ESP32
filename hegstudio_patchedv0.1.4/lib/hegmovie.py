@@ -282,9 +282,9 @@ class HEGMovie(InstrumentsPanel):
             try: os.path.listdir(defaultDir)
             except:
                 if "Python27" in sys.executable: 
-                    os.path.dirname(os.path.abspath(__file__))[:-3] + "media"
+                    defaultDir = os.path.dirname(os.path.abspath(__file__))[:-3] + "media"
                 else:
-                    os.path.dirname(sys.executable)+"media"
+                    defaultDir = os.path.dirname(sys.executable)+"media"
         dialog = wx.FileDialog(parent=None, message='', defaultDir=defaultDir, 
                                wildcard='Video files (*.avi;*.mpg;*.wmv;*.mp4;*.mkv;*.m4v)|*.avi;*.mpg;*.wmv;*.mp4;*.mkv;*.m4v')
         res = dialog.ShowModal()
@@ -329,16 +329,6 @@ class HEGMovie(InstrumentsPanel):
 
     def LoadVideo(self, path):
         self.app.userprofile['HEGMovie_video'] = path
-        try: 
-            os.path.listdir(path)
-            print path
-        except:
-            if "Python27" in sys.executable:
-                path = os.path.dirname(os.path.abspath(__file__))[:-3] + "media" 
-            else:
-                path = os.path.dirname(sys.executable) + "\\media"
-            path = path + "\\" + os.listdir(path)[0]
-            print path
         if not hasattr(self, 'mc'):
             self.InitMediaCtrl()
         if DEBUG: print "Loading %s" % path
@@ -440,7 +430,7 @@ class HEGMovie(InstrumentsPanel):
     
     def CloseMC(self, evt=None):
         if hasattr(self, 'mc') and self.mc:
-            self.sizer.Remove(self.mc)
+            #self.sizer.Remove(self.mc)
             self.mc.Quit()
             self.mc.Destroy()
         if hasattr(self, 'mcframe'):
