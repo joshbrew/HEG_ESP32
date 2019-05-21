@@ -1,6 +1,8 @@
 # HEG_ESP32 - Open Source
 Now on CrowdSupply!!! This includes an article elaborating on the science: https://crowdsupply.com/alaskit/hegduino
 
+Youtube announcement link: https://www.youtube.com/watch?v=uuF9yuV2Kxk 
+
 Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming schematics, app, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
 
 We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! 
