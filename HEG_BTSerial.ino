@@ -1,12 +1,12 @@
 // Joshua Brewster - HEG BTSerial
 // Requires Arduino ADS1x15 library and Arduino ESP32 library, as well as a compatible ESP32 board
 
-// TEST 0.93
-// 3/29/2019
+// TEST 0.94
+// 5/24/2019
 /*
    TODO
    - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable) Alternatively, use MAX30102 on 2nd i2c?
-   - Accurate SpO2 reading? Can re-appropriate examples from Sparkfun MAX30105 library
+   - Accurate SpO2 reading? 
    - Optimize memory usage. Take better advantage of ESP32.
    - Switch to hardware ISR timer. esp_timer_get_time() in microseconds.
    - More data modes, transmitter modes (e.g. wifi vs bluetooth) might have to stay in separate sketches to preserve esp32 memory. The 16MB ESP32 might not have any trouble there.
@@ -138,6 +138,11 @@ unsigned long ledMillis;
 unsigned long BLEMillis;
 unsigned long USBMillis;
 
+//hw_timer_t * timer = NULL;
+
+//void startTimer() {
+  //timer = timerBegin(0,80,true);
+//}
 
 //Start ADC and set gain. Starts timers
 void startADS() {
@@ -153,6 +158,7 @@ void startADS() {
   //ads.setGain(GAIN_SIXTEEN); // 16x gain  +/- 0.256V  1 bit = 0.125mV
   
   adcEnabled = true;
+  //startTimer();
 }
 
 //Character commands, may use Strings too, BLE likes chars more.
@@ -218,6 +224,47 @@ void commandESP32(char received) {
   delay(2000);
 }
 
+void switchLEDs() {
+  // Switch LEDs back and forth.
+  // PUT IR IN 13, AND RED IN 12
+  if (currentMillis - ledMillis >= ledRate) {
+    ledMillis = currentMillis;
+    if (red_led == true) { // turn IR on
+      if (pIR_MODE == false) {
+        red_led = false;
+        ir_led = true;
+        no_led = false;
+        digitalWrite(RED, LOW);
+        digitalWrite(IR, HIGH);
+        if(DEBUG_LEDS == true) {
+          Serial.println("IR ON");
+        }
+      }
+    }
+    else if ((red_led == false)){// && (no_led == true)) { // turn Red on
+      if (pIR_MODE == false) { // no LEDs in pIR mode, just raw IR from body heat emission.
+        red_led = true;
+        ir_led = false;
+        no_led = false;
+        digitalWrite(RED, HIGH);
+        digitalWrite(IR, LOW);
+        if(DEBUG_LEDS == true){
+          Serial.println("RED ON");
+        }
+      }
+    }
+    else { // No LEDs
+      red_led = false;
+      ir_led = false;
+      no_led = true;
+      digitalWrite(RED,LOW);
+      digitalWrite(IR,LOW);
+      if(DEBUG_LEDS == true){
+        Serial.println("NO LED");
+      }
+    }
+  }
+}
 void setup() {
   Wire.begin(SDA0_PIN,SCL0_PIN); //Use in case of non-default SDA/SCL pins
   //Wire1.begin(SDA1_PIN,SCL1_PIN);
@@ -242,6 +289,7 @@ void setup() {
 
 // Core loop for HEG sampling.
 void core_program() {
+  //Serial.print(timer);
   if (sensorEnabled == true) {
     if (adcEnabled == false) {
       startADS();
@@ -249,46 +297,9 @@ void core_program() {
       sampleMillis = millis();
       ledMillis = millis();
     }
-    if (SEND_DUMMY_VALUE != true) {
-      // Switch LEDs back and forth.
-      // PUT IR IN 13, AND RED IN 12
-      if (currentMillis - ledMillis >= ledRate) {
-        if (red_led == true) { // IR on
-          if (pIR_MODE == false) {
-            digitalWrite(RED, LOW);
-            digitalWrite(IR, HIGH);
-            if(DEBUG_LEDS == true) {
-              Serial.println("IR ON");
-            }
-          }
-          red_led = false;
-          ir_led = true;
-          no_led = false;
-        }
-        else if ((red_led == false)){// && (no_led == true)) { // Red on
-          if (pIR_MODE == false) { // no LEDs in pIR mode, just raw IR from body heat emission.
-            digitalWrite(RED, HIGH);
-            digitalWrite(IR, LOW);
-            if(DEBUG_LEDS == true){
-              Serial.println("RED ON");
-            }
-          }
-          red_led = true;
-          ir_led = false;
-          no_led = false;
-        }
-        else { // No LEDs
-          digitalWrite(RED,LOW);
-          digitalWrite(IR,LOW);
-          if(DEBUG_LEDS == true){
-            Serial.println("NO LED");
-          }
-          red_led = false;
-          ir_led = false;
-          no_led = true;
-        }
-        ledMillis = currentMillis;
-      }
+    if (SEND_DUMMY_VALUE != true) { 
+      
+      switchLEDs();    
       
       if (currentMillis - sampleMillis >= sampleRate) {
         // read the analog in value:
@@ -544,7 +555,7 @@ void bluetooth() {
 void usbSerial() {
   Serial.flush();
   if(currentMillis - USBMillis >= USBRate) {
-    if (SEND_DUMMY_VALUE != true) {
+    if ((SEND_DUMMY_VALUE != true) && (DEBUG_ADC != true)){
       if (adcTicks > 0) {
         adcAvg = adcAvg / adcTicks;
         /*
@@ -623,6 +634,7 @@ void checkInput() {
       received = SerialBT.read();
       SerialBT.println(received);
       commandESP32(received);
+      SerialBT.read(); // Clear out endline
     }
   }
   if (USE_USB == true) {
@@ -630,14 +642,15 @@ void checkInput() {
       received = Serial.read();
       Serial.println(received);
       commandESP32(received);
+      Serial.read(); // Clear out endline
     }
   }
 }
 
 void loop() {
-  delay(1); // temp, figure out why getting rid of this blocks serial inputs
-  currentMillis = millis();
+  delayMicroseconds(1800); // temp, figure out why getting rid of this blocks serial inputs
   checkInput();
+  currentMillis = millis();
   core_program();
   if (USE_USB == true) {
     usbSerial();
