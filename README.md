@@ -19,6 +19,8 @@ Hemoencephalography is a method that allows you to measure and influence control
 
 It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the theory and resources section of the [Whitepaper](https://github.com/moothyknight/HEG_ESP32/blob/master/HEG%20Whitepaper.pdf) to educate yourself more deeply on this subject.
 
+![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_Arduino/master/Pics/HEGExplained.png)
+
 ## Materials
 - Arduino Huzzah32 Feather (~$15) or Lolin32 V1.0.0 (~$5). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
 - ADS 1115 w/ PGA, 16-bit ADC
@@ -29,9 +31,6 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 - MicroUSB cable. 
 
 You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32 dev board, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. DN1102W is preferred at 850nm for IR as it is has fairly identical reflectivity between Hb or HbO2, providing a better baseline. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
-
-## Explanation
-![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_Arduino/master/Pics/HEGExplained.png)
 
 Placeholder...
 ## Schematics
