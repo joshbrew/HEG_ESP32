@@ -1,9 +1,9 @@
 # HEG_ESP32 - Open Source
+Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming schematics, app, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
+
 Now on CrowdSupply!!! This includes an article elaborating on the science: https://crowdsupply.com/alaskit/hegduino
 
 Youtube announcement link: https://www.youtube.com/watch?v=uuF9yuV2Kxk 
-
-Hemoencephalography meets highly affordable IoT! Now with bluetooth! Incoming schematics, app, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
 
 We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! 
 
@@ -14,8 +14,13 @@ Source and exe available in this repo, but requires the media files available fr
 See also:
 [Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
 
+## What is it?
+Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
+
+It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the theory and resources section of the [Whitepaper](https://github.com/moothyknight/HEG_ESP32/blob/master/HEG%20Whitepaper.pdf) to educate yourself more deeply on this subject.
+
 ## Materials
-- Arduino Huzzah32 Feather or Lolin32 V1.0.0. Other ESP32 arduino boards are compatible but usually have different pinouts.
+- Arduino Huzzah32 Feather (~$15) or Lolin32 V1.0.0 (~$5). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
 - ADS 1115 w/ PGA, 16-bit ADC
 - OPT101 Photodiode
 - 1 HAN1102W or DN1102W Infrared LED
@@ -24,11 +29,6 @@ See also:
 - MicroUSB cable. 
 
 You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32 dev board, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. DN1102W is preferred at 850nm for IR as it is has fairly identical reflectivity between Hb or HbO2, providing a better baseline. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
-
-## What is it?
-Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
-
-It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the [RecommendedReading.txt](https://github.com/moothyknight/HEG_Arduino/blob/master/RecommendedReading.txt) for some resources to educate yourself more deeply on this subject.
 
 ## Explanation
 ![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_Arduino/master/Pics/HEGExplained.png)
@@ -57,7 +57,7 @@ The photodiode is very sensitive. Any moisture or stray light will throw off the
 
 The maximum ADC reading is 32768 (15 bits) and each step is 0.125mV at the maximum 16X gain on the ADS1115. This is plenty sensitive for blood-oxygen detection. The range for real data is in the 200-3000 range. The script will not set the baseline unless it is below a specified light threshold.
 
-An ADC read of -1 means the ADC might be unpowered or fried. If you are just receiving random values with no responsiveness your A0 pin connection to the photodiode needs to be checked.
+An ADC read of -1 means the ADC might be unpowered or fried. If you are just receiving random values with no responsiveness your A0 pin connection to the photodiode needs to be checked. A constant value of 32768 with no responsiveness to light means there is a short or the 1MΩ pin might not be connected to the signal output of the photodiode.
 
 Be sure to cover the photodiode pins and the LED contacts with electrical tape so your forehead doesn't complete the circuit and throw off readings.
 
