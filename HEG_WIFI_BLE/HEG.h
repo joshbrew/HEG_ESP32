@@ -65,9 +65,9 @@ const int8_t USBRate = 0;         // No need to delay USB unless on old setups.
 const int nSensors = 2;
 const int nLEDs = 4;
 // LED GPIO pin definitions. Default LOLIN32 Pinout, commented values are TTGO T1 pins.
-int RED = 13, IR = 25, REDn = 16, IRn = 4; //Default LED GPIO. n values are LEDs used for noise cancelling.
-int IR0 = 25;    // Default left 3cm LEDs
-int RED0 = 13; //33
+int RED = 12, IR = 13, REDn = 16, IRn = 4; //Default LED GPIO. n values are LEDs used for noise cancelling.
+int IR0 = 13;  //25 // Default left 3cm LEDs
+int RED0 = 12; //13//33
 int IR1 = 4;//15              // Left 1cm LEDs
 int RED1 = 16;//2
 int IR2 = 26;             // Right 1cm LEDs
@@ -241,7 +241,7 @@ void setupHEG() {
 
   setupStateChanger();
   
-  Wire.begin(SDA0_PIN, SCL0_PIN);
+  Wire.begin(SDA0_PIN, SCL0_PIN); // Use Wire.begin(); with no custom pins defined if using the default ports defined on the board
 
   pinMode(IR, OUTPUT);
   pinMode(RED, OUTPUT);
