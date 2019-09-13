@@ -45,7 +45,7 @@ With extra sensors:
 
 
 The following demo pages are available:
-/       - default index has a canvas based snake game
+/       - default index has a canvas based snake game, from a circuits4you demo. Demonstrates capabilities with this device. Will be succeeded by HEG games, visualizers, etc.
 /listen - HEG Output event listener test. Better than websockets for this use case.
 /stream - HEG Output websocket stream test. May crash the device.
 /update - Upload compiled binaries and flash the ESP32 over the web.
