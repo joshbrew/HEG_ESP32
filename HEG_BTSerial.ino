@@ -1,3 +1,6 @@
+
+!!!! OLD SKETCH !!!! USE HEG_WIFI_BLE
+
 // Joshua Brewster - HEG BTSerial
 // Requires Arduino ADS1x15 library and Arduino ESP32 library, as well as a compatible ESP32 board
 
