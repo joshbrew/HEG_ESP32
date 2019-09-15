@@ -25,12 +25,13 @@ const char event_page[] PROGMEM = R"=====(
         source.addEventListener('myevent', function(e) {
             document.getElementById("myevent").innerHTML = e.data;
             console.log("myevent", e.data);
+            
         }, false);
 
-        data = e.data;
-        if(typeof(Storage) !=="undefined")
-        {window.localStorage.setItem('StateChangerPlugin', data');}
-        StateChangerPlugin.message(data);
+        //data = e.data;
+        //if(typeof(Storage) !=="undefined") 
+        //{window.localStorage.setItem('StateChangerPlugin', data);}
+        //StateChangerPlugin.message(data);
         }
     </script>
 
