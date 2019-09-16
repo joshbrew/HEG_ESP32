@@ -261,7 +261,7 @@ class ProtocolDetector(threading.Thread):
                 temp = s.readline()
                 if temp.find('|'):
                     temp = temp.split('|')
-                    self.data.append(float(temp[3]))
+                    self.data.append(float(temp[5]))
                     #self.data.append(temp[0])
                     data = self.data
                     if len(self.data) < 1:
@@ -641,7 +641,7 @@ class SerialManager(threading.Thread):
             if(self.baudrate == 115200):
                 time.sleep(1)
                 self.ser.write('t')
-                for i in range(1,25):
+                for i in range(1,40):
                     print self.ser.readline()
                 self.start_time = time.time()
                 TIME_FORMAT = "%Y-%m-%d %H-%M-%S"
@@ -772,7 +772,7 @@ class SerialManager(threading.Thread):
                         if self.baudrate == 115200:
                             temp = newline.split('|')
                             if len(temp) > 1:
-                                newdata = float(temp[3])
+                                newdata = float(temp[5])
                         else:
                             newdata = self.Parse(newline)
                     except:
