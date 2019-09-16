@@ -13,7 +13,7 @@ Youtube announcement link: https://www.youtube.com/watch?v=uuF9yuV2Kxk
 
 We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! 
 
-v0.1.4 with EXE, Tested for Windows 7, 8, and 10 available in this repo. Bugs are definitely present but the main HEGflight mode works fine.
+v0.1.5 with EXE, Tested for Windows 7, 8, and 10 available in this repo. Bugs are definitely present from old source code. Try the different modes.
 
 Source and exe available in this repo, but requires the media files available from the original sourceforge: https://sourceforge.net/projects/hegstudio/
 
