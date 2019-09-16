@@ -1161,7 +1161,7 @@ class AutoHEG(threading.Thread):
                         fastSMA = fastSMA / 10
 
                         dy = fastSMA*100 - self.heg_sma[dataLength - 1]
-                        score = self.hegdata[dataLength - 1] + dy * 0.5 # smoke and mirrors
+                        score = self.hegdata[dataLength - 1] + dy * 0.1 # smoke and mirrors
 
                 self.hegdata.append(score)
             else:
