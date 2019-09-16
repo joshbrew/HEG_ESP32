@@ -1,1 +1,0 @@
-Copy the files from the hegstudio res folder into here before launching hegstudio.pyw

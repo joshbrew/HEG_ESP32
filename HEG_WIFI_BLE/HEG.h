@@ -65,24 +65,24 @@ const int8_t USBRate = 0;         // No need to delay USB unless on old setups.
 const int nSensors = 2;
 const int nLEDs = 4;
 // LED GPIO pin definitions. Default LOLIN32 Pinout, commented values are TTGO T1 pins.
-int RED = 12, IR = 13, REDn = 16, IRn = 4; //Default LED GPIO. n values are LEDs used for noise cancelling.
-int IR0 = 13;    // Default left 3cm LEDs
-int RED0 = 12; //33
-int IR1 = 4;//15              // Left 1cm LEDs
-int RED1 = 16;//2
+int RED = 13, IR = 12, REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
+int IR0 = 12;    // Default left 3cm LEDs
+int RED0 = 13; //33
+int IR1 = 0;//15              // Left 1cm LEDs
+int RED1 = 18;//2
 int IR2 = 26;             // Right 1cm LEDs
 int RED2 = 27;
-int IR3 = 14;             // Right 3cm LEDs
+int IR3 = 19;             // Right 3cm LEDs
 int RED3 = 12;
 
 float scaling = 1;
 
 const int LED = 5;  // Lolin32 V1.0.0 LED on Pin 5
-const int PWR = 21;//14//21 // Powers ADC and OPT101
+const int PWR = 14;//21; // Powers ADC and OPT101
 
 //SET NON-DEFAULT SDA AND SCL PINS
-#define SDA0_PIN 23//16//23 //5
-#define SCL0_PIN 19//4//19 //18
+#define SDA0_PIN 16//23 //5
+#define SCL0_PIN 4//19 //18
 
 //For dual i2c or i2c switching
 //#define SDA1_PIN ?
@@ -218,7 +218,6 @@ unsigned long currentMillis;
 unsigned long LEDMillis;
 unsigned long BLEMillis;
 unsigned long USBMillis;
-g
 //Start ADC and set gain. Starts timers
 void startADS()
 {

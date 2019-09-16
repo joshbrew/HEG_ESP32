@@ -15,7 +15,7 @@ ESP32 web server demo
 <h1>Hello World</h1>
 <h3>Simple Snake Game</h3>
 <canvas id="stage" height="400" width="520"></canvas><br>
-Yse arrow keys to play. HTML5 canvas game demo from circuits4you.com.
+Use arrow keys to play. HTML5 canvas game demo from circuits4you.com
 </body>
 </html>
 <script>

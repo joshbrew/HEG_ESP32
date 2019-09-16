@@ -68,7 +68,7 @@ void connectAP(){
 }
 
 void setupStation(){
-  Serial.println("Setting up new WiFi Connection...");
+  Serial.println("Setting up WiFi Connection...");
   //Serial.println("Disconnecting from previous network...");
   WiFi.softAPdisconnect();
   WiFi.disconnect(true);
@@ -357,14 +357,14 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   if(type == WS_EVT_CONNECT){
  
     Serial.println("Websocket client connection received");
-    commandESP32('t');
+    //commandESP32('t');
     globalWSClient = client;
     xTaskCreate(wsHEGTask,"HEG_ws",8196,NULL,2,NULL);
  
   } else if(type == WS_EVT_DISCONNECT){
  
     Serial.println("Websocket client connection finished");
-    commandESP32('f');
+    //commandESP32('f');
     globalWSClient = NULL;
  
   }
@@ -418,7 +418,7 @@ void setupWiFi(){
   });
   server.on("/listen",HTTP_GET, [](AsyncWebServerRequest *request){
     //xTaskCreate(evsHEGTask,"evsHEGTask",8196,NULL,2,NULL);
-    commandESP32('t');
+    //commandESP32('t');
     request->send(200,"text/html", event_page);
   });
   server.on("/connect",HTTP_GET,[](AsyncWebServerRequest *request){
@@ -426,6 +426,15 @@ void setupWiFi(){
   });
   server.on("/doConnect",HTTP_POST, [](AsyncWebServerRequest *request){
     handleDoConnect(request);
+  });
+  server.on("/startHEG",HTTP_POST,[](AsyncWebServerRequest *request){
+    commandESP32('t');
+  });
+  server.on("/stopHEG",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('f');
+  });
+  server.on("/restart",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('R');
   });
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request){
     handleUpdate(request);
