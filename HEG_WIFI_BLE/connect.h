@@ -1,4 +1,4 @@
-const char connect_page[] PROGMEM = R"=====(
+const char connect_page1[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
 <body>
@@ -12,10 +12,12 @@ const char connect_page[] PROGMEM = R"=====(
       <input type='checkbox' id'btSwitch' name='btSwitch'>Use Bluetooth<br>
     <input type='submit' id='Connect' value='Connect'>
   </form>
-</body>
-</html>  
 )=====";
 
+const char connect_page2[] PROGMEM = R"=====(
+</body>
+</html>
+)=====";
 /* Auto-reconnect?
       <input type='checkbox' id='rc' name='rc'><br>
     Save?

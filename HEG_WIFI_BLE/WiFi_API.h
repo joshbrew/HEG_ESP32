@@ -234,8 +234,38 @@ void commandESP32(char received)
 
 // HTTP server GET/POST handles.
 
+//Return JSON string of WiFi scan results
+String scanWiFi(){
+  String json = "<div>[";
+  int n = WiFi.scanComplete();
+  if(n == -2){
+    WiFi.scanNetworks(true); //WiFi.scanNetworks(true,true); // Exposes hidden networks
+  } else if(n){
+    for (int i = 0; i < n; ++i){
+      if(i) json += ",";
+      json += "{";
+      json += "\"rssi\":"+String(WiFi.RSSI(i));
+      json += ",\"ssid\":\""+WiFi.SSID(i)+"\"";
+      json += ",\"bssid\":\""+WiFi.BSSIDstr(i)+"\"";
+      json += ",\"channel\":"+String(WiFi.channel(i));
+      json += ",\"secure\":"+String(WiFi.encryptionType(i));
+      //json += ",\"hidden\":"+String(WiFi.isHidden(i)?"true":"false");
+      json += "}<br>";
+    }
+    WiFi.scanDelete();
+    if(WiFi.scanComplete() == -2){
+      WiFi.scanNetworks(true);
+    }
+  }
+  json += "]</div>";
+  //request->send(200, "text/html", json);
+  return json;
+}
+
+
 void handleWiFiSetup(AsyncWebServerRequest *request){
-  request->send(200, "text/html", connect_page); //Send web page 
+  String scanResult = scanWiFi();
+  request->send(200, "text/html", connect_page1 + scanResult + connect_page2); //Send web page 
 }
 
 void handleDoConnect(AsyncWebServerRequest *request) {
@@ -407,7 +437,10 @@ void setupWiFi(){
   //HTTP Basic authentication
   //events.setAuthentication("user", "pass");
   server.addHandler(&events);
- 
+
+  WiFi.scanNetworks(true);
+  WiFi.scanDelete();
+  
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", MAIN_page); //Send web page 
   });      //This is the default display page
@@ -426,6 +459,14 @@ void setupWiFi(){
   });
   server.on("/doConnect",HTTP_POST, [](AsyncWebServerRequest *request){
     handleDoConnect(request);
+  });
+  //First request will return 0 results unless you start scan from somewhere else (loop/setup)
+  //Do not request more often than 3-5 seconds
+  server.on("/doScan", HTTP_POST, [](AsyncWebServerRequest *request){
+    String temp = scanWiFi();
+  });
+  server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200,"text/html",scanWiFi());
   });
   server.on("/startHEG",HTTP_POST,[](AsyncWebServerRequest *request){
     commandESP32('t');
