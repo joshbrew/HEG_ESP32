@@ -2,8 +2,6 @@
 // Contributors - Diego Schmaedech (StateChanger Team)
 // Requires Arduino ADS1x15 library and Arduino ESP32 library, as well as a compatible ESP32 board
 
-// TEST BUILD 0.98
-// 9/13/2019
 /*
    TODO
    - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable at bare min) Alternatively, get an ECG chip or use the MAX30102?
@@ -65,9 +63,9 @@ const int8_t USBRate = 0;         // No need to delay USB unless on old setups.
 const int nSensors = 2;
 const int nLEDs = 4;
 // LED GPIO pin definitions. Default LOLIN32 Pinout, commented values are TTGO T1 pins.
-int RED = 13, IR = 12, REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
-int IR0 = 12;    // Default left 3cm LEDs
-int RED0 = 13; //33
+int RED = 12, IR = 13, REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
+int IR0 = 13;    // Default left 3cm LEDs
+int RED0 = 12; //33
 int IR1 = 0;//15              // Left 1cm LEDs
 int RED1 = 18;//2
 int IR2 = 26;             // Right 1cm LEDs
@@ -198,7 +196,7 @@ bool badSignal = false;        // Bool for too high of an ADC reading
 bool signalDetermined = false; // Bool for whether the ADC reading is within desired range
 
 //Counters
-int ticks0, redTicks, irTicks, ratioTicks, adcTicks, noLEDTicks = 0;
+int ticks0, redTicks, irTicks, ratioTicks, noiseTicks, adcTicks, noLEDTicks = 0;
 
 //Scoring variables
 long redValue, irValue, rawValue = 0;
@@ -240,7 +238,7 @@ void setupHEG() {
 
   setupStateChanger();
   
-  Wire.begin(SDA0_PIN, SCL0_PIN); // Delete SDA0_PIN, SCL0_PIN if using default SDA/SCL on board
+  Wire.begin();//SDA0_PIN, SCL0_PIN); // Delete SDA0_PIN, SCL0_PIN if using default SDA/SCL on board
 
   pinMode(IR, OUTPUT);
   pinMode(RED, OUTPUT);
@@ -666,11 +664,13 @@ void get_ratio(bool isNoise, bool getPos) {
       ratioAvg += ratio;
       redAvg = redGet;
       irAvg = irGet;
+      ratioTicks++;
     }
     else {
       noiseAvg += ratio;
       rednAvg = redGet;
       irnAvg = irGet;
+      noiseTicks++;
     }
 
     if (getPos == true) {
@@ -694,8 +694,6 @@ void get_ratio(bool isNoise, bool getPos) {
     irTicks = 0;
     noLEDTicks = 0;
 
-    ratioTicks++;
-
     redValue = 0; //Reset values to get next average
     irValue = 0;
     rawValue = 0;
@@ -703,7 +701,7 @@ void get_ratio(bool isNoise, bool getPos) {
 }
 
 // Core loop for HEG sampling.
-void core_program()
+void core_program(bool doNoiseReduction)
 {
     if (adcEnabled == false)
     {
@@ -714,7 +712,12 @@ void core_program()
     if (SEND_DUMMY_VALUE != true)
     {
       // Switch LEDs back and forth.
-      switch_LEDs(RED, IR);
+      if(doNoiseReduction == true){
+        switch_LEDs(REDn, IRn);
+      }
+      else {
+        switch_LEDs(RED, IR);
+      }
       if (currentMillis - sampleMillis >= sampleRate)
       {
         // read the analog in value:
@@ -738,7 +741,12 @@ void core_program()
           }
           else
           { // GET RATIO
-            get_ratio(false, true);
+            if(doNoiseReduction == true){
+              get_ratio(true,false);
+            }
+            else{
+              get_ratio(false, true);
+            }
           }
         }
         sampleMillis = currentMillis;
@@ -763,41 +771,8 @@ void core_program()
 } // END core_program()
 
 
-
-
-//if ratioAvg > 0
-void noise_reduce() { //Experimental noise cancelling using another set of LEDs
-  digitalWrite(RED, LOW);
-  digitalWrite(IR, LOW);
-  delay(50); // 50ms delay to give LEDs time to shut down fully
-  red_led = false;
-  ir_led = false;
-  noiseAvg = 0;
-  while (noiseAvg == 0) {
-    switch_LEDs(REDn, IRn);
-    if (currentMillis - sampleMillis >= sampleRate)
-    {
-      // read the analog in value:
-      adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC
-      //Voltage = (adc0 * bits2mv);
-
-      // print the results to the Serial Monitor:
-      if (DEBUG_ADC == true)
-      {
-        Serial.print("ADC Value: ");
-        Serial.println(adc0);
-        //Serial.print("\tVoltage: ");
-        //Serial.println(Voltage,7);
-      }
-      else
-      {
-        get_ratio(true, false);
-      }
-      sampleMillis = currentMillis;
-    }
-    adcnAvg += adc0;
-    //adcTicks++;
-  }
+//denoising algo. Not final implementation
+void denoise(){
   denoised = ratioAvg - noiseAvg;
 }
 
@@ -812,11 +787,14 @@ void updateHEG()
       {
         ratioAvg = ratioAvg / ratioTicks;
         posAvg = posAvg / ratioTicks;
-
-
+        if((NOISE_REDUCTION == true) && (noiseTicks > 1)){
+          noiseAvg = noiseAvg / noiseTicks;
+          denoise();
+        }
  /*
 StateChanger Header Start//==================================================================================================
- */        filteredRatio = ratioAvg; //set filter
+ */        
+        filteredRatio = ratioAvg; //set filter
 
         slopeArray[slopeCounter] = largeFilter.Compute(); //circular buffer
         slopeCounter++;
@@ -853,9 +831,10 @@ StateChanger Header Start//=====================================================
  */
         //outputValue = ratioAvg;
         //output = "NO DATA";
-        if (NOISE_REDUCTION == true)
-        { 
-          output = String(currentMillis) + "|" + String(rednAvg) + "|" + String(irnAvg) + "|" + String(ratioAvg, 4) + "|" + String(denoised, 4) + "|" + String(largeFilter.Compute(), 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
+        if(noiseTicks > 0){ 
+            output = String(currentMillis) + "|" + String(rednAvg) + "|" + String(irnAvg) + "|" + String(ratioAvg, 4) + "|" + String(largeFilter.Compute(), 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "|" + String(denoised, 4) + "\r\n";
+            noiseAvg = 0;
+            noiseTicks = 0;
         }
         else
         {
@@ -895,12 +874,21 @@ void HEG_core_loop()
 {
   currentMillis = millis();;
   if(coreProgramEnabled == true){
-    core_program();
-  }
-  if (NOISE_REDUCTION == true) {
-    if (ratioAvg > 0) {
-      noise_reduce();
+    if(ratioTicks == 0) {
+      core_program(false);
+    }
+    else {
+      if(NOISE_REDUCTION == true) {    
+        core_program(true);
+      }
     }
   }
-  updateHEG(); 
+  if(NOISE_REDUCTION == true) {
+    if(noiseTicks > 0){
+      updateHEG(); 
+    }
+  }
+  else {
+    updateHEG();
+  }
 }

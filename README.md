@@ -47,7 +47,7 @@ We used cheap perfboard to mount our DIY prototypes. For the sensor we used a pr
 
 1. Cut your wire leads to be the desired length between the sensor, which goes on your forehead, and the receiver. Sensor-only or ADC to ESP32 leads should be the shortest distance, which will vary for different setups so use your judgment.
 
-2. Wire it up based on the above schematics diagram. The anode marks on the LEDs are green. Use a 6 pin SOT23 socket to mount the SMT LEDs, they should only be a few cents. Use electrical tape to cover any pins or wires exposed so they do not contact your forehead.
+2. Wire it up based on the above schematics diagram. The anode marks on the LEDs are green. Use a 6 pin SOT23 socket to mount the SMT LEDs, they should only be a few cents. Use electrical tape to cover any pins or wires exposed so they do not contact your forehead. Ensure each component is grounded separately to minimize noise and crosstalk (made that mistake).
 
 3. Install ESP32 firmware on device via Arduino IDE. Requires [ADS1x15 library](https://github.com/adafruit/Adafruit_ADS1X15) and [arduino ESP32 library](https://github.com/espressif/arduino-esp32) 
 
