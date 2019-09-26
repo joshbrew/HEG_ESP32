@@ -38,7 +38,7 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 
 You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32 dev board, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. DN1102W is preferred at 850nm for IR as it is has fairly identical reflectivity between Hb or HbO2, providing a better baseline. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
 
-Placeholder...
+Placeholder... UPDATING SOON.
 ## Schematics
 ![Schematic](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEG_ESP32Arduino_BP.PNG?raw=true)
 
@@ -53,7 +53,11 @@ We used cheap perfboard to mount our DIY prototypes. For the sensor we used a pr
 
 4. Secure sensor to forehead, make sure ALL light is blocked as the photodiode is very sensitive.
 
-5. The data output via serial USB or bluetooth (toggleable in the script or via serial) is structured as: "ADC_READ, RATIO_READ, POSITION_FROM_BASELINE" The Ratio section will transmit "WAIT" when it is still gathering samples, including when getting the initial baseline. 
+5. The data output via WiFi, serial USB, or bluetooth (toggleable in the script or via serial) is structured as: Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
+Red/IR Ratio Average | small Sav Lay Filter | large Sav Lay Filter |
+adc Avg | position Average | ratio Slope | Attention Index
+
+Data will not transmit if the photodiode is saturated, use command 'T' to test diode or activate debug options.
 
 We'll soon be adding free Windows and Android apps. We have compatibility with the original HEGstudio by Jonathan Toomim! It's hacky but the feedback outputs more or less are identical to the Peanut.
 
