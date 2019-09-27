@@ -3,6 +3,8 @@ Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! In
 
 Use the HEG_WIFI_BLE sketch in the arduino IDE on your ESP32. Pin definitions in HEG.h for the SDA/SCL, and LEDs need to be adjusted according to your setup.
 
+Requires these arduino libraries: Arduino ESP32 latest dev build via git, AsyncTCP, ESPAsyncWebServer, SavLay Filter, Arduino ADS1X15, and the different build options provided in /HEG_WIFI_BLE/replace_these. See Wifi_Readme.md for info on serial and wifi controls. Gonna re-do this page soon.
+
 -------------------------------------------------------------------------------------------
 
 Now on CrowdSupply!!! This includes an article elaborating on the science: https://crowdsupply.com/alaskit/hegduino
