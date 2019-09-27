@@ -1,3 +1,7 @@
+//Requires these arduino libraries: Arduino ESP32 latest dev build via git, AsyncTCP, ESPAsyncWebServer, SavLay Filter, Arduino ADS1X15, and the different build options provided.
+//By Joshua Brewster
+//Contributors: Diego Schmaedech and many others indirectly. 
+
 #include "WiFi_API.h" // WiFi settings and macros. HEG and BLE libraries linked through here.
 unsigned long eventMillis = 0;
 
