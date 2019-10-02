@@ -11,6 +11,7 @@
 #include "ws.h" // Websocket client page
 #include "connect.h" // Wifi connect page
 #include "evs.h" // Event Source page
+#include "sc.h" // State Changer page
 
 #include "HEG.h"
 
@@ -123,6 +124,26 @@ void commandESP32(char received)
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
     reset = true;
+  }
+  if (received == 'D'){ // for use with a Serial Monitor
+    if(coreProgramEnabled = false){
+      coreProgramEnabled = true;
+      if(DEBUG_LEDS==false){
+        DEBUG_LEDS = true;
+        DEBUG_ADC = true;
+      }
+      else{
+        DEBUG_LEDS = false;
+        DEBUG_ADC = false;
+      }
+    }
+    else{
+      coreProgramEnabled = false;
+      DEBUG_LEDS = false;
+      DEBUG_ADC = false;
+    }
+    
+    
   }
   if (received == 's')
   { //Reset baseline and readings
@@ -262,6 +283,13 @@ String scanWiFi(){
   return json;
 }
 
+void handleDoCommand(AsyncWebServerRequest *request){
+  for(uint8_t i = 0; i< request->args(); i++){
+    if(request->argName(i) == "command"){
+      commandESP32(char(String(request->arg(i))[0]));
+    }
+  }
+}
 
 void handleWiFiSetup(AsyncWebServerRequest *request){
   String scanResult = scanWiFi();
@@ -411,9 +439,13 @@ void setupWiFi(){
     if(EEPROM.read(1) == 1){ //Read from flash memory
       setSSID = EEPROM.readString(2);
       setPass = EEPROM.readString(128);
-      setupStation();
       //setupStation(setSSID,setPass);
     }
+    else{
+      setSSID = String(ssid);
+      setPass = String(password);
+    }
+    setupStation();
   //----------------------------------------------------------------
   }
   else {
@@ -431,7 +463,7 @@ void setupWiFi(){
     }
     //send event with message "hello!", id current millis
     // and set reconnect delay to 1 second
-    client->send("hello!",NULL,millis(),1000);
+    //client->send("hello!",NULL,millis(),1000);
   });
   
   //HTTP Basic authentication
@@ -444,15 +476,18 @@ void setupWiFi(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", MAIN_page); //Send web page 
   });      //This is the default display page
+  server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
+    request->send(200,"text/html", String(sc_page));
+  });
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/html", String(ws_page1)+myLocalIP+String(ws_page2));
+    request->send(200, "text/html", String(ws_page));
     delay(1000);
     deviceConnected = true;
   });
   server.on("/listen",HTTP_GET, [](AsyncWebServerRequest *request){
     //xTaskCreate(evsHEGTask,"evsHEGTask",8196,NULL,2,NULL);
     //commandESP32('t');
-    request->send(200,"text/html", event_page);
+    request->send_P(200,"text/html", event_page);
   });
   server.on("/connect",HTTP_GET,[](AsyncWebServerRequest *request){
     handleWiFiSetup(request);
@@ -467,15 +502,6 @@ void setupWiFi(){
   });
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200,"text/html",scanWiFi());
-  });
-  server.on("/startHEG",HTTP_POST,[](AsyncWebServerRequest *request){
-    commandESP32('t');
-  });
-  server.on("/stopHEG",HTTP_POST, [](AsyncWebServerRequest *request){
-    commandESP32('f');
-  });
-  server.on("/restart",HTTP_POST, [](AsyncWebServerRequest *request){
-    commandESP32('R');
   });
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request){
     handleUpdate(request);
@@ -493,6 +519,34 @@ void setupWiFi(){
                   size_t len, bool final) {handleDoUpdate(request, filename, index, data, len, final);}
   );
   server.onNotFound([](AsyncWebServerRequest *request){request->send(404);});
+
+  //Text-based commands. Send char corresponding to known commands.
+  server.on("/command",HTTP_POST,[](AsyncWebServerRequest *request){
+    handleDoCommand(request);
+  });
+  
+  //POST-based commands
+  server.on("/startHEG",HTTP_POST,[](AsyncWebServerRequest *request){
+    commandESP32('t');
+  });
+  server.on("/stopHEG",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('f');
+  });
+  server.on("/restart",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('R');
+  });
+  server.on("/l",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('l');
+  });
+  server.on("/c",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('c');
+  });
+  server.on("/r",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('r');
+  });
+  server.on("/n",HTTP_POST, [](AsyncWebServerRequest *request){
+    commandESP32('n');
+  });
  
   server.begin();                  //Start server
   Serial.println("HTTP server started");

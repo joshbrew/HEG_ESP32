@@ -727,7 +727,7 @@ void core_program(bool doNoiseReduction)
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
-          Serial.println("ADC Value: ");
+          Serial.print("ADC Value: ");
           Serial.println(adc0);
           //Serial.println("\tVoltage: ");
           //Serial.println(Voltage,7);

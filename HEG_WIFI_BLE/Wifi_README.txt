@@ -4,6 +4,10 @@ HEG WiFi WIP implementation.
 
 Arduino's default partition settings for the ESP32 need to be changed.
 
+You can change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
+
+Alternatively, to have increased SPIFFs:
+
 In the Arduino>hardware>espressif>esp32 folder replace boards.txt with the one in this library
 
 In esp32>tools>partitions replace default.csv with the one in this library
@@ -36,6 +40,7 @@ HEG serial commands:
 'u' - toggles USB data stream. 
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
+'D' - toggles ADC debugging (serial only)
 
 With extra sensors:
 'l' - toggles sensor 0 and LED set 0.
@@ -53,6 +58,7 @@ With noise average activated, the denoised ratio (if using an extra pair of LEDs
 
 The following demo pages are available:
 /       - default index has a canvas based snake game, from a circuits4you demo. Demonstrates capabilities with this device. Will be succeeded by HEG games, visualizers, etc.
+/sc     - State Changer demo page.
 /listen - HEG Output event listener test. Better than websockets for this use case.
 /stream - HEG Output websocket stream test. May crash the device.
 /update - Upload compiled binaries and flash the ESP32 over the web.
@@ -83,6 +89,13 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 
 
 Changelog:
+
+10/1/19
+------
+Canvas demo
+Really basic navigation on index page
+Fix websocket page to use js to call the hostname in case of esp32.local being used.
+More POST commands, also added text input-based command method as an option, only send single char.
 
 9/9/19
 ------

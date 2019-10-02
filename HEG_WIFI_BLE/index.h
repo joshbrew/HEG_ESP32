@@ -12,8 +12,17 @@ canvas {
 </style>
 <body>
 ESP32 web server demo
-<h1>Hello World</h1>
+<h1>HEG Pre-Alpha Web Nav</h1>
+
+<div id="HEG_NAV">
+  StateChanger Demo <form method="get" action="/sc"><button type="submit">GO</button></form><br>
+  Canvas Demo <form method="get" action="/listen"><button type="submit">GO</button></form><br>
+  Connection Settings <form method="get" action="/connect"><button type="submit">GO</button></form><br>
+</div>
+
 <h3>Simple Snake Game</h3>
+
+
 <canvas id="stage" height="400" width="520"></canvas><br>
 Use arrow keys to play. HTML5 canvas game demo from circuits4you.com
 </body>

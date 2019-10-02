@@ -23,6 +23,10 @@ const char event_page[] PROGMEM = R"=====(
       <form method="post" action="/stopHEG" target="dummyframe">
           <button type="submit">Stop HEG</button>
       </form>
+
+      <form method="post" action="/command" target="dummyframe">
+          <input type="text" id="command" name="command"><button type="submit">Send</button>
+      </form>
     
     </div>
 
