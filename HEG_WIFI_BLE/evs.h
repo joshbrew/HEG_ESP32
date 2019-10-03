@@ -271,7 +271,7 @@ const char event_page[] PROGMEM = R"=====(
           mainContext.fill();
 
           if(((angle > 1.57) || (angleChange > 0)) && ((angle < 3.14) || (angleChange < 0))) {
-            angle += angleChange;
+            angle += angleChange*.1;
           }
           requestAnimationFrame(drawCircle);
       }

@@ -23,6 +23,7 @@ AsyncEventSource events("/events");
 
 //Enter your WiFi SSID and PASSWORD
 const char* host = "esp32";
+const char* softAPName = "My_HEG";
 
 char received;
 
@@ -65,7 +66,7 @@ void connectAP(){
   Serial.println("Starting local access point, scan for StateChanger in available WiFi connections");
   Serial.println("Log in at 192.168.4.1 after connecting successfully");
   WiFi.mode(WIFI_AP); //Access Point mode, creates a local access point
-  WiFi.softAP("StateChanger", "12345678");    //Password length minimum 8 char 
+  WiFi.softAP(softAPName, "12345678");    //Password length minimum 8 char 
   myLocalIP = "192.168.4.1";
 }
 
