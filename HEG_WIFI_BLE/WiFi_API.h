@@ -7,7 +7,8 @@
 #include <EEPROM.h>
 
 #include "settings.h" //ESP32 Settings
-#include "index.h"  //Web page header file
+#include "index.h"  //Index/intro page
+#include "update.h" //Update page
 #include "ws.h" // Websocket client page
 #include "connect.h" // Wifi connect page
 #include "evs.h" // Event Source page
@@ -72,7 +73,7 @@ void setupStation(){
   Serial.println("Setting up WiFi Connection...");
   //Serial.println("Disconnecting from previous network...");
   WiFi.softAPdisconnect();
-  WiFi.disconnect(true);
+  WiFi.disconnect();
   WiFi.mode(WIFI_OFF);
   delay(1000);
   
@@ -98,7 +99,7 @@ void setupStation(){
     Serial.println("Connect to host and access via the new local IP assigned to the ESP32");
   }
   else{
-    WiFi.disconnect(true);
+    WiFi.disconnect();
     Serial.println("");
     Serial.println("Connection Failed.");
     Serial.print("Attempted at SSID: ");
@@ -335,8 +336,8 @@ void handleDoConnect(AsyncWebServerRequest *request) {
 }
  
 void handleUpdate(AsyncWebServerRequest *request) {
-  char* html = "<h4>Upload compiled sketch .bin file</h4><form method='POST' action='/doUpdate' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
-  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", html);
+  //char* html = "<h4>Upload compiled sketch .bin file</h4><form method='POST' action='/doUpdate' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_page);
   request->send(response);
 }
 
@@ -429,6 +430,8 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 }
 
 void setupWiFi(){
+
+  //WiFi.mode(AP_STA_MODE);
   EEPROM.begin(512);
   //Serial.println(EEPROM.read(0));
   //Serial.println(EEPROM.readString(2));
@@ -474,13 +477,13 @@ void setupWiFi(){
   WiFi.scanDelete();
   
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", MAIN_page); //Send web page 
+    request->send_P(200, "text/html", MAIN_page); //Send web page 
   });      //This is the default display page
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
-    request->send(200,"text/html", String(sc_page));
+    request->send_P(200,"text/html", sc_page);
   });
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/html", String(ws_page));
+    request->send_P(200, "text/html", ws_page);
     delay(1000);
     deviceConnected = true;
   });

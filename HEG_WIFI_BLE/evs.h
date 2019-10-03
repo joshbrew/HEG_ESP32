@@ -4,36 +4,84 @@ const char event_page[] PROGMEM = R"=====(
 <head>
 <style>
   body {
-      background-color: gray
+    background-color: #707070;
+  }
+  msgDiv {
+    color: white;
   }
   eventDiv {
-      color: chartreuse
+      color: white;
   }
-  scoreDiv {
-      color: tomato
+
+  input[type=text]{
+    border: 2px solid red;
+    border-radius: 4px;
+    height: 30px;
+    padding: 2px;
+    font-size: 16px;
   }
+  
+  .button {
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+   }
+   .hegapi {
+      position: relative;
+      width: 100%;
+      height: 150px;
+   }
+   .startbutton {
+      background-color: #4CAF50; /* Green */
+      position: absolute;
+      left: 0%;
+   }
+   .stopbutton {
+      background-color: #FF0000;
+      position: absolute;
+      left: 120px;
+   }
+   .sendcommand{
+      position: absolute;
+      top: 50%;
+   }
+   .sendbutton{
+      background-color: #0000FF; 
+   }
+   .label { padding: 4px; color: white; }
+   .dattable {
+      position: relative;
+      width: 75%;
+      table-layout: fixed;
+   }
+   th {
+      color: chartreuse;
+      padding: 5px;
+      border: 1px solid white;
+      width: 10%;
+   }
+   td {
+      color: chartreuse;
+      padding: 5px;
+      border: 1px solid white;
+      width: 10%;
+   }
+   .scoreth {
+      color: honeydew;
+   }
+   .canvas {
+      position: relative;
+   }
 </style>
 </head>
 <body id="main_body">
-
-    <div id="HEGAPI">     
-      <form method="post" action="/startHEG" target="dummyframe">
-          <button type="submit">Start HEG</button>
-      </form>
-      <form method="post" action="/stopHEG" target="dummyframe">
-          <button type="submit">Stop HEG</button>
-      </form>
-
-      <form method="post" action="/command" target="dummyframe">
-          <input type="text" id="command" name="command"><button type="submit">Send</button>
-      </form>
-    
-    </div>
-
-    <div id="canvasContainer">
-        <canvas id="myCanvas" height="400px" width="400px"></canvas>
-    </div>
-
     <script>
         var ms = [];
         var red = [];
@@ -102,15 +150,31 @@ const char event_page[] PROGMEM = R"=====(
             }
         }
 
-        var containerHTML = '<div id="container"></div>';
-        var messageHTML = '<div id="message">Not connected</div>';
-        var eventHTML = '<eventDiv id="myevent">Waiting...</eventDiv>';
-        var scoreHTML = '<scoreDiv id="ScoreHTML">Getting score...</scoreDiv>';
+        var hegapiHTML = '<div id="HEGAPI" class="hegapi"> \
+          <form method="post" action="/startHEG" target="dummyframe"><button class="button startbutton" type="submit">Start HEG</button></form> \
+          <form method="post" action="/stopHEG" target="dummyframe"><button class="button stopbutton" type="submit">Stop HEG</button></form> \
+          <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
+          </div>';
+    
+        var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>'
 
-        appendFragment(containerHTML,"HEGAPI");
+        var canvasHTML = '<div id="canvasContainer"><canvas id="myCanvas" height="400px" width="400px"></canvas></div>'
+
+        var containerHTML = '<div id="container"></div>';
+        var messageHTML = '<msgDiv id="message">Output:</div>';
+        var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
+        var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th></tr></table></div>';
+        var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Getting Score...</th></tr></table></div>';
+
+        //Setup page as fragments so updates to elements are asynchronous.
+        appendFragment(hegapiHTML,"main_body");
+        appendFragment(dataDivHTML,"main_body");
+        appendFragment(canvasHTML,"main_body");
+        appendFragment(containerHTML,"dataDiv");
         appendFragment(messageHTML,"container");
         appendFragment(eventHTML,"container");
-        appendFragment(scoreHTML,"container");
+        appendFragment(tableHeadHTML,"container");
+        appendFragment(tableDatHTML,"container");
 
         //var data;
         //function getMessage(){
@@ -122,6 +186,7 @@ const char event_page[] PROGMEM = R"=====(
 
             source.addEventListener('open', function(e) {
                 console.log("HEGDUINO", "Events Connected");
+                //document.getElementById("message").innerHTML = "Output:";
             }, false);
 
             source.addEventListener('error', function(e) {
@@ -147,22 +212,24 @@ const char event_page[] PROGMEM = R"=====(
             }, false);
 
             source.addEventListener('myevent', function(e) {
-                document.getElementById("myevent").innerHTML = e.data;
                 console.log("myevent", e.data);
-                if(e.data.includes("|")) {
-                    var dataArray = e.data.split("|");
-                    ms.push(parseInt(dataArray[0]));
-                    red.push(parseInt(dataArray[1]));
-                    ir.push(parseInt(dataArray[2]));
-                    ratio.push(parseFloat(dataArray[3]));
-                    smallSavLay.push(parseFloat(dataArray[4]));
-                    largeSavLay.push(parseFloat(dataArray[5]));
-                    adcAvg.push(parseInt(dataArray[6]));
-                    ratioSlope.push(parseFloat(dataArray[7]));
-                    AI.push(parseFloat(dataArray[8]));
-
-                    //slowFastSMAScore(ratio);
-                    document.getElementById("ScoreHTML").innerHTML = largeSavLay[largeSavLay.length-1];//slowFastScore[slowFastScore.length - 1]
+                if(document.getElementById("myevent").innerHTML != e.data){
+                  document.getElementById("myevent").innerHTML = e.data;
+                  if(e.data.includes("|")) {
+                      var dataArray = e.data.split("|");
+                      ms.push(parseInt(dataArray[0]));
+                      red.push(parseInt(dataArray[1]));
+                      ir.push(parseInt(dataArray[2]));
+                      ratio.push(parseFloat(dataArray[3]));
+                      smallSavLay.push(parseFloat(dataArray[4]));
+                      largeSavLay.push(parseFloat(dataArray[5]));
+                      adcAvg.push(parseInt(dataArray[6]));
+                      ratioSlope.push(parseFloat(dataArray[7]));
+                      AI.push(parseFloat(dataArray[8]));
+  
+                      //slowFastSMAScore(ratio);
+                      document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1]+'</td><td id="red">'+red[red.length-1]+'</td><td id="ir">'+ir[ir.length-1]+'</td><td id="ratio">'+ratio[ratio.length-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1]+'</td><td class="scoreth" id="ratioSlope">'+ratioSlope[ratioSlope.length-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td></tr>'
+                  }
                 }
             }, false);
 
