@@ -33,31 +33,6 @@ const char event_page[] PROGMEM = R"=====(
     margin: 4px 2px;
     cursor: pointer;
    }
-   .hegapi {
-      position: absolute;
-      width: 275px;
-      height: 150px;
-      top: 105px;
-      left: 0%;
-   }
-   .startbutton {
-      background-color: #4CAF50; /* Green */
-      position: absolute;
-      left: 0%;
-   }
-   .stopbutton {
-      background-color: #FF0000;
-      position: absolute;
-      left: 120px;
-   }
-   .sendcommand{
-      position: absolute;
-      top: 50%;
-   }
-   .sendbutton{
-      background-color: #0000FF; 
-   }
-   .label { padding: 4px; color: white; }
    .dattable {
       position: relative;
       width: 75%;
@@ -79,14 +54,45 @@ const char event_page[] PROGMEM = R"=====(
    .scoreth {
       color: honeydew;
    }
+   .hegapi {
+      position: absolute;
+      width: 275px;
+      height: 150px;
+      top: 125px;
+      left: 0%;
+   }
+   .startbutton {
+      background-color: #4CAF50; /* Green */
+      position: absolute;
+      left: 0%;
+   }
+   .stopbutton {
+      background-color: #FF0000;
+      position: absolute;
+      left: 120px;
+   }
+   .sendcommand{
+      position: absolute;
+      top: 50%;
+   }
+   .sendbutton{
+      background-color: #0000FF; 
+   }
+   .label { padding: 4px; color: white; }
    .canvascss {
       position: absolute;
-      top:110px;
+      top:125px;
       left:300px;
+   }
+   .dummy {
+      position: absolute;
+      top: 130px;
+      left:325px;
    }
 </style>
 </head>
 <body id="main_body">
+    <iframe class="dummy" width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
     <script>
         var ms = [];
         var red = [];
@@ -97,9 +103,12 @@ const char event_page[] PROGMEM = R"=====(
         var adcAvg = [];
         var ratioSlope = [0];
         var AI = [];
-        var slowFastScore = [100];
-        var slowSMAArray = [];
 
+        var slowSMA = 0;
+        var fastSMA = 0;
+        var angleChange = 0;
+        var scoreArr = [0];
+        
         //appendId is the element Id you want to append this fragment to
         function appendFragment(HTMLtoAppend, appendId) {
 
@@ -130,29 +139,6 @@ const char event_page[] PROGMEM = R"=====(
             fragment.appendChild(newDiv);
 
             document.getElementById(appendId).appendChild(fragment);
-
-        }
-
-        function slowFastSMAScore(dataArray) {
-            var dy = 0;
-            var slowSMA = 0;
-            var fastSMA = 0;
-            var score = 0;
-            if(dataArray.length > 20) {
-                for(var i=dataArray.length-20;i<dataArray.length-1;i++) {
-                    slowSMA += dataArray[i];
-                    if (i > dataArray.length - 6) {
-                        fastSMA += dataArray[i];
-                    }
-                }
-                slowSMA = slowSMA / 20;
-                slowSMAArray.push(slowSMA);
-
-                fastSMA = fastSMA / 5;
-                dy = fastSMA - slowSMAArray[slowSMAArray.length - 1];
-                score = slowFastScore[slowFastScore.length - 1] + dy;
-                slowFastScore.push(score);
-            }
         }
 
         var hegapiHTML = '<div id="HEGAPI" class="hegapi"> \
@@ -168,8 +154,8 @@ const char event_page[] PROGMEM = R"=====(
         var containerHTML = '<div id="container"></div>';
         var messageHTML = '<msgDiv id="message">Output:</div>';
         var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
-        var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th></tr></table></div>';
-        var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Getting Score...</th></tr></table></div>';
+        var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-SMA2s</th></tr></table></div>';
+        var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
         //Setup page as fragments so updates to elements are asynchronous.
         appendFragment(dataDivHTML,"main_body");
@@ -232,8 +218,16 @@ const char event_page[] PROGMEM = R"=====(
                       ratioSlope.push(parseFloat(dataArray[7]));
                       AI.push(parseFloat(dataArray[8]));
   
-                      //slowFastSMAScore(ratio);
-                      document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1]+'</td><td id="red">'+red[red.length-1]+'</td><td id="ir">'+ir[ir.length-1]+'</td><td id="ratio">'+ratio[ratio.length-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1]+'</td><td class="scoreth" id="ratioSlope">'+ratioSlope[ratioSlope.length-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td></tr>'
+                      if(largeSavLay.length-1 > 20){
+                        var temp = largeSavLay.slice(largeSavLay.length - 40,largeSavLay.length);
+                        var temp2 = largeSavLay.slice(largeSavLay.length - 20,largeSavLay.length);
+                        slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
+                        fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
+                        angleChange = fastSMA - slowSMA;
+                        scoreArr.push(angleChange);
+                      }
+                      
+                      document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1-1]+'</td><td id="red">'+red[red.length-1-1]+'</td><td id="ir">'+ir[ir.length-1-1]+'</td><td id="ratio">'+ratio[ratio.length-1-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1-1]+'</td><td id="ratioSlope">'+ratioSlope[ratioSlope.length-1-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td><td class="scoreth">'+scoreArr[scoreArr.length-1].toFixed(4)+'</td></tr>'
                   }
                 }
             }, false);
@@ -276,17 +270,14 @@ const char event_page[] PROGMEM = R"=====(
           mainContext.fillStyle = "#EE1818";
           mainContext.fill();
 
-          angleChange = ratioSlope[ratioSlope.length-1]
           if(((angle > 1.57) || (angleChange > 0)) && ((angle < 3.14) || (angleChange < 0))) {
-            angle += angleChange*0.2;
+            angle += angleChange;
           }
           requestAnimationFrame(drawCircle);
       }
       drawCircle();
       
   </script>
-
-  <iframe width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
    
 </body>
 </html>
