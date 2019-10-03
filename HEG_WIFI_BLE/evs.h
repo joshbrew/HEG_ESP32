@@ -34,9 +34,11 @@ const char event_page[] PROGMEM = R"=====(
     cursor: pointer;
    }
    .hegapi {
-      position: relative;
-      width: 100%;
+      position: absolute;
+      width: 275px;
       height: 150px;
+      top: 105px;
+      left: 0%;
    }
    .startbutton {
       background-color: #4CAF50; /* Green */
@@ -59,6 +61,7 @@ const char event_page[] PROGMEM = R"=====(
    .dattable {
       position: relative;
       width: 75%;
+      min-width: 700px;
       table-layout: fixed;
    }
    th {
@@ -76,8 +79,10 @@ const char event_page[] PROGMEM = R"=====(
    .scoreth {
       color: honeydew;
    }
-   .canvas {
-      position: relative;
+   .canvascss {
+      position: absolute;
+      top:110px;
+      left:300px;
    }
 </style>
 </head>
@@ -158,7 +163,7 @@ const char event_page[] PROGMEM = R"=====(
     
         var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>'
 
-        var canvasHTML = '<div id="canvasContainer"><canvas id="myCanvas" height="400px" width="400px"></canvas></div>'
+        var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="myCanvas" height="400px" width="400px"></canvas></div>'
 
         var containerHTML = '<div id="container"></div>';
         var messageHTML = '<msgDiv id="message">Output:</div>';
@@ -167,9 +172,9 @@ const char event_page[] PROGMEM = R"=====(
         var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Getting Score...</th></tr></table></div>';
 
         //Setup page as fragments so updates to elements are asynchronous.
-        appendFragment(hegapiHTML,"main_body");
         appendFragment(dataDivHTML,"main_body");
         appendFragment(canvasHTML,"main_body");
+        appendFragment(hegapiHTML,"main_body");
         appendFragment(containerHTML,"dataDiv");
         appendFragment(messageHTML,"container");
         appendFragment(eventHTML,"container");
@@ -263,7 +268,7 @@ const char event_page[] PROGMEM = R"=====(
           // draw the circle
           mainContext.beginPath();
            
-          var radius = 25 + 150 * Math.abs(Math.cos(angle));
+          var radius = 25 + 175 * Math.abs(Math.cos(angle));
           mainContext.arc(200, 200, radius, 0, Math.PI * 2, false);
           mainContext.closePath();
            
