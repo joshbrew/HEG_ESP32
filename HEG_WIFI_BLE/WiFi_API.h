@@ -328,6 +328,9 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     if(setSSID.length() > 0) {
       setupStation();
     }
+    else{
+      ESP.restart();
+    }
   }
   else{
     commandESP32('b');
