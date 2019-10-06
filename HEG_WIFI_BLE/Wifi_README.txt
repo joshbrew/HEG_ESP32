@@ -57,7 +57,7 @@ adc Avg | position Average | ratio Slope | Attention Index
 With noise average activated, the denoised ratio (if using an extra pair of LEDs) is inserted between Red/IR Ratio Avg and the small Sav Lay Filter.
 
 The following demo pages are available:
-/       - default index has a canvas based snake game, from a circuits4you demo. Demonstrates capabilities with this device. Will be succeeded by HEG games, visualizers, etc.
+/       - Index page, basic site navigation.
 /sc     - State Changer demo page.
 /listen - HEG Output event listener test. Better than websockets for this use case.
 /stream - HEG Output websocket stream test. May crash the device.
@@ -89,6 +89,12 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 
 
 Changelog:
+
+10/6/19
+-----
+Fixed crash when changing wifi modes
+Add static IP settings. 
+
 
 10/1/19
 ------
