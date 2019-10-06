@@ -33,8 +33,11 @@ unsigned long t_start,t_stop;
 String setSSID;
 String setPass;
 String myLocalIP;
+String staticIP;
+String gateway;
+String subnetM;
 
-void saveWiFiLogin(bool ap_only, bool reset){
+void saveWiFiLogin(bool ap_only, bool use_static, bool reset){
   //512 usable address bytes [default values: 0x00], each char uses a byte.
   EEPROM.begin(512);
   //Store SSID at address 1
@@ -51,6 +54,13 @@ void saveWiFiLogin(bool ap_only, bool reset){
   Serial.print("New saved password: ");
   Serial.println(setPass);
   EEPROM.writeString(address, setPass);
+  if(use_static == true){
+    EEPROM.write(255, 1);
+    EEPROM.writeString(256, staticIP);
+    EEPROM.writeString(320, gateway);
+    EEPROM.writeString(384, subnetM);
+  }
+  else { EEPROM.write(255,0); EEPROM.writeString(256, ""); EEPROM.writeString(320, ""); EEPROM.writeString(384, "");}
   if(ap_only == true){ EEPROM.write(1, 0); } //Address of whether to attempt a connection by default.
   else { EEPROM.write(1,1); }
   Serial.println("Committing to flash...");
@@ -65,26 +75,55 @@ void connectAP(){
   //ESP32 As access point IP: 192.168.4.1
   Serial.println("Starting local access point, scan for StateChanger in available WiFi connections");
   Serial.println("Log in at 192.168.4.1 after connecting successfully");
-  WiFi.mode(WIFI_AP); //Access Point mode, creates a local access point
+  //WiFi.mode(WIFI_AP); //Access Point mode, creates a local access point
   WiFi.softAP(softAPName, "12345678");    //Password length minimum 8 char 
   myLocalIP = "192.168.4.1";
 }
 
-void setupStation(){
+IPAddress parseIP(String ipString){ //Parse IP from string
+  int i = ipString.indexOf('.');
+  String temp1 = ipString.substring(0,i);
+  int j = ipString.indexOf('.', i+1);
+  String temp2 = ipString.substring(i+1,j);
+  int k = ipString.indexOf('.', j+1);
+  String temp3 = ipString.substring(j+1,k);
+  String temp4 = ipString.substring(k+1);
+  return IPAddress(temp1.toInt(),temp2.toInt(),temp3.toInt(),temp4.toInt());
+}
+
+void setupStation(bool use_static){
   Serial.println("Setting up WiFi Connection...");
   //Serial.println("Disconnecting from previous network...");
-  WiFi.softAPdisconnect();
-  WiFi.disconnect();
-  WiFi.mode(WIFI_OFF);
-  delay(1000);
+  //WiFi.softAPdisconnect();
+  //WiFi.disconnect();
+  //WiFi.mode(WIFI_OFF);
+  //delay(1000);
   
-  WiFi.mode(WIFI_STA);
+  //WiFi.mode(WIFI_STA);
+  if(use_static == true) {
+    //str.split('.');
+    if(staticIP.indexOf('.') != -1) {
+      IPAddress staticIPAddress = parseIP(staticIP);
+      IPAddress gateWay = parseIP(gateway);
+      IPAddress subnet_Mask = parseIP(subnetM);
+      Serial.print("Static IP: ");
+      Serial.println(staticIPAddress);
+      Serial.print("Gateway IP: ");
+      Serial.println(gateWay);
+      Serial.print("Subnet Mask: ");
+      Serial.println(subnet_Mask);
+      WiFi.config(staticIPAddress, gateWay, subnet_Mask);
+    }  
+    else { 
+      Serial.println("No saved Static IP.");
+    }
+  }
   Serial.println("Connecting to SSID: ");
   Serial.print(setSSID);
   WiFi.begin(setSSID.c_str(),setPass.c_str());
   int wait = 0;
   while((WiFi.waitForConnectResult() != WL_CONNECTED)){
-        if(wait >= 1){ break; }     
+        if(wait >= 0){ break; }     
         Serial.print("...");
         wait++;
         delay(100);
@@ -302,12 +341,18 @@ void handleDoConnect(AsyncWebServerRequest *request) {
 
   bool save = true; //temp: always true until setupStation is functional mid-program.
   bool ap_only = false;
+  bool use_static = false;
   bool btSwitch = false;
+  
   for(uint8_t i = 0; i < request->args(); i++){
-    if(request->argName(i) == "ssid"){setSSID = String(request->arg(i)); Serial.println(setSSID);}
-    if(request->argName(i) == "pw"){setPass = String(request->arg(i)); Serial.println(setPass);}
-    if(request->argName(i) == "AP_ONLY"){ap_only = bool(request->arg(i)); Serial.println(ap_only);}
-    if(request->argName(i) == "btSwitch"){btSwitch = bool(request->arg(i)); Serial.println(btSwitch);}
+    if(request->argName(i) == "ssid"){setSSID = String(request->arg(i)); Serial.print("SSID: "); Serial.println(setSSID);}
+    if(request->argName(i) == "pw"){setPass = String(request->arg(i)); Serial.print("Password: "); Serial.println(setPass);}
+    if(request->argName(i) == "static"){ staticIP = String(request->arg(i)); Serial.print("Static IP: "); Serial.println(staticIP);}
+    if(request->argName(i) == "gateway"){ gateway = String(request->arg(i)); Serial.print("Gateway IP: "); Serial.println(gateway);}
+    if(request->argName(i) == "subnet"){ subnetM = String(request->arg(i)); Serial.print("Subnet Mask: "); Serial.println(subnetM);  }
+    if(request->argName(i) == "use_static"){ use_static = bool(request->arg(i)); Serial.print("Use Static IP: "); Serial.println(use_static);}
+    if(request->argName(i) == "AP_ONLY"){ap_only = bool(request->arg(i)); Serial.print("AP Only: "); Serial.println(ap_only);}
+    if(request->argName(i) == "btSwitch"){btSwitch = bool(request->arg(i)); Serial.print("Use Bluetooth: "); Serial.println(btSwitch);}
     //if(request->argName(i) == "save"){save = bool(request->arg(i)); Serial.println(save);}
   }
   delay(100);
@@ -318,7 +363,7 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     request->send(response);
     delay(100);
     if(save==true){
-      saveWiFiLogin(ap_only,false);
+      saveWiFiLogin(ap_only,use_static,false);
     }
     //if((save==false)&&(ap_only==true)){
       //EEPROM.begin(512);
@@ -327,13 +372,18 @@ void handleDoConnect(AsyncWebServerRequest *request) {
       //EEPROM.end();
     //}
     if(setSSID.length() > 0) {
-      setupStation();
+      if(use_static == true){
+        setupStation(true);
+      }
+      else { 
+        setupStation(false); 
+      }
     }
-    else{
+    else {
       ESP.restart();
     }
   }
-  else{
+  else {
     commandESP32('b');
   }
   delay(100);
@@ -440,19 +490,21 @@ void setupWiFi(){
   //Serial.println(EEPROM.read(0));
   //Serial.println(EEPROM.readString(2));
   //Serial.println(EEPROM.readString(128));
-  
   if ((defaultConnectWifi == true) || (EEPROM.read(1) == 1)){
   //ESP32 connects to your wifi -----------------------------------
     if(EEPROM.read(1) == 1){ //Read from flash memory
       setSSID = EEPROM.readString(2);
       setPass = EEPROM.readString(128);
+      staticIP = EEPROM.readString(256);
+      gateway = EEPROM.readString(320);
+      subnetM = EEPROM.readString(384);
       //setupStation(setSSID,setPass);
     }
     else{
       setSSID = String(ssid);
       setPass = String(password);
     }
-    setupStation();
+    setupStation(bool(EEPROM.read(255)));
   //----------------------------------------------------------------
   }
   else {
