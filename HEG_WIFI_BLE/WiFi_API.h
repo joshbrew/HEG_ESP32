@@ -14,6 +14,7 @@
 #include "evs.h" // Event Source page
 #include "sc.h" // State Changer page
 #include "hegvid.h" //HEGstudio clone (WIP)
+#include "graphing.h" //WebGL graphing (WIP)
 
 #include "HEG.h"
 
@@ -538,6 +539,9 @@ void setupWiFi(){
   });      //This is the default display page
   server.on("/hegvid",HTTP_GET,[](AsyncWebServerRequest *request) {
     request->send_P(200,"text/html",video_page);
+  });
+  server.on("/graph",HTTP_GET,[](AsyncWebServerRequest *request){
+    request->send_P(200,"text/html",graph_page);
   });
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
     request->send_P(200,"text/html", sc_page);
