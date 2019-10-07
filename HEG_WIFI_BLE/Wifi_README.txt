@@ -60,6 +60,7 @@ The following demo pages are available:
 /       - Index page, basic site navigation.
 /sc     - State Changer demo page.
 /listen - HEG Output event listener test. Better than websockets for this use case.
+/hegvid - HEG Output controlling video speed. Super rough implementation.
 /stream - HEG Output websocket stream test. May crash the device.
 /update - Upload compiled binaries and flash the ESP32 over the web.
 /connect - connect HEG to router so it may be accessed via a router instead. 
@@ -94,6 +95,7 @@ Changelog:
 -----
 Fixed crash when changing wifi modes
 Add static IP settings. 
+Add demo video speed page (super WIP). 
 
 
 10/1/19

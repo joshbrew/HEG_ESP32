@@ -13,6 +13,7 @@
 #include "connect.h" // Wifi connect page
 #include "evs.h" // Event Source page
 #include "sc.h" // State Changer page
+#include "hegvid.h" //HEGstudio clone (WIP)
 
 #include "HEG.h"
 
@@ -535,6 +536,9 @@ void setupWiFi(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", MAIN_page); //Send web page 
   });      //This is the default display page
+  server.on("/hegvid",HTTP_GET,[](AsyncWebServerRequest *request) {
+    request->send_P(200,"text/html",video_page);
+  });
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
     request->send_P(200,"text/html", sc_page);
   });
