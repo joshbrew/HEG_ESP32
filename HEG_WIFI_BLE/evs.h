@@ -84,6 +84,14 @@ const char event_page[] PROGMEM = R"=====(
       top:125px;
       left:300px;
    }
+   .webglcss {
+     position: absolute;
+     top: 550px;
+     left: 10px;
+     width: 75%;
+     height: 200px;
+     min-width: 400px;
+   }
    .dummy {
       position: absolute;
       top: 130px;
@@ -108,6 +116,9 @@ const char event_page[] PROGMEM = R"=====(
         var fastSMA = 0;
         var angleChange = 0;
         var scoreArr = [0];
+
+        const VERTEX_LENGTH = 1500;
+        var graphY = [...Array(VERTEX_LENGTH).fill(0)];
         
         //appendId is the element Id you want to append this fragment to
         function appendFragment(HTMLtoAppend, appendId) {
@@ -151,6 +162,8 @@ const char event_page[] PROGMEM = R"=====(
 
         var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="myCanvas" height="400px" width="400px"></canvas></div>'
 
+        var shaderHTML = '<div id="shaderContainer"><canvas class="webglcss" id="myShader"></canvas></div>'
+
         var containerHTML = '<div id="container"></div>';
         var messageHTML = '<msgDiv id="message">Output:</div>';
         var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
@@ -160,17 +173,13 @@ const char event_page[] PROGMEM = R"=====(
         //Setup page as fragments so updates to elements are asynchronous.
         appendFragment(dataDivHTML,"main_body");
         appendFragment(canvasHTML,"main_body");
+        appendFragment(shaderHTML,"main_body");
         appendFragment(hegapiHTML,"main_body");
         appendFragment(containerHTML,"dataDiv");
         appendFragment(messageHTML,"container");
         appendFragment(eventHTML,"container");
         appendFragment(tableHeadHTML,"container");
         appendFragment(tableDatHTML,"container");
-
-        //var data;
-        //function getMessage(){
-        //    return data;
-        //}
 
         if (!!window.EventSource) {
             var source = new EventSource('/events');
@@ -189,17 +198,6 @@ const char event_page[] PROGMEM = R"=====(
             source.addEventListener('message', function(e) {
                 document.getElementById("message").innerHTML = e.data;
                 console.log("HEGDUINO", e.data);
-
-                <!-- Android interface -->
-                 // data = e.data;
-                 // if (typeof(Storage) !== "undefined"){window.localStorage.setItem('StateChangerPlugin', data);}  
-                 // if (typeof(StateChangerPlugin) !== "undefined"){StateChangerPlugin.message(data);} 
-                <!-- Android interface -->
-                <!-- Web interface -->
-                  // var onRead = new CustomEvent('on_read', { detail: {data: data} });
-                  // window.parent.dispatchEvent(onRead); 
-                  //window.parent.postMessage(data, "*");
-                <!-- Web interface -->
             }, false);
 
             source.addEventListener('myevent', function(e) {
@@ -225,19 +223,120 @@ const char event_page[] PROGMEM = R"=====(
                         fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
                         angleChange = fastSMA - slowSMA;
                         scoreArr.push(angleChange);
+                        graphY.shift();
+                        graphY.push(angleChange);
+                        createVertices();
                       }
                       
                       document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1-1]+'</td><td id="red">'+red[red.length-1-1]+'</td><td id="ir">'+ir[ir.length-1-1]+'</td><td id="ratio">'+ratio[ratio.length-1-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1-1]+'</td><td id="ratioSlope">'+ratioSlope[ratioSlope.length-1-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td><td class="scoreth">'+scoreArr[scoreArr.length-1].toFixed(4)+'</td></tr>'
                   }
                 }
             }, false);
-
-            //data = e.data;
-            //if(typeof(Storage) !=="undefined") 
-            //{window.localStorage.setItem('StateChangerPlugin', data);}
-            //StateChangerPlugin.message(data);
-            
         }
+      //Based on: https://tinyurl.com/y5roydhe
+      let gl,
+      shaderProgram,
+      vertices,
+      canvas;
+
+      const VERTEX_SHADER = `
+      attribute vec4 coords;
+      attribute float pointSize;
+      void main(void) {
+        gl_Position = coords;
+        gl_PointSize = pointSize;
+      }
+      `;
+
+      const FRAGMENT_SHADER = `
+      precision mediump float;
+      uniform vec4 color;
+      void main(void) {
+        gl_FragColor = color;
+      }
+      `;
+
+      initGL();
+      createShader();
+      createVertices();
+      draw();
+      window.addEventListener('resize', setCanvasSize, false);
+
+      function setCanvasSize() {
+          canvas.width = 700;
+          canvas.height = 200;
+          gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+      }
+
+      function initGL() {
+          canvas = document.querySelector('#myShader');
+          gl = canvas.getContext('webgl');
+          setCanvasSize();
+          console.log(gl.drawingBufferWidth, gl.drawingBufferHeight);
+          gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+          gl.clearColor(0, 0, 0, 1);
+      }
+      
+      function makePoints(numPoints) {
+        const highestPointNdx = numPoints - 1;
+        return Array.from({length: numPoints * 2}, (_, i) => {
+          const pointId = i / 2 | 0;
+          const lerp0To1 = pointId / highestPointNdx;
+          const isY = i % 2;
+          return isY
+            ? graphY[i]           // Y
+            : (lerp0To1 * 4 - 1); // X
+        });
+      }
+
+      function createVertices() {
+          vertices = makePoints(VERTEX_LENGTH);
+          const buffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
+
+          const coords = gl.getAttribLocation(shaderProgram, 'coords');
+          gl.vertexAttribPointer(coords, 2, gl.FLOAT, false, 0, 0);
+          gl.enableVertexAttribArray(coords);
+          // gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+          const pointSize = gl.getAttribLocation(shaderProgram, 'pointSize');
+          gl.vertexAttrib1f(pointSize, 2);
+
+          const uniformColor = gl.getUniformLocation(shaderProgram, 'color');
+          gl.uniform4f(uniformColor, normalize(255), normalize(100), normalize(80), 1);
+      }
+
+      function createShader() {
+          const vs = VERTEX_SHADER;
+
+          const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+          gl.shaderSource(vertexShader, vs);
+          gl.compileShader(vertexShader);
+
+          const fs = FRAGMENT_SHADER;
+
+          fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+          gl.shaderSource(fragmentShader, fs);
+          gl.compileShader(fragmentShader);
+
+          shaderProgram = gl.createProgram();
+          gl.attachShader(shaderProgram, vertexShader);
+          gl.attachShader(shaderProgram, fragmentShader);
+
+          gl.linkProgram(shaderProgram);
+          gl.useProgram(shaderProgram);
+      }
+
+      function draw() {
+          gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.drawArrays(gl.LINE_STRIP, 0, VERTEX_LENGTH);
+          requestAnimationFrame(draw);
+      }
+
+      function normalize(val, max=255, min=0) { return (val - min) / (max - min); }
+            
 
       var mainCanvas = document.getElementById("myCanvas");
       var mainContext = mainCanvas.getContext('2d');
