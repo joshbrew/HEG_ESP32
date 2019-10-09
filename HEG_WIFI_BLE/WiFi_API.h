@@ -76,7 +76,7 @@ void saveWiFiLogin(bool ap_only, bool use_static, bool reset){
 void connectAP(){
   //ESP32 As access point IP: 192.168.4.1
   Serial.println("Starting local access point, scan for StateChanger in available WiFi connections");
-  Serial.println("Log in at 192.168.4.1 after connecting successfully");
+  Serial.println("Log in at 192.168.4.1 or try http://"+String(host)+".local after connecting to the access point successfully");
   //WiFi.mode(WIFI_AP); //Access Point mode, creates a local access point
   WiFi.softAP(softAPName, "12345678");    //Password length minimum 8 char 
   myLocalIP = "192.168.4.1";
@@ -138,7 +138,7 @@ void setupStation(bool use_static){
     Serial.print("IP address: ");
     myLocalIP = WiFi.localIP().toString();
     Serial.println(myLocalIP);  //IP address assigned to your ESP
-    Serial.println("Connect to host and access via the new local IP assigned to the ESP32");
+    Serial.println("Connect to host and access via the new local IP assigned to the ESP32, or try http://" + String(host) +".local");
   }
   else{
     WiFi.disconnect();
@@ -628,7 +628,7 @@ void setupWiFi(){
       delay(1000);
     }
   }
-  Serial.println("mDNS responder started");
+  Serial.println("mDNS responder started. Bonjour service required (default enabled on Apple products)");
   // Add service to MDNS-SD
   MDNS.addService("http", "tcp", 80);
 }
