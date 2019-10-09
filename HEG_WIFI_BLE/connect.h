@@ -45,9 +45,9 @@ input[type=submit]{
       <input type='text' id='gateway' name='gateway'><br>
     Subnet Mask (e.g. 255.255.255.0):<br>
       <input type='text' id='subnet' name='subnet'><br>
-      <input type='radio' id='use_static' name='use_static'>Use Static IP<br>
-      <input type='radio' id='AP_ONLY' name='AP_ONLY'>Access Point Only<br>
-      <input type='radio' id'btSwitch' name='btSwitch'>Use Bluetooth<br>
+      <input type='radio' id='use_static' name='choices' value='0'>Use Static IP<br>
+      <input type='radio' id='AP_ONLY' name='choices' value='1'>Access Point Only<br>
+      <input type='radio' id='btSwitch' name='choices' value='2'>Use Bluetooth<br>
     <input type='submit' id='Connect' value='Connect'>
   </form>
 )=====";

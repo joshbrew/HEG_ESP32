@@ -20,7 +20,6 @@ const char event_page[] PROGMEM = R"=====(
     padding: 2px;
     font-size: 16px;
   }
-  
   .button {
     border: none;
     border-radius: 12px;
@@ -162,13 +161,14 @@ const char event_page[] PROGMEM = R"=====(
 
         var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="myCanvas" height="400px" width="400px"></canvas></div>'
 
-        var shaderHTML = '<div id="shaderContainer"><canvas class="webglcss" id="myShader"></canvas></div>'
+        var shaderHTML = '<div id="shaderContainer"><canvas class="webglcss" id="myShader"></canvas><canvas class="webglcss" id="gltext"></canvas></div>'
 
         var containerHTML = '<div id="container"></div>';
         var messageHTML = '<msgDiv id="message">Output:</div>';
         var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
         var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
         var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
+
 
         //Setup page as fragments so updates to elements are asynchronous.
         appendFragment(dataDivHTML,"main_body");
@@ -180,6 +180,10 @@ const char event_page[] PROGMEM = R"=====(
         appendFragment(eventHTML,"container");
         appendFragment(tableHeadHTML,"container");
         appendFragment(tableDatHTML,"container");
+
+        var graphtext = document.getElementById("gltext").getContext("2d");
+        graphtext.canvas.width = 1400;
+        graphtext.canvas.height = 400;
 
         if (!!window.EventSource) {
             var source = new EventSource('/events');
@@ -231,9 +235,16 @@ const char event_page[] PROGMEM = R"=====(
                       document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1-1]+'</td><td id="red">'+red[red.length-1-1]+'</td><td id="ir">'+ir[ir.length-1-1]+'</td><td id="ratio">'+ratio[ratio.length-1-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1-1]+'</td><td id="ratioSlope">'+ratioSlope[ratioSlope.length-1-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td><td class="scoreth">'+scoreArr[scoreArr.length-1].toFixed(4)+'</td></tr>'
                   }
                 }
+                else {
+                  graphY.shift();
+                  graphY.push(0);
+                  createVertices();
+                }
+                
             }, false);
         }
-      //Based on: https://tinyurl.com/y5roydhe
+        
+      //WebGL graph based on: https://tinyurl.com/y5roydhe
       let gl,
       shaderProgram,
       vertices,
@@ -263,8 +274,8 @@ const char event_page[] PROGMEM = R"=====(
       window.addEventListener('resize', setCanvasSize, false);
 
       function setCanvasSize() {
-          canvas.width = 700;
-          canvas.height = 200;
+          canvas.width = 1400;
+          canvas.height = 400;
           gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
       }
 
@@ -328,10 +339,22 @@ const char event_page[] PROGMEM = R"=====(
           gl.useProgram(shaderProgram);
       }
 
+      var requestAnimationFrame = window.requestAnimationFrame || 
+                                  window.mozRequestAnimationFrame || 
+                                  window.webkitRequestAnimationFrame || 
+                                  window.msRequestAnimationFrame;
+
+      graphtext.font = "20pt Arial";
+      graphtext.fillStyle = "#00ff00";
+
       function draw() {
           gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.drawArrays(gl.LINE_STRIP, 0, VERTEX_LENGTH);
+
+          graphtext.clearRect(0, 0, canvas.width, canvas.height);
+          graphtext.fillText("t: " + (ms[ms.length - 1]*0.001).toFixed(2),5,25);
+          graphtext.fillText("y: " + graphY[graphY.length - 1].toFixed(4),5,50);
           requestAnimationFrame(draw);
       }
 
@@ -345,11 +368,6 @@ const char event_page[] PROGMEM = R"=====(
       var canvasHeight = mainCanvas.height;
        
       var angle = 1.57;
-       
-      var requestAnimationFrame = window.requestAnimationFrame || 
-                                  window.mozRequestAnimationFrame || 
-                                  window.webkitRequestAnimationFrame || 
-                                  window.msRequestAnimationFrame;
        
       function drawCircle() {
           mainContext.clearRect(0, 0, canvasWidth, canvasHeight);

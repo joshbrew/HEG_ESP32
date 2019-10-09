@@ -14,7 +14,6 @@
 #include "evs.h" // Event Source page
 #include "sc.h" // State Changer page
 #include "hegvid.h" //HEGstudio clone (WIP)
-#include "graphing.h" //WebGL graphing (WIP)
 
 #include "HEG.h"
 
@@ -341,7 +340,7 @@ void handleWiFiSetup(AsyncWebServerRequest *request){
 
 void handleDoConnect(AsyncWebServerRequest *request) {
 
-  bool save = true; //temp: always true until setupStation is functional mid-program.
+  bool save = true;
   bool ap_only = false;
   bool use_static = false;
   bool btSwitch = false;
@@ -352,9 +351,11 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     if(request->argName(i) == "static"){ staticIP = String(request->arg(i)); Serial.print("Static IP: "); Serial.println(staticIP);}
     if(request->argName(i) == "gateway"){ gateway = String(request->arg(i)); Serial.print("Gateway IP: "); Serial.println(gateway);}
     if(request->argName(i) == "subnet"){ subnetM = String(request->arg(i)); Serial.print("Subnet Mask: "); Serial.println(subnetM);  }
-    if(request->argName(i) == "use_static"){ use_static = bool(request->arg(i)); Serial.print("Use Static IP: "); Serial.println(use_static);}
-    if(request->argName(i) == "AP_ONLY"){ap_only = bool(request->arg(i)); Serial.print("AP Only: "); Serial.println(ap_only);}
-    if(request->argName(i) == "btSwitch"){btSwitch = bool(request->arg(i)); Serial.print("Use Bluetooth: "); Serial.println(btSwitch);}
+    if(request->argName(i) == "choices"){ 
+      if(String(request->arg(i)) == "0"){use_static = true; Serial.println("Use Static IP: true");}
+      else if (String(request->arg(i)) == "1") {ap_only = true; Serial.println("AP Only: true");}
+      else if (String(request->arg(i)) == "2"){btSwitch = true; Serial.println("Use Bluetooth: true");}
+    }
     //if(request->argName(i) == "save"){save = bool(request->arg(i)); Serial.println(save);}
   }
   delay(100);
@@ -539,9 +540,6 @@ void setupWiFi(){
   });      //This is the default display page
   server.on("/hegvid",HTTP_GET,[](AsyncWebServerRequest *request) {
     request->send_P(200,"text/html",video_page);
-  });
-  server.on("/graph",HTTP_GET,[](AsyncWebServerRequest *request){
-    request->send_P(200,"text/html",graph_page);
   });
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
     request->send_P(200,"text/html", sc_page);
