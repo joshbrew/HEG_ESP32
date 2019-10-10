@@ -23,7 +23,7 @@ const char event_page[] PROGMEM = R"=====(
   .button {
     border: none;
     border-radius: 12px;
-    color: teal;
+    color: white;
     padding: 15px;
     text-align: center;
     text-decoration: none;
@@ -80,6 +80,9 @@ const char event_page[] PROGMEM = R"=====(
    .saveLoadBar{
       position: absolute;
       top: 200px;
+   }
+   .saveLoadButtons{
+      background-color: teal;
    }
    .label { padding: 4px; color: white; }
    .canvascss {
@@ -162,8 +165,8 @@ const char event_page[] PROGMEM = R"=====(
           <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
           <div id="saveLoad" class="saveLoadBar"> \
             <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session" required></input> \
-            <button class="button" id="savecsv">Save CSV</button> \
-            <button class="button" id="replaycsv">Replay CSV</button> \
+            <button class="button saveLoadButtons" id="savecsv">Save CSV</button> \
+            <button class="button saveLoadButtons" id="replaycsv">Replay CSV</button> \
           </div> \
           </div> \
           ';
