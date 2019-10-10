@@ -3,16 +3,9 @@ const char event_page[] PROGMEM = R"=====(
 <html>
 <head>
 <style>
-  body {
-    background-color: #707070;
-    font: sans-serif;
-  }
-  msgDiv {
-    color: white;
-  }
-  eventDiv {
-      color: white;
-  }
+  body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
+  msgDiv { color: white; }
+  eventDiv { color: white; }
   input[type=text]{
     border: 2px solid red;
     border-radius: 4px;
@@ -50,9 +43,7 @@ const char event_page[] PROGMEM = R"=====(
       border: 1px solid white;
       width: 10%;
    }
-   .scoreth {
-      color: honeydew;
-   }
+   .scoreth { color: honeydew; }
    .hegapi {
       position: absolute;
       width: 275px;
@@ -60,30 +51,12 @@ const char event_page[] PROGMEM = R"=====(
       top: 130px;
       left: 0%;
    }
-   .startbutton {
-      background-color: #4CAF50; /* Green */
-      position: absolute;
-      left: 0%;
-   }
-   .stopbutton {
-      background-color: #FF0000;
-      position: absolute;
-      left: 120px;
-   }
-   .sendcommand{
-      position: absolute;
-      top: 70px;
-   }
-   .sendbutton{
-      background-color: #0000FF; 
-   }
-   .saveLoadBar{
-      position: absolute;
-      top: 200px;
-   }
-   .saveLoadButtons{
-      background-color: teal;
-   }
+   .startbutton { background-color: #4CAF50; position: absolute; left: 0%; }
+   .stopbutton { background-color: #FF0000; position: absolute; left: 120px; }
+   .sendcommand{ position: absolute; top: 70px;   }
+   .sendbutton{ background-color: #0000FF; }
+   .saveLoadBar{ position: absolute; top: 200px; }
+   .saveLoadButtons{ background-color: teal; }
    .label { padding: 4px; color: white; }
    .canvascss {
       position: absolute;
@@ -263,20 +236,20 @@ const char event_page[] PROGMEM = R"=====(
         }
 
       function resetVars(){
-        var ms = [];
-        var red = [];
-        var ir = [];
-        var ratio = [];
-        var smallSavLay = [];
-        var largeSavLay = [];
-        var adcAvg = [];
-        var ratioSlope = [0];
-        var AI = [];
+        ms = [];
+        red = [];
+        ir = [];
+        ratio = [];
+        smallSavLay = [];
+        largeSavLay = [];
+        adcAvg = [];
+        ratioSlope = [0];
+        AI = [];
         
-        var slowSMA = 0;
-        var fastSMA = 0;
-        var angleChange = 0;
-        var scoreArr = [0];
+        slowSMA = 0;
+        fastSMA = 0;
+        angleChange = 0;
+        scoreArr = [0];
       }
 
       function saveCSV(){
@@ -325,7 +298,7 @@ const char event_page[] PROGMEM = R"=====(
               createVertices();
             }
             document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+csvDat[csvIndex][0]+'</td><td id="red">'+csvDat[csvIndex][1]+'</td><td id="ir">'+csvDat[csvIndex][2]+'</td><td id="ratio">'+csvDat[csvIndex][3]+'</td><td id="smallSavLay">'+csvDat[csvIndex][4]+'</td><td id="largeSavLay">'+csvDat[csvIndex][5]+'</td><td id="adcAvg">'+csvDat[csvIndex][6]+'</td><td id="ratioSlope">'+csvDat[csvIndex][7]+'</td><td id="AI">'+csvDat[csvIndex][8]+'</td><td class="scoreth">'+angleChange.toFixed(4)+'</td></tr>'
-            setTimeout(function(){replayCSV();},(timeArr[csvIndex]-timeArr[csvIndex-1])); //Call until end of index
+            setTimeout(function(){replayCSV();},(timeArr[csvIndex]-timeArr[csvIndex-1])); //Call until end of index. Need to make this async
           }
           else {
             angleChange = 0;
@@ -371,7 +344,6 @@ const char event_page[] PROGMEM = R"=====(
           input.value = '';
         }
         input.click();
-        //document.removeChild(input);
       }
         
       //WebGL graph based on: https://tinyurl.com/y5roydhe

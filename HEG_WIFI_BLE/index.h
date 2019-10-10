@@ -5,7 +5,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 <style>
 body {
   background-color: #707070;
-  font-family: helvetica;
+  font-family: Arial, Helvetica, sans-serif;
   color: white;
 }
 h1, h3 {

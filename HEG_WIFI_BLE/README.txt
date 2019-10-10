@@ -100,12 +100,25 @@ The noise_reduce() function in this version is still broken. That needs to be tr
 On the /listen or /stream page once the event listener/websocket is connected you can control and test the HEG through the Serial monitor. Right now there is a manual 75ms delay on the data stream, I'm going to create buffers as the new sensors will be WAY faster than TCP can handle.
 
 Changelog:
+10/10/19
+-----
+CSV Save/Load functions added.
+Graphing improved, canvas demo fairly playable now. 
+Waiting on new pcbs to get definitive data after fixing noise issues in designs.
+
+TODO:
+graph upgrades
+reformat functions and variables into respective classes to reduce bloat.
+sliders for exploring data
+create SPIFFS js packages? That way we can break up essential functions on the webAPI and reduce bloat or add third party packages easily.
+hegstudio brightness exercise recreation is easiest to do with default <video> tag and a transparency overlay.
+Fix spaghetti
 
 10/6/19
 -----
 Fixed crash when changing wifi modes
 Add static IP settings. 
-Working on WebGL based graphing and video controls. /hegvid and /graph
+Working on WebGL based graphing and video controls. /hegvid wip
 
 
 10/1/19

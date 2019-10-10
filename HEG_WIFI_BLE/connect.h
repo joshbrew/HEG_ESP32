@@ -6,14 +6,7 @@ const char connect_page1[] PROGMEM = R"=====(
 body {
   background-color:#707070;
   color: white;
-  font: sans-serif;
-}
-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
 }
 input[type=text]{
   border: 2px solid lime;
@@ -37,11 +30,18 @@ input[type=submit]{
     margin: 4px 2px;
     cursor: pointer;
 }
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 </style>
 </head>
 <body>
-<h2>Connect to WiFi</h4>
  <div id='formContainer' class='container'>
+  <h2>Connect to WiFi</h4>
   <form method ='post' action='/doConnect' enctype='multipart/form-data'>
     SSID:<br>
       <input type='text' id='ssid' name='ssid'><br>
