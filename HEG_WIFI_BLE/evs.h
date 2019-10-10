@@ -13,7 +13,6 @@ const char event_page[] PROGMEM = R"=====(
   eventDiv {
       color: white;
   }
-
   input[type=text]{
     border: 2px solid red;
     border-radius: 4px;
@@ -57,8 +56,8 @@ const char event_page[] PROGMEM = R"=====(
    .hegapi {
       position: absolute;
       width: 275px;
-      height: 150px;
-      top: 125px;
+      height: 300px;
+      top: 130px;
       left: 0%;
    }
    .startbutton {
@@ -73,15 +72,19 @@ const char event_page[] PROGMEM = R"=====(
    }
    .sendcommand{
       position: absolute;
-      top: 50%;
+      top: 70px;
    }
    .sendbutton{
       background-color: #0000FF; 
    }
+   .saveLoadBar{
+      position: absolute;
+      top: 200px;
+   }
    .label { padding: 4px; color: white; }
    .canvascss {
       position: absolute;
-      top:125px;
+      top:130px;
       left:300px;
    }
    .webglcss {
@@ -116,6 +119,7 @@ const char event_page[] PROGMEM = R"=====(
         var fastSMA = 0;
         var angleChange = 0;
         var scoreArr = [0];
+        var replay = false;
 
         const VERTEX_LENGTH = 1500;
         var graphY = [...Array(VERTEX_LENGTH).fill(0)];
@@ -156,7 +160,13 @@ const char event_page[] PROGMEM = R"=====(
           <form method="post" action="/startHEG" target="dummyframe"><button class="button startbutton" type="submit">Start HEG</button></form> \
           <form method="post" action="/stopHEG" target="dummyframe"><button class="button stopbutton" type="submit">Stop HEG</button></form> \
           <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
-          </div>';
+          <div id="saveLoad" class="saveLoadBar"> \
+            <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session" required></input> \
+            <button class="button" id="savecsv">Save CSV</button> \
+            <button class="button" id="replaycsv">Replay CSV</button> \
+          </div> \
+          </div> \
+          ';
     
         var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>'
 
@@ -182,6 +192,9 @@ const char event_page[] PROGMEM = R"=====(
         appendFragment(tableHeadHTML,"container");
         appendFragment(tableDatHTML,"container");
 
+        document.getElementById("savecsv").onclick = function(){saveCSV();}
+        document.getElementById("replaycsv").onclick = function(){openCSV();}
+        
         var graphtext = document.getElementById("gltext").getContext("2d");
         graphtext.canvas.width = 1400;
         graphtext.canvas.height = 400;
@@ -221,7 +234,7 @@ const char event_page[] PROGMEM = R"=====(
                       ratioSlope.push(parseFloat(dataArray[7]));
                       AI.push(parseFloat(dataArray[8]));
   
-                      if(largeSavLay.length-1 > 20){
+                      if(largeSavLay.length > 40){
                         var temp = largeSavLay.slice(largeSavLay.length - 40,largeSavLay.length);
                         var temp2 = largeSavLay.slice(largeSavLay.length - 20,largeSavLay.length);
                         slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
@@ -236,7 +249,8 @@ const char event_page[] PROGMEM = R"=====(
                       document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1-1]+'</td><td id="red">'+red[red.length-1-1]+'</td><td id="ir">'+ir[ir.length-1-1]+'</td><td id="ratio">'+ratio[ratio.length-1-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1-1]+'</td><td id="ratioSlope">'+ratioSlope[ratioSlope.length-1-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td><td class="scoreth">'+scoreArr[scoreArr.length-1].toFixed(4)+'</td></tr>'
                   }
                 }
-                else {
+                else if (replay == false) {
+                  angleChange = 0;
                   graphY.shift();
                   graphY.push(0);
                   createVertices();
@@ -244,6 +258,98 @@ const char event_page[] PROGMEM = R"=====(
                 
             }, false);
         }
+
+      function saveCSV(){
+        var csv = "ms,red,ir,ratio,sSavLay,lSavLay,adcAvg,ratioSlope,AI\n"; //csv header
+        for(var i = 0; i<ms.length - 1; i++){
+          var temp = [ms[i],red[i],ir[i],ratio[i],smallSavLay[i],largeSavLay[i],adcAvg[i],ratioSlope[i],AI[i],].join(',') + "\n";
+          csv += temp;
+        }
+        var hiddenElement = document.createElement('a');
+        hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
+        hiddenElement.target = "_blank";
+        hiddenElement.download = document.getElementById("csvname").value+".csv";
+        hiddenElement.click();
+      }
+
+      var csvDat = [];
+      var timeArr = [];
+      var scoringArr = [];
+      var csvIndex = 0;
+      
+      function replayCSV(){
+        if(csvIndex == 0){
+          timeArr.push(parseInt(csvDat[csvIndex][0]));
+          scoringArr.push(parseFloat(csvDat[csvIndex][5]));
+        }
+        if(csvIndex < csvDat.length - 1){
+          csvIndex++;
+          timeArr.push(parseInt(csvDat[csvIndex][0]));
+          scoringArr.push(parseFloat(csvDat[csvIndex][5]));
+          if(timeArr.length >= 2){
+            if(scoringArr.length > 40){
+              var temp = scoringArr.slice(scoringArr.length - 40,scoringArr.length);
+              var temp2 = scoringArr.slice(scoringArr.length - 20,scoringArr.length);
+              slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
+              fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
+              angleChange = fastSMA - slowSMA;
+              graphY.shift();
+              graphY.push(angleChange);
+              createVertices();
+            }
+            else {
+              angleChange = 0;
+              graphY.shift();
+              graphY.push(0);
+              createVertices();
+            }
+            document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+csvDat[csvIndex][0]+'</td><td id="red">'+csvDat[csvIndex][1]+'</td><td id="ir">'+csvDat[csvIndex][2]+'</td><td id="ratio">'+csvDat[csvIndex][3]+'</td><td id="smallSavLay">'+csvDat[csvIndex][4]+'</td><td id="largeSavLay">'+csvDat[csvIndex][5]+'</td><td id="adcAvg">'+csvDat[csvIndex][6]+'</td><td id="ratioSlope">'+csvDat[csvIndex][7]+'</td><td id="AI">'+csvDat[csvIndex][8]+'</td><td class="scoreth">'+angleChange.toFixed(4)+'</td></tr>'
+            setTimeout(function(){replayCSV();},(timeArr[csvIndex]-timeArr[csvIndex-1])); //Call until end of index
+          }
+          else {
+            angleChange = 0;
+            graphY.shift();
+            graphY.push(0);
+            createVertices();
+          }
+        }
+        else {
+          replay = false;
+          csvDat = [];
+          timeArr = [];
+          scoringArr = [];
+          csvIndex = 0;
+        }
+      }
+      
+      function openCSV() {
+        var input = document.createElement('input');
+        input.type = 'file';
+
+        input.onchange = e => {
+          csvDat = [];
+          var file = e.target.files[0];
+          var reader = new FileReader();
+          reader.readAsText(file);
+          reader.onload = function (event) {
+            var tempcsvData = event.target.result;
+            var tempcsvArr = tempcsvData.split("\n");
+            tempcsvArr.pop();
+            tempcsvArr.forEach(function(row,i){
+              if(i==0){ var temp = row.split(","); }
+              else{
+                var temp = row.split(",");
+                csvDat.push(temp);
+              }
+            });
+            replay = true;
+            replayCSV();
+          }
+          input.value = '';
+        }
+        input.click();
+        //document.removeChild(input);
+      }
         
       //WebGL graph based on: https://tinyurl.com/y5roydhe
       let gl,
