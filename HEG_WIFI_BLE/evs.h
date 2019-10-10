@@ -23,7 +23,7 @@ const char event_page[] PROGMEM = R"=====(
   .button {
     border: none;
     border-radius: 12px;
-    color: white;
+    color: teal;
     padding: 15px;
     text-align: center;
     text-decoration: none;
@@ -259,6 +259,23 @@ const char event_page[] PROGMEM = R"=====(
             }, false);
         }
 
+      function resetVars(){
+        var ms = [];
+        var red = [];
+        var ir = [];
+        var ratio = [];
+        var smallSavLay = [];
+        var largeSavLay = [];
+        var adcAvg = [];
+        var ratioSlope = [0];
+        var AI = [];
+        
+        var slowSMA = 0;
+        var fastSMA = 0;
+        var angleChange = 0;
+        var scoreArr = [0];
+      }
+
       function saveCSV(){
         var csv = "ms,red,ir,ratio,sSavLay,lSavLay,adcAvg,ratioSlope,AI\n"; //csv header
         for(var i = 0; i<ms.length - 1; i++){
@@ -285,6 +302,7 @@ const char event_page[] PROGMEM = R"=====(
         if(csvIndex < csvDat.length - 1){
           csvIndex++;
           timeArr.push(parseInt(csvDat[csvIndex][0]));
+          ms.push(parseInt(csvDat[csvIndex][0]));
           scoringArr.push(parseFloat(csvDat[csvIndex][5]));
           if(timeArr.length >= 2){
             if(scoringArr.length > 40){
@@ -319,6 +337,7 @@ const char event_page[] PROGMEM = R"=====(
           timeArr = [];
           scoringArr = [];
           csvIndex = 0;
+          resetVars();
         }
       }
       
@@ -332,6 +351,7 @@ const char event_page[] PROGMEM = R"=====(
           var reader = new FileReader();
           reader.readAsText(file);
           reader.onload = function (event) {
+            resetVars();
             var tempcsvData = event.target.result;
             var tempcsvArr = tempcsvData.split("\n");
             tempcsvArr.pop();
