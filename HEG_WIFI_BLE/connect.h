@@ -6,6 +6,14 @@ const char connect_page1[] PROGMEM = R"=====(
 body {
   background-color:#707070;
   color: white;
+  font: sans-serif;
+}
+container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 input[type=text]{
   border: 2px solid lime;
@@ -33,6 +41,7 @@ input[type=submit]{
 </head>
 <body>
 <h2>Connect to WiFi</h4>
+ <div id='formContainer' class='container'>
   <form method ='post' action='/doConnect' enctype='multipart/form-data'>
     SSID:<br>
       <input type='text' id='ssid' name='ssid'><br>
@@ -49,6 +58,7 @@ input[type=submit]{
       <input type='radio' id='AP_ONLY' name='choices' value='1'>Access Point Only<br>
       <input type='radio' id='btSwitch' name='choices' value='2'>Use Bluetooth<br>
     <input type='submit' id='Connect' value='Connect'>
+   </div>
   </form>
 )=====";
 

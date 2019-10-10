@@ -90,8 +90,6 @@ const char video_page[] PROGMEM = R"=====(
       left:325px;
    }
 </style>
-<link href="https://unpkg.com/video.js/dist/video-js.min.css" rel="stylesheet">
-<script src="https://unpkg.com/video.js/dist/video.min.js"></script>
 </head>
 <body id="main_body">
     <iframe class="dummy" width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
@@ -233,3 +231,7 @@ const char video_page[] PROGMEM = R"=====(
 </body>
 </html>
 )=====";
+
+
+//Using SPIFFS:
+//<script src="jquery-3.4.1.min.js"></script> 

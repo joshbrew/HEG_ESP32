@@ -5,6 +5,7 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <EEPROM.h>
+//#include "SPIFFS.h"
 
 #include "settings.h" //ESP32 Settings
 #include "index.h"  //Index/intro page
@@ -488,6 +489,11 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 
 void setupWiFi(){
 
+  //if(!SPIFFS.begin(true)){
+  //  Serial.println("An Error has occurred while mounting SPIFFS");
+  //  return;
+  //}
+
   //WiFi.mode(AP_STA_MODE);
   EEPROM.begin(512);
   //Serial.println(EEPROM.read(0));
@@ -612,6 +618,10 @@ void setupWiFi(){
   server.on("/n",HTTP_POST, [](AsyncWebServerRequest *request){
     commandESP32('n');
   });
+
+  //server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
+  //  request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
+  //});
  
   server.begin();                  //Start server
   Serial.println("HTTP server started");

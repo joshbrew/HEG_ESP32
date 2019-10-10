@@ -5,6 +5,7 @@ const char event_page[] PROGMEM = R"=====(
 <style>
   body {
     background-color: #707070;
+    font: sans-serif;
   }
   msgDiv {
     color: white;

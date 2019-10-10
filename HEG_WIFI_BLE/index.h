@@ -1,6 +1,7 @@
 const char MAIN_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
+<head>
 <style>
 body {
   background-color: #707070;
@@ -60,6 +61,7 @@ form {
 }
 
 </style>
+</head>
 <body>
 <h3>ESP32 web server demo</h3>
 <h1>HEG Pre-Alpha Web Nav</h1>
