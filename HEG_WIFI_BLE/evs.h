@@ -77,6 +77,138 @@ const char event_page[] PROGMEM = R"=====(
       left:325px;
    }
 </style>
+<script>
+  class graphJS {
+        constructor(canvasId, nPoints=[1000], color=[0,255,0], res=[1400,400]){
+          //WebGL graph based on: https://tinyurl.com/y5roydhe
+          //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
+          this.gl,
+          this.shaderProgram,
+          this.vertices,
+          this.canvas;
+    
+          this.canvasId = canvasId;
+          this.textId = canvasId + "text";
+          this.color = color;
+          this.res = res;
+          
+          this.ms = [0];
+          this.VERTEX_LENGTH = nPoints;
+          this.graphY1 = [...Array(nPoints).fill(0)];
+    
+          this.VERTEX_SHADER = `
+          attribute vec4 coords;
+          attribute float pointSize;
+          void main(void) {
+            gl_Position = coords;
+            gl_PointSize = pointSize;
+          }
+          `;
+    
+          this.FRAGMENT_SHADER = `
+          precision mediump float;
+          uniform vec4 color;
+          void main(void) {
+            gl_FragColor = color;
+          }
+          `;
+    
+          this.initGL(canvasId);
+          this.createShader();
+          this.createVertices(color);
+          
+          this.graphtext = document.getElementById(this.textId).getContext("2d");
+          this.graphtext.canvas.width = res[0];
+          this.graphtext.canvas.height = res[1];
+          this.graphtext.font = "20pt Arial";
+          this.graphtext.fillStyle = "#00ff00";
+          
+          this.draw();
+    
+          window.addEventListener('resize', this.setCanvasSize(this.canvasId), false);
+    
+        }
+  
+        setCanvasSize(canvasId) {
+            this.canvas.width = this.res[0]; //Define in CSS
+            this.canvas.height = this.res[1];
+            this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+        }
+    
+        initGL(canvasId) {
+            this.canvas = document.querySelector('#'+canvasId);
+            this.gl = this.canvas.getContext('webgl');
+              this.setCanvasSize(canvasId);
+              console.log(this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+              this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+              this.gl.clearColor(0, 0, 0, 1);
+        }
+          
+        makePoints(numPoints) {
+            const highestPointNdx = numPoints - 1;
+            return Array.from({length: numPoints * 2}, (_, i) => {
+              const pointId = i / 2 | 0;
+              const lerp0To1 = pointId / highestPointNdx;
+              const isY = i % 2;
+              return isY
+                ? this.graphY1[i]     // Y
+                : (lerp0To1 * 4 - 1); // X
+            });
+        }
+    
+        createVertices() {
+              this.vertices = this.makePoints(this.VERTEX_LENGTH);
+              const buffer = this.gl.createBuffer();
+              this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+              this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.vertices), this.gl.DYNAMIC_DRAW);
+    
+              const coords = this.gl.getAttribLocation(this.shaderProgram, 'coords');
+              this.gl.vertexAttribPointer(coords, 2, this.gl.FLOAT, false, 0, 0);
+              this.gl.enableVertexAttribArray(coords);
+              // gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    
+              const pointSize = this.gl.getAttribLocation(this.shaderProgram, 'pointSize');
+              this.gl.vertexAttrib1f(pointSize, 2);
+    
+              const uniformColor = this.gl.getUniformLocation(this.shaderProgram, 'color');
+              this.gl.uniform4f(uniformColor, this.normalize(this.color[0]), this.normalize(this.color[1]), this.normalize(this.color[2]), 1);
+        }
+    
+        createShader() {
+              const vs = this.VERTEX_SHADER;
+    
+              const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+              this.gl.shaderSource(vertexShader, vs);
+              this.gl.compileShader(vertexShader);
+    
+              const fs = this.FRAGMENT_SHADER;
+    
+              const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+              this.gl.shaderSource(fragmentShader, fs);
+              this.gl.compileShader(fragmentShader);
+    
+              this.shaderProgram = this.gl.createProgram();
+              this.gl.attachShader(this.shaderProgram, vertexShader);
+              this.gl.attachShader(this.shaderProgram, fragmentShader);
+    
+              this.gl.linkProgram(this.shaderProgram);
+              this.gl.useProgram(this.shaderProgram);
+        }
+    
+        draw = () => {
+            this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array(this.vertices));
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            this.gl.drawArrays(this.gl.LINE_STRIP, 0, this.VERTEX_LENGTH);
+    
+            this.graphtext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.graphtext.fillText("t: " + (this.ms[this.ms.length - 1]*0.001).toFixed(2),5,25);
+            this.graphtext.fillText("y: " + this.graphY1[this.graphY1.length - 1].toFixed(4),5,50);
+            requestAnimationFrame(this.draw);
+        }
+    
+        normalize(val, max=255, min=0) { return (val - min) / (max - min); }
+      }
+</script>
 </head>
 <body id="main_body">
     <iframe class="dummy" width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
@@ -96,9 +228,6 @@ const char event_page[] PROGMEM = R"=====(
         var angleChange = 0;
         var scoreArr = [0];
         var replay = false;
-
-        const VERTEX_LENGTH = 1500;
-        var graphY = [...Array(VERTEX_LENGTH).fill(0)];
         
         //appendId is the element Id you want to append this fragment to
         function appendFragment(HTMLtoAppend, appendId) {
@@ -148,7 +277,7 @@ const char event_page[] PROGMEM = R"=====(
 
         var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="myCanvas" height="400px" width="400px"></canvas></div>'
 
-        var shaderHTML = '<div id="shaderContainer"><canvas class="webglcss" id="myShader"></canvas><canvas class="webglcss" id="gltext"></canvas></div>'
+        var shaderHTML = '<div id="shaderContainer"><canvas class="webglcss" id="graph1"></canvas><canvas class="webglcss" id="graph1text"></canvas></div>'
 
         var containerHTML = '<div id="container"></div>';
         var messageHTML = '<msgDiv id="message">Output:</div>';
@@ -171,9 +300,7 @@ const char event_page[] PROGMEM = R"=====(
         document.getElementById("savecsv").onclick = function(){saveCSV();}
         document.getElementById("replaycsv").onclick = function(){openCSV();}
         
-        var graphtext = document.getElementById("gltext").getContext("2d");
-        graphtext.canvas.width = 1400;
-        graphtext.canvas.height = 400;
+        var graph1 = new graphJS("graph1",1500,[255,100,80]);
 
         if (!!window.EventSource) {
             var source = new EventSource('/events');
@@ -217,9 +344,9 @@ const char event_page[] PROGMEM = R"=====(
                         fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
                         angleChange = fastSMA - slowSMA;
                         scoreArr.push(angleChange);
-                        graphY.shift();
-                        graphY.push(angleChange);
-                        createVertices();
+                        graph1.graphY1.shift();
+                        graph1.graphY1.push(angleChange);
+                        graph1.createVertices();
                       }
                       
                       document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1-1]+'</td><td id="red">'+red[red.length-1-1]+'</td><td id="ir">'+ir[ir.length-1-1]+'</td><td id="ratio">'+ratio[ratio.length-1-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1-1]+'</td><td id="ratioSlope">'+ratioSlope[ratioSlope.length-1-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td><td class="scoreth">'+scoreArr[scoreArr.length-1].toFixed(4)+'</td></tr>'
@@ -227,9 +354,9 @@ const char event_page[] PROGMEM = R"=====(
                 }
                 else if (replay == false) {
                   angleChange = 0;
-                  graphY.shift();
-                  graphY.push(0);
-                  createVertices();
+                  graph1.graphY1.shift();
+                  graph1.graphY1.push(0);
+                  graph1.createVertices();
                 }
                 
             }, false);
@@ -287,24 +414,24 @@ const char event_page[] PROGMEM = R"=====(
               slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
               fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
               angleChange = fastSMA - slowSMA;
-              graphY.shift();
-              graphY.push(angleChange);
-              createVertices();
+              graph1.graphY1.shift();
+              graph1.graphY1.push(angleChange);
+              graph1.createVertices();
             }
             else {
               angleChange = 0;
-              graphY.shift();
-              graphY.push(0);
-              createVertices();
+              graph1.graphY1.shift();
+              graph1.graphY1.push(0);
+              graph1.createVertices();
             }
             document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+csvDat[csvIndex][0]+'</td><td id="red">'+csvDat[csvIndex][1]+'</td><td id="ir">'+csvDat[csvIndex][2]+'</td><td id="ratio">'+csvDat[csvIndex][3]+'</td><td id="smallSavLay">'+csvDat[csvIndex][4]+'</td><td id="largeSavLay">'+csvDat[csvIndex][5]+'</td><td id="adcAvg">'+csvDat[csvIndex][6]+'</td><td id="ratioSlope">'+csvDat[csvIndex][7]+'</td><td id="AI">'+csvDat[csvIndex][8]+'</td><td class="scoreth">'+angleChange.toFixed(4)+'</td></tr>'
             setTimeout(function(){replayCSV();},(timeArr[csvIndex]-timeArr[csvIndex-1])); //Call until end of index. Need to make this async
           }
           else {
             angleChange = 0;
-            graphY.shift();
-            graphY.push(0);
-            createVertices();
+            graph1.graphY1.shift();
+            graph1.graphY1.push(0);
+            graph1.createVertices();
           }
         }
         else {
@@ -345,124 +472,7 @@ const char event_page[] PROGMEM = R"=====(
         }
         input.click();
       }
-        
-      //WebGL graph based on: https://tinyurl.com/y5roydhe
-      let gl,
-      shaderProgram,
-      vertices,
-      canvas;
-
-      const VERTEX_SHADER = `
-      attribute vec4 coords;
-      attribute float pointSize;
-      void main(void) {
-        gl_Position = coords;
-        gl_PointSize = pointSize;
-      }
-      `;
-
-      const FRAGMENT_SHADER = `
-      precision mediump float;
-      uniform vec4 color;
-      void main(void) {
-        gl_FragColor = color;
-      }
-      `;
-
-      initGL();
-      createShader();
-      createVertices();
-      draw();
-      window.addEventListener('resize', setCanvasSize, false);
-
-      function setCanvasSize() {
-          canvas.width = 1400;
-          canvas.height = 400;
-          gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-      }
-
-      function initGL() {
-          canvas = document.querySelector('#myShader');
-          gl = canvas.getContext('webgl');
-          setCanvasSize();
-          console.log(gl.drawingBufferWidth, gl.drawingBufferHeight);
-          gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-          gl.clearColor(0, 0, 0, 1);
-      }
-      
-      function makePoints(numPoints) {
-        const highestPointNdx = numPoints - 1;
-        return Array.from({length: numPoints * 2}, (_, i) => {
-          const pointId = i / 2 | 0;
-          const lerp0To1 = pointId / highestPointNdx;
-          const isY = i % 2;
-          return isY
-            ? graphY[i]           // Y
-            : (lerp0To1 * 4 - 1); // X
-        });
-      }
-
-      function createVertices() {
-          vertices = makePoints(VERTEX_LENGTH);
-          const buffer = gl.createBuffer();
-          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
-
-          const coords = gl.getAttribLocation(shaderProgram, 'coords');
-          gl.vertexAttribPointer(coords, 2, gl.FLOAT, false, 0, 0);
-          gl.enableVertexAttribArray(coords);
-          // gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-          const pointSize = gl.getAttribLocation(shaderProgram, 'pointSize');
-          gl.vertexAttrib1f(pointSize, 2);
-
-          const uniformColor = gl.getUniformLocation(shaderProgram, 'color');
-          gl.uniform4f(uniformColor, normalize(255), normalize(100), normalize(80), 1);
-      }
-
-      function createShader() {
-          const vs = VERTEX_SHADER;
-
-          const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-          gl.shaderSource(vertexShader, vs);
-          gl.compileShader(vertexShader);
-
-          const fs = FRAGMENT_SHADER;
-
-          fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-          gl.shaderSource(fragmentShader, fs);
-          gl.compileShader(fragmentShader);
-
-          shaderProgram = gl.createProgram();
-          gl.attachShader(shaderProgram, vertexShader);
-          gl.attachShader(shaderProgram, fragmentShader);
-
-          gl.linkProgram(shaderProgram);
-          gl.useProgram(shaderProgram);
-      }
-
-      var requestAnimationFrame = window.requestAnimationFrame || 
-                                  window.mozRequestAnimationFrame || 
-                                  window.webkitRequestAnimationFrame || 
-                                  window.msRequestAnimationFrame;
-
-      graphtext.font = "20pt Arial";
-      graphtext.fillStyle = "#00ff00";
-
-      function draw() {
-          gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.drawArrays(gl.LINE_STRIP, 0, VERTEX_LENGTH);
-
-          graphtext.clearRect(0, 0, canvas.width, canvas.height);
-          graphtext.fillText("t: " + (ms[ms.length - 1]*0.001).toFixed(2),5,25);
-          graphtext.fillText("y: " + graphY[graphY.length - 1].toFixed(4),5,50);
-          requestAnimationFrame(draw);
-      }
-
-      function normalize(val, max=255, min=0) { return (val - min) / (max - min); }
-            
-
+  
       var mainCanvas = document.getElementById("myCanvas");
       var mainContext = mainCanvas.getContext('2d');
        
