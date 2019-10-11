@@ -252,6 +252,7 @@ void setupHEG() {
 
   if(USE_BT == true){
     setupBLE();
+    //SerialBT.begin();
   }
 
   BLEMillis = millis();

@@ -39,7 +39,7 @@ After logging into the access point, access the interface at 192.168.4.1
 --DEVICE INSTRUCTIONS--
 
 HEG serial commands:
-'t' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in on your forehead and not saturated by ambient light.
+'t' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light.
 'f' - Sensor off
 'b' - Toggle BLE mode, this resets the device to start in BLE mode, so you have to enter 'b' again through the serial or BLE connection to switch back to WiFi.
 'R' - hard resets the ESP32
@@ -48,6 +48,7 @@ HEG serial commands:
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 'D' - toggles ADC debugging (serial only)
+'W' - resets WiFi to AP mode (in case of bad Static IP glitch)
 
 With extra sensors:
 'l' - toggles sensor 0 and LED set 0.
@@ -99,12 +100,20 @@ The noise_reduce() function in this version is still broken. That needs to be tr
 
 On the /listen or /stream page once the event listener/websocket is connected you can control and test the HEG through the Serial monitor. Right now there is a manual 75ms delay on the data stream, I'm going to create buffers as the new sensors will be WAY faster than TCP can handle.
 
+*-*-*-*-*-*-*
 Changelog:
+*-*-*-*-*-*-*
+10/11/19
+-----
+/hegvid page improvements/experiments. Can load local video files (web URLs next, some site embedding like Vimeo MIGHT work)
+
+
 10/10/19
 -----
 CSV Save/Load functions added.
 Graphing improved, canvas demo fairly playable now. 
 Waiting on new pcbs to get definitive data after fixing noise issues in designs.
+GraphJS wrapper class for graphing.
 
 TODO:
 graph upgrades

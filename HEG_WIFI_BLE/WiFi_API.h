@@ -184,9 +184,10 @@ void commandESP32(char received)
       coreProgramEnabled = false;
       DEBUG_LEDS = false;
       DEBUG_ADC = false;
-    }
-    
-    
+    } 
+  }
+  if (received == 'W') { //Reset wifi mode.
+    saveWiFiLogin(false,false,true);
   }
   if (received == 's')
   { //Reset baseline and readings
