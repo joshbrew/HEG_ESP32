@@ -92,11 +92,15 @@ const char video_page[] PROGMEM = R"=====(
       position: absolute;
       top: 135px;
       left:325px;
+      width:0;
+      height:0;
+      border:0; 
+      border:none;
    }
 </style>
 </head>
 <body id="main_body">
-    <iframe class="dummy" width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
+    <iframe class="dummy" name="dummyframe" id="dummyframe"></iframe>
     <script>
          var ms = [];
          var red = [];
@@ -115,17 +119,17 @@ const char video_page[] PROGMEM = R"=====(
 
          var playRate = 1;
          var alpha = 0;
+         var useAlpha = true;
+         var useRate = true;
+         var enableControls = false;
          
          //appendId is the element Id you want to append this fragment to
          function appendFragment(HTMLtoAppend, appendId) {
-
             fragment = document.createDocumentFragment();
             var newDiv = document.createElement('div');
             newDiv.innerHTML = HTMLtoAppend;
             newDiv.setAttribute("id", appendId + '_child');
-
             fragment.appendChild(newDiv);
-
             document.getElementById(appendId).appendChild(fragment);
          }
 
@@ -137,25 +141,26 @@ const char video_page[] PROGMEM = R"=====(
 
          //Separates the appendId from the fragmentId so you can make multiple child threads with different Ids
          function appendFragmentMulti(HTMLtoAppend, appendId, fragmentId) {
-
             fragment = document.createDocumentFragment();
             var newDiv = document.createElement('div');
             newDiv.innerHTML = HTMLtoAppend;
             newDiv.setAttribute("id", fragmentId + '_child');
-
             fragment.appendChild(newDiv);
-
             document.getElementById(appendId).appendChild(fragment);
          }
  
-         var hegapiHTML = '<div id="HEGAPI" class="hegapi"> \
+         var hegapiHTML = '<div id="hegapi" class="hegapi"> \
           <form method="post" action="/startHEG" target="dummyframe"><button id="start" class="button startbutton" type="submit">Start HEG</button></form> \
           <form method="post" action="/stopHEG" target="dummyframe"><button id="stop" class="button stopbutton" type="submit">Stop HEG</button></form> \
           <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
           </div>';
     
          var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>';
-         var fileSelectHTML = '<div id="fsContainer" style="position:absolute; top:500px;"><input id="fs" name="fs" type="file" accept="video/*"/></div>';
+         var videoapiHTML = '<div id="vidapi" style="position:absolute; top:500px;"> \
+          <input class="button" id="fs" name="fs" type="file" accept="video/*"/><br> \
+          <button class="button" id="useAlpha" name="useAlpha">Fade</button> \
+          <button class="button" id="useRate" name="useRate">Speed</button> \
+          </div>';
          var videoHTML = '<video id="vid" height="480px" width="640px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="vidcanvas"></canvas>';
          var containerHTML = '<div id="container"></div>';
          var messageHTML = '<msgDiv id="message">Output:</div>';
@@ -165,7 +170,7 @@ const char video_page[] PROGMEM = R"=====(
 
          //Setup page as fragments so updates to elements are asynchronous.
          appendFragment(dataDivHTML,"main_body");
-         appendFragment(fileSelectHTML,"main_body");
+         appendFragment(videoapiHTML,"main_body");
          appendFragment(videoHTML,"main_body");
          appendFragment(hegapiHTML,"main_body");
          appendFragment(containerHTML,"dataDiv");
@@ -182,8 +187,25 @@ const char video_page[] PROGMEM = R"=====(
          gl.clearColor(0,0,0.1,0);
          gl.clear(gl.COLOR_BUFFER_BIT);
 
+         document.getElementById("useAlpha").onclick = function(){
+          if(useAlpha == true){
+            useAlpha = false;
+            alpha = 0;
+          }
+          else{ useAlpha = true; }
+         }
+
+         document.getElementById("useRate").onclick = function() {
+          if(useRate == true){
+            useRate = false;
+            playRate = 1;
+            vidQuery.playbackRate = 1;
+          }
+          else{ useRate = true; }
+         }
+
          document.getElementById("start").onclick = function(){
-          if(playRate < 0.1){ vidQuery.playRate = 0; }
+          if(playRate < 0.1){ vidQuery.playbackRate = 0; }
           else{ vidQuery.playbackRate = playRate; }
          }
          document.getElementById("stop").onclick = function(){vidQuery.playbackRate = 0;}
@@ -229,36 +251,39 @@ const char video_page[] PROGMEM = R"=====(
                         slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
                         fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
                         smaSlope = fastSMA - slowSMA;
-                        if(((alpha < 0.8) || (smaSlope > 0)) && ((alpha > 0)||(smaSlope < 0))){
-                          if(alpha - smaSlope < 0){
-                            alpha = 0;
-                          }
-                          else if(alpha - smaSlope > 0.8){
-                            alpha = 0.8;
-                          }
-                          else{
-                            alpha -= smaSlope;
+                        if(useAlpha == true) {
+                          if(((alpha < 0.8) || (smaSlope > 0)) && ((alpha > 0)||(smaSlope < 0))){
+                            if(alpha - smaSlope < 0){
+                              alpha = 0;
+                            }
+                            else if(alpha - smaSlope > 0.8){
+                              alpha = 0.8;
+                            }
+                            else{
+                              alpha -= smaSlope;
+                            }
                           }
                         }
-                        if(((vidQuery.playbackRate < 3) || (smaSlope < 0)) && ((vidQuery.playbackRate > 0) || (smaSlope > 0)))
-                        { 
-                          playRate = vidQuery.playbackRate + smaSlope*0.5;
-                          if((playRate < 0.05) && (playRate > 0)){
-                            vidQuery.playbackRate = 0;
-                          }
-                          else if(playRate < 0) {
-                            vidQuery.currentTime += smaSlope;
-                          }
-                          else if((playRate > 0.05) && (playRate < 0.1)){
-                            vidQuery.playbackRate = 0.5;
-                          }
-                          else{
-                            vidQuery.playbackRate = playRate;
+                        if(useRate == true){
+                          if(((vidQuery.playbackRate < 3) || (smaSlope < 0)) && ((vidQuery.playbackRate > 0) || (smaSlope > 0)))
+                          { 
+                            playRate = vidQuery.playbackRate + smaSlope*0.5;
+                            if((playRate < 0.05) && (playRate > 0)){
+                              vidQuery.playbackRate = 0;
+                            }
+                            else if(playRate < 0) {
+                              vidQuery.currentTime += smaSlope;
+                            }
+                            else if((playRate > 0.05) && (playRate < 0.1)){
+                              vidQuery.playbackRate = 0.5;
+                            }
+                            else{
+                              vidQuery.playbackRate = playRate;
+                            }
                           }
                         }
                         scoreArr.push(smaSlope);
                       }
-                      
                       document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+ms[ms.length-1-1]+'</td><td id="red">'+red[red.length-1-1]+'</td><td id="ir">'+ir[ir.length-1-1]+'</td><td id="ratio">'+ratio[ratio.length-1-1]+'</td><td id="smallSavLay">'+smallSavLay[smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+largeSavLay[largeSavLay.length-1-1]+'</td><td id="adcAvg">'+adcAvg[adcAvg.length-1-1]+'</td><td id="ratioSlope">'+ratioSlope[ratioSlope.length-1-1]+'</td><td id="AI">'+AI[AI.length-1]+'</td><td class="scoreth">'+scoreArr[scoreArr.length-1].toFixed(4)+'</td></tr>'
                   }
                 }
