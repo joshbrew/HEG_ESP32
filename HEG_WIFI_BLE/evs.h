@@ -417,16 +417,13 @@ const char event_page[] PROGMEM = R"=====(
        
       this.cWidth = this.c.width;
       this.cHeight = this.c.height;
-       
+ 
       this.angle = 1.57;
+      this.angleChange = 0;
 
       this.draw();
     }
-    
-    changeAngle(){
-      return;
-    }
-    
+
     draw = () => {
         this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
          
@@ -445,8 +442,9 @@ const char event_page[] PROGMEM = R"=====(
         this.ctx.fillStyle = "#EE1818";
         this.ctx.fill();
 
-        this.changeAngle();
-
+        if(((this.angle > 1.57) || (s.smaSlope > 0)) && ((this.angle < 3.14) || (s.smaSlope < 0))) {
+          this.angle += this.angleChange;
+        }
         requestAnimationFrame(this.draw);
     }
   }
@@ -468,13 +466,6 @@ const char event_page[] PROGMEM = R"=====(
       var c = new circleJS("canvas1");
       var graph1 = new graphJS("graph1",1500,[255,100,80]);
 
-      c.changeAngle = function() {
-        if(((this.angle > 1.57) || (s.smaSlope > 0)) && ((this.angle < 3.14) || (s.smaSlope < 0))) {
-          this.angle += s.smaSlope*.1;
-        }
-        return;
-      }
-
       s.replayCSV = () => {
         if(s.csvIndex == 0){
           s.ms.push(parseInt(s.csvDat[s.csvIndex][0]));
@@ -488,12 +479,14 @@ const char event_page[] PROGMEM = R"=====(
           if(s.ms.length >= 2){
             if(s.largeSavLay.length > 40){
               s.smaScore();
+              c.angleChange = s.smaSlope;
               graph1.graphY1.shift();
               graph1.graphY1.push(s.smaSlope);
               graph1.createVertices();
             }
             else {
               s.smaSlope = 0;
+              c.angleChange = 0;
               graph1.graphY1.shift();
               graph1.graphY1.push(0);
               graph1.createVertices();
@@ -503,6 +496,7 @@ const char event_page[] PROGMEM = R"=====(
           }
           else {
             s.smaSlope = 0;
+            c.angleChange = 0;
             graph1.graphY1.shift();
             graph1.graphY1.push(0);
             graph1.createVertices();
@@ -533,6 +527,7 @@ const char event_page[] PROGMEM = R"=====(
 
           if(s.largeSavLay.length > 40){
             s.smaScore();
+            c.angleChange = s.smaSlope;
             graph1.graphY1.shift();
             graph1.graphY1.push(s.smaSlope);
             graph1.createVertices();
@@ -542,6 +537,7 @@ const char event_page[] PROGMEM = R"=====(
       }
       else if (s.replay == false) {
         s.smaSlope = 0;
+        c.angleChange = 0;
         graph1.graphY1.shift();
         graph1.graphY1.push(0);
         graph1.createVertices();
