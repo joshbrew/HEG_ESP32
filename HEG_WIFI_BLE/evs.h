@@ -212,8 +212,8 @@ const char event_page[] PROGMEM = R"=====(
     normalize(val, max=255, min=0) { return (val - min) / (max - min); }
   }
       
-  class sessionData {
-    constructor(){
+  class HEGwebAPI {
+    constructor(parentId="main_body"){
       this.ms=[];
       this.red=[];
       this.ir=[];
@@ -232,6 +232,9 @@ const char event_page[] PROGMEM = R"=====(
 
       this.csvDat = [];
       this.csvIndex = 0;
+
+      this.createHegUI(parentId);
+
     }
 
     resetVars() {
@@ -307,6 +310,104 @@ const char event_page[] PROGMEM = R"=====(
       }
       input.click();
     }
+
+    //appendId is the element Id you want to append this fragment to
+    static appendFragment(HTMLtoAppend, appendId) {
+
+        var fragment = document.createDocumentFragment();
+        var newDiv = document.createElement('div');
+        newDiv.innerHTML = HTMLtoAppend;
+        newDiv.setAttribute("id", appendId + '_child');
+
+        fragment.appendChild(newDiv);
+
+        document.getElementById(appendId).appendChild(fragment);
+    }
+
+    //delete selected fragment. Will delete the most recent fragment if Ids are shared.
+    static deleteFragment(parentId,fragmentId) {
+        var this_fragment = document.getElementById(fragmentId);
+        document.getElementById(parentId).removeChild(this_fragment);
+    }
+
+    //Separates the appendId from the fragmentId so you can make multiple child threads with different Ids
+    static appendFragmentMulti(HTMLtoAppend, appendId, fragmentId) {
+
+        var fragment = document.createDocumentFragment();
+        var newDiv = document.createElement('div');
+        newDiv.innerHTML = HTMLtoAppend;
+        newDiv.setAttribute("id", fragmentId + '_child');
+
+        fragment.appendChild(newDiv);
+
+        document.getElementById(appendId).appendChild(fragment);
+    }
+
+    handleData(e){
+      console.log("HEGDUINO", e.data);
+    }
+
+    createEventListeners() {
+      if (!!window.EventSource) {
+        var source = new EventSource('/events');
+
+        source.addEventListener('open', function(e) {
+            console.log("HEGDUINO", "Events Connected");
+            //document.getElementById("message").innerHTML = "Output:";
+        }, false);
+
+        source.addEventListener('error', function(e) {
+            if (e.target.readyState != EventSource.OPEN) {
+              console.log("HEGDUINO", "Events Disconnected");
+            }
+        }, false);
+
+        source.addEventListener('message', function(e) {
+            document.getElementById("message").innerHTML = e.data;
+            console.log("HEGDUINO", e.data);
+        }, false);
+
+        source.addEventListener('myevent', (e) => {
+            this.handleData(e);
+        }, false);
+      }
+    }
+
+    createHegUI(parentId) {
+      var hegapiHTML = '<div id="hegapi" class="hegapi"> \
+        <form method="post" action="/startHEG" target="dummyframe"><button class="button startbutton" type="submit">Start HEG</button></form> \
+        <form method="post" action="/stopHEG" target="dummyframe"><button class="button stopbutton" type="submit">Stop HEG</button></form> \
+        <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
+        <div id="saveLoad" class="saveLoadBar"> \
+          <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input> \
+          <button class="button saveLoadButtons" id="savecsv">Save CSV</button> \
+          <button class="button saveLoadButtons" id="replaycsv">Replay CSV</button> \
+        </div> \
+        </div> \
+        <iframe name="dummyframe" id="dummyframe" class="dummy"></iframe> \
+        ';
+  
+      var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>';
+      var containerHTML = '<div id="container"></div>';
+      var messageHTML = '<msgDiv id="message">Output:</div>';
+      var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
+      var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
+      var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
+
+      HEGwebAPI.appendFragment(dataDivHTML,"main_body");
+      HEGwebAPI.appendFragment(hegapiHTML,"main_body");
+      HEGwebAPI.appendFragment(containerHTML,"dataDiv");
+      HEGwebAPI.appendFragment(messageHTML,"container");
+      HEGwebAPI.appendFragment(eventHTML,"container");
+      HEGwebAPI.appendFragment(tableHeadHTML,"container");
+      HEGwebAPI.appendFragment(tableDatHTML,"container");
+
+      document.getElementById("savecsv").onclick = () => {this.saveCSV();}
+      document.getElementById("replaycsv").onclick = () => {this.openCSV();}
+
+      this.createEventListeners();
+    }
+
   }
 
   class circleJS {
@@ -349,82 +450,23 @@ const char event_page[] PROGMEM = R"=====(
         requestAnimationFrame(this.draw);
     }
   }
-  
-  //appendId is the element Id you want to append this fragment to
-  function appendFragment(HTMLtoAppend, appendId) {
 
-      fragment = document.createDocumentFragment();
-      var newDiv = document.createElement('div');
-      newDiv.innerHTML = HTMLtoAppend;
-      newDiv.setAttribute("id", appendId + '_child');
-
-      fragment.appendChild(newDiv);
-
-      document.getElementById(appendId).appendChild(fragment);
-  }
-
-  //delete selected fragment. Will delete the most recent fragment if Ids are shared.
-  function deleteFragment(parentId,fragmentId) {
-      this_fragment = document.getElementById(fragmentId);
-      document.getElementById(parentId).removeChild(this_fragment);
-  }
-
-  //Separates the appendId from the fragmentId so you can make multiple child threads with different Ids
-  function appendFragmentMulti(HTMLtoAppend, appendId, fragmentId) {
-
-      fragment = document.createDocumentFragment();
-      var newDiv = document.createElement('div');
-      newDiv.innerHTML = HTMLtoAppend;
-      newDiv.setAttribute("id", fragmentId + '_child');
-
-      fragment.appendChild(newDiv);
-
-      document.getElementById(appendId).appendChild(fragment);
-  }
   
 </script>
 </head>
 <body id="main_body">
-    <iframe name="dummyframe" id="dummyframe" class="dummy"></iframe>
     <script>
-      var hegapiHTML = '<div id="hegapi" class="hegapi"> \
-        <form method="post" action="/startHEG" target="dummyframe"><button class="button startbutton" type="submit">Start HEG</button></form> \
-        <form method="post" action="/stopHEG" target="dummyframe"><button class="button stopbutton" type="submit">Stop HEG</button></form> \
-        <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
-        <div id="saveLoad" class="saveLoadBar"> \
-          <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input> \
-          <button class="button saveLoadButtons" id="savecsv">Save CSV</button> \
-          <button class="button saveLoadButtons" id="replaycsv">Replay CSV</button> \
-        </div> \
-        </div> \
-        ';
-  
-      var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>'
+      var s = new HEGwebAPI();
 
       var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="canvas1" height="400px" width="400px"></canvas></div>'
-
       var shaderHTML = '<div id="shaderContainer"><canvas class="webglcss" id="graph1"></canvas><canvas class="webglcss" id="graph1text"></canvas></div>'
 
-      var containerHTML = '<div id="container"></div>';
-      var messageHTML = '<msgDiv id="message">Output:</div>';
-      var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
-      var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
-      var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
-
-
       //Setup page as fragments so updates to elements are asynchronous.
-      appendFragment(dataDivHTML,"main_body");
-      appendFragment(canvasHTML,"main_body");
-      appendFragment(shaderHTML,"main_body");
-      appendFragment(hegapiHTML,"main_body");
-      appendFragment(containerHTML,"dataDiv");
-      appendFragment(messageHTML,"container");
-      appendFragment(eventHTML,"container");
-      appendFragment(tableHeadHTML,"container");
-      appendFragment(tableDatHTML,"container");
+      HEGwebAPI.appendFragment(canvasHTML,"main_body");
+      HEGwebAPI.appendFragment(shaderHTML,"main_body");
 
-      var s = new sessionData();
       var c = new circleJS("canvas1");
+      var graph1 = new graphJS("graph1",1500,[255,100,80]);
 
       c.changeAngle = function() {
         if(((this.angle > 1.57) || (s.smaSlope > 0)) && ((this.angle < 3.14) || (s.smaSlope < 0))) {
@@ -432,8 +474,6 @@ const char event_page[] PROGMEM = R"=====(
         }
         return;
       }
-      
-      var graph1 = new graphJS("graph1",1500,[255,100,80]);
 
       s.replayCSV = () => {
         if(s.csvIndex == 0){
@@ -474,61 +514,38 @@ const char event_page[] PROGMEM = R"=====(
           s.csvIndex = 0;
         }
     }
-   
-    document.getElementById("savecsv").onclick = function(){s.saveCSV();}
-    document.getElementById("replaycsv").onclick = function(){s.openCSV();}
 
-    if (!!window.EventSource) {
-        var source = new EventSource('/events');
+    s.handleData = (e) => {
+      console.log("HEGDUINO", e.data);
+      if(document.getElementById("myevent").innerHTML != e.data){
+        document.getElementById("myevent").innerHTML = e.data;
+        if(e.data.includes("|")) {
+          var dataArray = e.data.split("|");
+          s.ms.push(parseInt(dataArray[0]));
+          s.red.push(parseInt(dataArray[1]));
+          s.ir.push(parseInt(dataArray[2]));
+          s.ratio.push(parseFloat(dataArray[3]));
+          s.smallSavLay.push(parseFloat(dataArray[4]));
+          s.largeSavLay.push(parseFloat(dataArray[5]));
+          s.adcAvg.push(parseInt(dataArray[6]));
+          s.ratioSlope.push(parseFloat(dataArray[7]));
+          s.AI.push(parseFloat(dataArray[8]));
 
-        source.addEventListener('open', function(e) {
-            console.log("HEGDUINO", "Events Connected");
-            //document.getElementById("message").innerHTML = "Output:";
-        }, false);
-
-        source.addEventListener('error', function(e) {
-            if (e.target.readyState != EventSource.OPEN) {
-              console.log("HEGDUINO", "Events Disconnected");
-            }
-        }, false);
-
-        source.addEventListener('message', function(e) {
-            document.getElementById("message").innerHTML = e.data;
-            console.log("HEGDUINO", e.data);
-        }, false);
-
-        source.addEventListener('myevent', function(e) {
-            console.log("myevent", e.data);
-            if(document.getElementById("myevent").innerHTML != e.data){
-              document.getElementById("myevent").innerHTML = e.data;
-              if(e.data.includes("|")) {
-                  var dataArray = e.data.split("|");
-                  s.ms.push(parseInt(dataArray[0]));
-                  s.red.push(parseInt(dataArray[1]));
-                  s.ir.push(parseInt(dataArray[2]));
-                  s.ratio.push(parseFloat(dataArray[3]));
-                  s.smallSavLay.push(parseFloat(dataArray[4]));
-                  s.largeSavLay.push(parseFloat(dataArray[5]));
-                  s.adcAvg.push(parseInt(dataArray[6]));
-                  s.ratioSlope.push(parseFloat(dataArray[7]));
-                  s.AI.push(parseFloat(dataArray[8]));
-
-                  if(s.largeSavLay.length > 40){
-                    s.smaScore();
-                    graph1.graphY1.shift();
-                    graph1.graphY1.push(s.smaSlope);
-                    graph1.createVertices();
-                  }
-                  document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+s.ms[s.ms.length-1-1]+'</td><td id="red">'+s.red[s.red.length-1-1]+'</td><td id="ir">'+s.ir[s.ir.length-1-1]+'</td><td id="ratio">'+s.ratio[s.ratio.length-1-1]+'</td><td id="smallSavLay">'+s.smallSavLay[s.smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+s.largeSavLay[s.largeSavLay.length-1-1]+'</td><td id="adcAvg">'+s.adcAvg[s.adcAvg.length-1-1]+'</td><td id="ratioSlope">'+s.ratioSlope[s.ratioSlope.length-1-1]+'</td><td id="AI">'+s.AI[s.AI.length-1]+'</td><td class="scoreth">'+s.scoreArr[s.scoreArr.length-1].toFixed(4)+'</td></tr>'
-              }
-            }
-            else if (s.replay == false) {
-              s.smaSlope = 0;
-              graph1.graphY1.shift();
-              graph1.graphY1.push(0);
-              graph1.createVertices();
-            }
-        }, false);
+          if(s.largeSavLay.length > 40){
+            s.smaScore();
+            graph1.graphY1.shift();
+            graph1.graphY1.push(s.smaSlope);
+            graph1.createVertices();
+          }
+          document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+s.ms[s.ms.length-1-1]+'</td><td id="red">'+s.red[s.red.length-1-1]+'</td><td id="ir">'+s.ir[s.ir.length-1-1]+'</td><td id="ratio">'+s.ratio[s.ratio.length-1-1]+'</td><td id="smallSavLay">'+s.smallSavLay[s.smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+s.largeSavLay[s.largeSavLay.length-1-1]+'</td><td id="adcAvg">'+s.adcAvg[s.adcAvg.length-1-1]+'</td><td id="ratioSlope">'+s.ratioSlope[s.ratioSlope.length-1-1]+'</td><td id="AI">'+s.AI[s.AI.length-1]+'</td><td class="scoreth">'+s.scoreArr[s.scoreArr.length-1].toFixed(4)+'</td></tr>'
+        }
+      }
+      else if (s.replay == false) {
+        s.smaSlope = 0;
+        graph1.graphY1.shift();
+        graph1.graphY1.push(0);
+        graph1.createVertices();
+      }
     }
   </script>
    

@@ -75,7 +75,7 @@ void saveWiFiLogin(bool ap_only, bool use_static, bool reset){
 
 void connectAP(){
   //ESP32 As access point IP: 192.168.4.1
-  Serial.println("Starting local access point, scan for StateChanger in available WiFi connections");
+  Serial.println("Starting local access point, scan for "+String(softAPName)+" in available WiFi connections");
   Serial.println("Log in at 192.168.4.1 or try http://"+String(host)+".local after connecting to the access point successfully");
   //WiFi.mode(WIFI_AP); //Access Point mode, creates a local access point
   WiFi.softAP(softAPName, "12345678");    //Password length minimum 8 char 
