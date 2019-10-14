@@ -525,7 +525,8 @@ const char event_page[] PROGMEM = R"=====(
       var shaderHTML = '<div id="shaderContainer"> \
       <canvas class="webglcss" id="graph1"></canvas><canvas class="webglcss" id="graph1text"></canvas> \
       <div class="scale"> \
-        Y Scale:<br><input type="range" id="yscale" min=1 max=1000 value=100><button id="scalebutton" class="button">Default</button> \
+        X Scale:<br><input type="range" id="xscale" min=11 max=3000 value=1000><button id="xscalebutton" class="button">Default</button><br> \
+        Y Scale:<br><input type="range" id="yscale" min=1 max=1000 value=100><button id="yscalebutton" class="button">Default</button> \
       </div> \
       </div> \
       ';
@@ -537,12 +538,54 @@ const char event_page[] PROGMEM = R"=====(
       var c = new circleJS("canvas1");
       var graph1 = new graphJS("graph1",1500,[255,100,80,1]);
 
+      var xscaleSlider = document.getElementById("xscale");
+      xscaleSlider.onchange = function() {
+        var len = graph1.graphY1.length;
+        if(xscaleSlider.value < len) { // Remove from front.
+          for(var i = 0; i < len - xscaleSlider.value; i++){
+            graph1.graphY1.shift();
+          }
+        }
+        if(xscaleSlider.value > len) { // Add to front
+          for(var i = 0; i < xscaleSlider.value - len; i++){
+            if(i+len < s.scoreArr.length){
+              graph1.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - (i+len)]);
+            } 
+            else{
+              graph1.graphY1.unshift(0);
+            }
+          }
+        }
+        graph1.VERTEX_LENGTH = xscaleSlider.value;
+      }
+
+      document.getElementById("xscalebutton").onclick = function() {
+        var len = graph1.graphY1.length;
+        xscaleSlider.value = 1000;
+        if(xscaleSlider.value < len) { // Remove from front.
+          for(var i = 0; i < len - xscaleSlider.value; i++){
+            graph1.graphY1.shift();
+          }
+        }
+        if(xscaleSlider.value > len) { // Add to front
+          for(var i = 0; i < xscaleSlider.value - len; i++){
+            if(xscaleSlider.value < s.scoreArr.length){
+              graph1.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - graph1.graphY1.length]);
+            } 
+            else{
+              graph1.graphY1.unshift(0);
+            }
+          }
+        }
+        graph1.VERTEX_LENGTH = xscaleSlider.value;
+      }
+      
       var yscaleSlider = document.getElementById("yscale");
       yscaleSlider.oninput = function() {
         graph1.yscale = yscaleSlider.value * .01;
         graph1.invScale = 1/graph1.yscale;
       }
-      document.getElementById("scalebutton").onclick = function() {
+      document.getElementById("yscalebutton").onclick = function() {
         yscaleSlider.value = 100;
         graph1.yscale = 1;
         graph1.invScale = 1;
@@ -569,6 +612,7 @@ const char event_page[] PROGMEM = R"=====(
               c.angleChange = 0;
               graph1.graphY1.shift();
               graph1.graphY1.push(0);
+              s.scoreArr.push(0);
             }
             document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+s.csvDat[s.csvIndex][0]+'</td><td id="red">'+s.csvDat[s.csvIndex][1]+'</td><td id="ir">'+s.csvDat[s.csvIndex][2]+'</td><td id="ratio">'+s.csvDat[s.csvIndex][3]+'</td><td id="smallSavLay">'+s.csvDat[s.csvIndex][4]+'</td><td id="largeSavLay">'+s.csvDat[s.csvIndex][5]+'</td><td id="adcAvg">'+s.csvDat[s.csvIndex][6]+'</td><td id="ratioSlope">'+s.csvDat[s.csvIndex][7]+'</td><td id="AI">'+s.csvDat[s.csvIndex][8]+'</td><td class="scoreth">'+s.smaSlope.toFixed(4)+'</td></tr>'
             setTimeout(() => {s.replayCSV();},(s.ms[s.csvIndex]-s.ms[s.csvIndex-1])); //Call until end of index. Need to make this async
@@ -578,6 +622,7 @@ const char event_page[] PROGMEM = R"=====(
             c.angleChange = 0;
             graph1.graphY1.shift();
             graph1.graphY1.push(0);
+            s.scoreArr.push(0);
           }
         }
         else {
@@ -617,6 +662,7 @@ const char event_page[] PROGMEM = R"=====(
         c.angleChange = 0;
         graph1.graphY1.shift();
         graph1.graphY1.push(0);
+        s.scoreArr.push(0);
       }
     }
   </script>
