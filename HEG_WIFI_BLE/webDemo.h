@@ -545,6 +545,7 @@ const char event_page[] PROGMEM = R"=====(
       document.getElementById("scalebutton").onclick = function() {
         yscaleSlider.value = 100;
         graph1.yscale = 1;
+        graph1.invScale = 1;
       }
 
       s.replayCSV = () => {
