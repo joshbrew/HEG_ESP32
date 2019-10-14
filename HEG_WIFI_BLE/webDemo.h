@@ -594,11 +594,13 @@ const char event_page[] PROGMEM = R"=====(
       s.replayCSV = () => {
         if(s.csvIndex == 0){
           s.ms.push(parseInt(s.csvDat[s.csvIndex][0]));
+          graph1.ms.push(s.ms[s.ms.length - 1]);
           s.largeSavLay.push(parseFloat(s.csvDat[s.csvIndex][5]))
         }
         if(s.csvIndex < s.csvDat.length - 1){
           s.csvIndex++;
           s.ms.push(parseInt(s.csvDat[s.csvIndex][0]));
+          graph1.ms = s.ms;
           s.largeSavLay.push(parseFloat(s.csvDat[s.csvIndex][5]));
           if(s.ms.length >= 2){
             if(s.largeSavLay.length > 40){
@@ -650,6 +652,7 @@ const char event_page[] PROGMEM = R"=====(
 
           if(s.largeSavLay.length > 40){
             s.smaScore();
+            graph1.ms = s.ms;
             c.angleChange = s.smaSlope*s.sensitivity.value*0.01;
             graph1.graphY1.shift();
             graph1.graphY1.push(s.smaSlope);
