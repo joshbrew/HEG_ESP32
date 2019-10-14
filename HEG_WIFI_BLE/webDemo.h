@@ -312,9 +312,10 @@ const char event_page[] PROGMEM = R"=====(
             
       this.ms = [0];
       this.VERTEX_LENGTH = nPoints;
-      this.graphY1 = [...Array(nPoints).fill(0)];
+      this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
       
       this.yscale = 1;
+      this.invScale = 1/this.yscale;
       this.offset = 0; //Index offset
       
       this.xAxis = new Float32Array([
@@ -365,7 +366,6 @@ const char event_page[] PROGMEM = R"=====(
       this.graphtext.canvas.width = res[0];
       this.graphtext.canvas.height = res[1];
       this.graphtext.font = "20pt Arial";
-      this.graphtext.fillStyle = "#00ff00";
       
       this.draw();
 
@@ -460,8 +460,17 @@ const char event_page[] PROGMEM = R"=====(
 
       //Create text overlay
       this.graphtext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.graphtext.fillStyle = "#00ff00";
       this.graphtext.fillText("t: " + (this.ms[this.ms.length - 1]*0.001).toFixed(2),5,25);
       this.graphtext.fillText("y: " + this.graphY1[this.graphY1.length - 1].toFixed(4),5,50);
+      this.graphtext.fillStyle = "#707070";
+      var xoffset = this.graphtext.canvas.width * 0.11;
+      this.graphtext.fillText((this.invScale * 0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
+      this.graphtext.fillText((this.invScale * 0.5).toFixed(3), xoffset, this.graphtext.canvas.height * 0.25); 
+      this.graphtext.fillText((this.invScale * 0.25).toFixed(3), xoffset, this.graphtext.canvas.height * 0.375); 
+      this.graphtext.fillText((this.invScale * -0.25).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
+      this.graphtext.fillText((this.invScale * -0.5).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
+      this.graphtext.fillText((this.invScale * -0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
       requestAnimationFrame(this.draw);
     }
 
@@ -531,10 +540,11 @@ const char event_page[] PROGMEM = R"=====(
       var yscaleSlider = document.getElementById("yscale");
       yscaleSlider.oninput = function() {
         graph1.yscale = yscaleSlider.value * .01;
+        graph1.invScale = 1/graph1.yscale;
       }
       document.getElementById("scalebutton").onclick = function() {
         yscaleSlider.value = 100;
-        graph1.yscale = 100;
+        graph1.yscale = 1;
       }
 
       s.replayCSV = () => {
