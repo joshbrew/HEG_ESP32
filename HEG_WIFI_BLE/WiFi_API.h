@@ -2,7 +2,7 @@
 /*
  * EventSource for device errors and updating
  * Threading for events when involving multiple sensors
- * 
+ *
  */
 
 #include <WiFi.h>
@@ -194,7 +194,7 @@ void commandESP32(char received)
     } 
   }
   if (received == 'W') { //Reset wifi mode.
-    saveWiFiLogin(false,false,true);
+    saveWiFiLogin(true,false,true);
   }
   if (received == 's')
   { //Reset baseline and readings
