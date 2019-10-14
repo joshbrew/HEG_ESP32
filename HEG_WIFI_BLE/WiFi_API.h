@@ -1,3 +1,10 @@
+//TODO:
+/*
+ * EventSource for device errors and updating
+ * Threading for events when involving multiple sensors
+ * 
+ */
+
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 //#include <WiFiClient.h>
@@ -12,7 +19,7 @@
 #include "update.h" //Update page
 #include "ws.h" // Websocket client page
 #include "connect.h" // Wifi connect page
-#include "evs.h" // Event Source page
+#include "webDemo.h" // Event Source page
 #include "sc.h" // State Changer page
 #include "hegvid.h" //HEGstudio clone (WIP)
 
@@ -545,9 +552,12 @@ void setupWiFi(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", MAIN_page); //Send web page 
   });      //This is the default display page
-  server.on("/hegvid",HTTP_GET,[](AsyncWebServerRequest *request) {
+  server.on("/video",HTTP_GET,[](AsyncWebServerRequest *request) {
     request->send_P(200,"text/html",video_page);
   });
+  //server.on("/music",HTTP_GET,[](AsyncWebServerRequest *request) {
+    //request->send_P(200,"text/html",audio_page);
+  //});
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
     request->send_P(200,"text/html", sc_page);
   });

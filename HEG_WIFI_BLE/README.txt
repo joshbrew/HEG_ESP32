@@ -18,8 +18,8 @@ These change the default partitioning to allow sketches up to 2MB in size on the
 
 Extra SPIFFS notes:
 You need the SPIFFs tools: https://github.com/me-no-dev/arduino-esp32fs-plugin
-You also need to copy the esptool and mkspiffs EXE files in Arduino/hardware/espressif/esp32/tools/esptool and tools/mkspiffs into the
-upper /tools directory so the SPIFFs tool can find it.
+You also need to copy the esptool and mkspiffs EXE files in Arduino/hardware/espressif/esp32/tools/esptool and .../tools/mkspiffs into the
+upper .../tools directory so the SPIFFs tool can find them.
 
 
 *****
@@ -48,7 +48,6 @@ HEG serial commands:
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 'D' - toggles ADC debugging (serial only)
-'W' - resets WiFi to AP mode (in case of bad Static IP glitch)
 
 With extra sensors:
 'l' - toggles sensor 0 and LED set 0.
@@ -103,6 +102,19 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/13/19
+------
+webGL graphing API improvements. More to come.
+WIP Object-oriented web API on canvas demo page. Final suite will be completely class-based.
+Sensitivity slider.
+/hegvid -> /video (this page will be integrated with the main demo)
+
+
+More TODO:
+Audio visualizer (HTML5 has sweet built-in tools)
+CSS Overhaul w/ animations. Utilize webkit/moz/mobile libs.
+Fix mobile support for web demo (mostly requires permissions changes)
+
 10/11/19
 -----
 /hegvid page improvements/experiments. Can load local video files (web URLs next, some site embedding like Vimeo MIGHT work)

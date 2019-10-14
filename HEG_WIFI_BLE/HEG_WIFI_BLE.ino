@@ -38,6 +38,6 @@ void loop(void){
   if(currentMillis - eventMillis >= 50){
     eventMillis = currentMillis;
 
-    events.send(output.c_str(),"myevent",millis());
+    events.send(output.c_str(),"heg",millis());
   }
 }

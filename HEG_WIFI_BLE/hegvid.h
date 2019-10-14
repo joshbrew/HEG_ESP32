@@ -164,7 +164,7 @@ const char video_page[] PROGMEM = R"=====(
          var videoHTML = '<video id="vid" height="480px" width="640px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="vidcanvas"></canvas>';
          var containerHTML = '<div id="container"></div>';
          var messageHTML = '<msgDiv id="message">Output:</div>';
-         var eventHTML = '<eventDiv id="myevent">Not connected...</eventDiv>';
+         var eventHTML = '<eventDiv id="heg">Not connected...</eventDiv>';
          var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
          var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
@@ -229,10 +229,10 @@ const char video_page[] PROGMEM = R"=====(
                 console.log("HEGDUINO", e.data);
             }, false);
 
-            source.addEventListener('myevent', function(e) {
+            source.addEventListener('heg', function(e) {
                 console.log("myevent", e.data);
-                if(document.getElementById("myevent").innerHTML != e.data){
-                  document.getElementById("myevent").innerHTML = e.data;
+                if(document.getElementById("heg").innerHTML != e.data){
+                  document.getElementById("heg").innerHTML = e.data;
                   if(e.data.includes("|")) {
                       var dataArray = e.data.split("|");
                       ms.push(parseInt(dataArray[0]));
