@@ -811,13 +811,19 @@ const char event_page[] PROGMEM = R"=====(
       }
 
       s.replayCSV = function() {
-        if(this.csvIndex == 0){
+        if(this.csvIndex < 2){
           this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
-          g.ms.push(this.ms[this.ms.length - 1]);
-          this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]))
+          this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
+          this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
+          this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
+          this.smallSavLay.push(parseFloat(this.csvDat[this.csvIndex][4]));
+          this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]));
+          this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][6]));
+          this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][7]));
+          this.AI.push(parseFloat(this.csvDat[this.csvIndex][8]));
         }
+        this.csvIndex++;
         if(this.csvIndex < this.csvDat.length - 1){
-          this.csvIndex++;
           this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
           this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
           this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
@@ -834,7 +840,6 @@ const char event_page[] PROGMEM = R"=====(
               c.angleChange = this.smaSlope*this.sensitivity.value*0.01;
               g.graphY1.shift();
               g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
-              
             }
             else {
               this.smaSlope = 0;
@@ -844,17 +849,10 @@ const char event_page[] PROGMEM = R"=====(
               this.scoreArr.push(0);
             }
             this.updateTable();
-            setTimeout(() => {this.replayCSV();},(this.ms[this.csvIndex]-this.ms[this.csvIndex-1])); //Call until end of index.
-          }
-          else {
-            this.smaSlope = 0;
-            c.angleChange = 0;
-            g.graphY1.shift();
-            g.graphY1.push(0);
-            this.scoreArr.push(0);
           }
         }
         else {
+          this.replay = false;
           this.csvDat = [];
           this.csvIndex = 0;
         }
@@ -863,6 +861,7 @@ const char event_page[] PROGMEM = R"=====(
             g.xoffsetSlider.max = this.scoreArr.length - 1;
           }
         }
+        setTimeout(() => {this.replayCSV();},(this.ms[this.csvIndex]-this.ms[this.csvIndex-1])); //Call until end of index.
     }
 
     s.handleData = function(e) {
