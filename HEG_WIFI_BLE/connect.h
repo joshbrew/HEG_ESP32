@@ -48,9 +48,9 @@ input[type=submit]{
     Password:<br>
       <input type='password' id='pw' name='pw'><br>
     For use with Static IP: <br>
-    Static IP (e.g. 192.168.0.199):<br>
+    Static IP (e.g. 192.168.0.199, first 3 numbers must match gateway):<br>
       <input type='text' id='static' name='static'><br>
-    Gateway IP (e.g. 192.168.0.1):<br>
+    Gateway IP (e.g. 192.168.0.1 or 192.168.1.1, check your router settings):<br>
       <input type='text' id='gateway' name='gateway'><br>
     Subnet Mask (e.g. 255.255.255.0):<br>
       <input type='text' id='subnet' name='subnet'><br>

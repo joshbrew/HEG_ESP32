@@ -90,7 +90,7 @@ const char event_page[] PROGMEM = R"=====(
 </style>
 <script>
   class HEGwebAPI {
-    constructor(parentId="main_body"){
+    constructor(defaultUI=true, parentId="main_body"){
       this.ms=[];
       this.red=[];
       this.ir=[];
@@ -111,9 +111,9 @@ const char event_page[] PROGMEM = R"=====(
       this.csvIndex = 0;
 
       this.sensitivity = null;
-
-      this.createHegUI(parentId);
-
+      if(defaultUI==true){
+        this.createHegUI(parentId);
+      }
     }
 
     //appendId is the element Id you want to append this fragment to
@@ -251,11 +251,15 @@ const char event_page[] PROGMEM = R"=====(
         }, false);
       }
     }
+   
+    updateTable(){
+      document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+this.ms[this.ms.length-1-1]+'</td><td id="red">'+this.red[this.red.length-1-1]+'</td><td id="ir">'+this.ir[this.ir.length-1-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1-1]+'</td><td id="smallSavLay">'+this.smallSavLay[this.smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+this.largeSavLay[this.largeSavLay.length-1-1]+'</td><td id="adcAvg">'+this.adcAvg[this.adcAvg.length-1-1]+'</td><td id="ratioSlope">'+this.ratioSlope[this.ratioSlope.length-1-1]+'</td><td id="AI">'+this.AI[this.AI.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
+    }
 
     createHegUI(parentId) {
       var hegapiHTML = '<div id="hegapi" class="hegapi"> \
-        <form method="post" action="/startHEG" target="dummyframe"><button class="button startbutton" type="submit">Start HEG</button></form> \
-        <form method="post" action="/stopHEG" target="dummyframe"><button class="button stopbutton" type="submit">Stop HEG</button></form> \
+        <form method="post" action="/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form> \
+        <form method="post" action="/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form> \
         <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
         <div id="saveLoad" class="saveLoadBar"> \
           <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input> \
@@ -285,6 +289,7 @@ const char event_page[] PROGMEM = R"=====(
       HEGwebAPI.appendFragment(tableHeadHTML,"container");
       HEGwebAPI.appendFragment(tableDatHTML,"container");
 
+      document.getElementById("startbutton").onclick = () => { this.resetVars(); }
       document.getElementById("savecsv").onclick = () => {this.saveCSV();}
       document.getElementById("replaycsv").onclick = () => {this.openCSV();}
       this.sensitivity = document.getElementById("sensitivity");
@@ -292,12 +297,11 @@ const char event_page[] PROGMEM = R"=====(
       
       this.createEventListeners();
     }
-
   }
 
 
   class graphJS {
-    constructor(canvasId, nPoints=[1000], color=[0,255,0,1], res=[1400,400]){
+    constructor(canvasId, nPoints=[1000], color=[0,255,0,1], defaultUI=true, res=[1400,400]){
       //WebGL graph based on: https://tinyurl.com/y5roydhe
       //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
       this.gl,
@@ -313,7 +317,7 @@ const char event_page[] PROGMEM = R"=====(
       this.ms = [0];
       this.VERTEX_LENGTH = nPoints;
       this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
-      
+
       this.yscale = 1;
       this.invScale = 1/this.yscale;
       this.offset = 0; //Index offset
@@ -358,6 +362,9 @@ const char event_page[] PROGMEM = R"=====(
         }
       `;
 
+      if(defaultUI == true){
+        this.createUI();
+      }
       this.initGL(canvasId);
       this.createShader();
       this.createVertices(color);
@@ -370,6 +377,35 @@ const char event_page[] PROGMEM = R"=====(
       this.draw();
 
       window.addEventListener('resize', this.setCanvasSize(this.canvasId), false);
+    }
+
+    createUI(){
+      var shaderHTML = '<div id="shaderContainer"> \
+      <canvas class="webglcss" id="'+this.canvasId+'"></canvas><canvas class="webglcss" id="'+this.canvasId+'text"></canvas> \
+      <div class="scale"> \
+        X Offset:<br><input type="range" id="xoffset" min=0 max=1000 value=0><button id="xoffsetbutton" class="button">Reset</button><br> \
+        X Scale:<br><input type="range" id="xscale" min=10 max=3000 value=1000><button id="xscalebutton" class="button">Reset</button><br> \
+        Y Scale:<br><input type="range" id="yscale" min=1 max=1000 value=100><button id="yscalebutton" class="button">Reset</button> \
+      </div> \
+      </div> \
+      ';
+
+      HEGwebAPI.appendFragment(shaderHTML,"main_body");
+
+      this.xoffsetSlider = document.getElementById("xoffset");
+
+      this.xscaleSlider = document.getElementById("xscale");
+      
+      this.yscaleSlider = document.getElementById("yscale");
+      this.yscaleSlider.oninput = () => {
+        this.yscale = this.yscaleSlider.value * .01;
+        this.invScale = 1/this.yscale;
+      }
+      document.getElementById("yscalebutton").onclick = () => {
+        this.yscaleSlider.value = 100;
+        this.yscale = 1;
+        this.invScale = 1;
+      }
     }
 
     setCanvasSize(canvasId) {
@@ -478,7 +514,10 @@ const char event_page[] PROGMEM = R"=====(
   }
       
   class circleJS {
-    constructor(canvasId){
+    constructor(canvasId, defaultUI=true){
+      if(defaultUI == true){
+        this.createCanvas(canvasId);
+      }
       this.c = document.getElementById(canvasId);
       this.ctx = this.c.getContext('2d');
        
@@ -489,6 +528,13 @@ const char event_page[] PROGMEM = R"=====(
       this.angleChange = 0;
 
       this.draw();
+    }
+
+    createCanvas(canvasId){
+      var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="'+canvasId+'" height="400px" width="400px"></canvas></div>'
+
+      //Setup page as fragments so updates to elements are asynchronous.
+      HEGwebAPI.appendFragment(canvasHTML,"main_body");
     }
 
     draw = () => {
@@ -515,157 +561,339 @@ const char event_page[] PROGMEM = R"=====(
         requestAnimationFrame(this.draw);
     }
   }
+
+    class videoJS {
+        constructor(parentId, vidId, vidcanvasId, defaultUI=true){
+          this.playRate = 0;
+          this.alpha = 0;
+          this.useAlpha = true;
+          this.useRate = true;
+          this.enableControls = false;
+          this.parentId = parentId;
+          this.vidId = vidId
+          this.vidcanvasId = vidcanvasId
+
+          this.vidQuery;
+          this.c;
+          this.gl;
+          if(defaultUI=true){
+            this.addUI();
+          }
+          this.init();
+        }
+
+        setupButtons() {
+          document.getElementById("start").onclick = function(){
+            if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
+            else{ this.vidQuery.playbackRate = this.playRate; }
+          }
+          document.getElementById("stop").onclick = function(){this.vidQuery.playbackRate = 0;}
+        }
+
+        deInit(){
+          document.getElementById("start").onclick = function(){
+            return;
+          }
+          document.getElementById("stop").onclick = function(){
+            return;
+          }
+
+          HEGwebAPI.deleteFragment(this.parentId,this.vidId);
+          HEGwebAPI.deleteFragment(this.parentId,this.vidcanvasId);
+        }
+
+        addUI(){
+         var videoapiHTML = '<div id="'+this.vidId+'" style="position:absolute; top:500px;"> \
+          <input class="button" id="fs" name="fs" type="file" accept="video/*"/><br> \
+          <button class="button" id="useAlpha" name="useAlpha">Fade</button> \
+          <button class="button" id="useRate" name="useRate">Speed</button> \
+          </div>';
+         var videoHTML = '<video id="'+this.vidcanvasId+'" height="480px" width="640px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="vidcanvas"></canvas>';
+         HEGwebAPI.appendFragment(videoapiHTML);
+         HEGwebAPI.appendFragment(videoHTML);
+         this.localFileVideoPlayer();
+         this.setupButtons();
+        }
+
+       localFileVideoPlayer() {
+        'use strict'
+        var URL = window.URL || window.webkitURL;
+        var displayMessage = function (message, isError) {
+          var element = document.querySelector('#message');
+          element.innerHTML = message;
+          element.className = isError ? 'error' : 'info';
+        }
+        var playSelectedFile = function (event) {
+          var file = this.files[0];
+          var type = file.type;
+          var videoNode = document.querySelector('video');
+          var canPlay = videoNode.canPlayType(type);
+          if (canPlay === ''){ canPlay = 'no';}
+          var message = 'Can play type "' + type + '": ' + canPlay;
+          var isError = canPlay === 'no';
+          displayMessage(message, isError)
+          if (isError) {
+            return;
+          }
+          var fileURL = URL.createObjectURL(file);
+          videoNode.src = fileURL;
+        }
+        var inputNode = document.querySelector('input[name="fs"]');
+        inputNode.addEventListener('change', playSelectedFile, false);
+      }
+      
+      animateRect = () => {
+          this.gl.clearColor(0,0,0.1,alpha);
+          this.gl.clear(gl.COLOR_BUFFER_BIT);
+          requestAnimationFrame(this.animateRect);
+      }
+
+      handleData(e) {
+        console.log("myevent", e.data);
+        if(document.getElementById("heg").innerHTML != e.data){
+          document.getElementById("heg").innerHTML = e.data;
+          if(e.data.includes("|")) {
+            var dataArray = e.data.split("|");
+            this.ms.push(parseInt(dataArray[0]));
+            this.red.push(parseInt(dataArray[1]));
+            this.ir.push(parseInt(dataArray[2]));
+            this.ratio.push(parseFloat(dataArray[3]));
+            this.smallSavLay.push(parseFloat(dataArray[4]));
+            this.largeSavLay.push(parseFloat(dataArray[5]));
+            this.adcAvg.push(parseInt(dataArray[6]));
+            this.ratioSlope.push(parseFloat(dataArray[7]));
+            this.AI.push(parseFloat(dataArray[8]));
+
+            if(this.largeSavLay.length-1 > 40){
+              this.smaScore();
+              if(this.useAlpha == true) {
+                if(((this.alpha < 0.8) || (this.smaSlope > 0)) && ((this.alpha > 0)||(this.smaSlope < 0))){
+                  if(this.alpha - this.smaSlope < 0){
+                    this.alpha = 0;
+                  }
+                  else if(alpha - this.smaSlope > 0.8){
+                    this.alpha = 0.8;
+                  }
+                  else{
+                    this.alpha -= this.smaSlope;
+                  }
+                }
+              }
+              if(this.useRate == true){
+                if(((this.vidQuery.playbackRate < 3) || (this.smaSlope < 0)) && ((this.vidQuery.playbackRate > 0) || (this.smaSlope > 0)))
+                { 
+                  this.playRate = this.vidQuery.playbackRate + this.smaSlope*0.5;
+                  if((this.playRate < 0.05) && (this.playRate > 0)){
+                    this.vidQuery.playbackRate = 0;
+                  }
+                  else if(playRate < 0) {
+                    this.vidQuery.currentTime += this.smaSlope;
+                  }
+                  else if((this.playRate > 0.05) && (this.playRate < 0.1)){
+                    this.vidQuery.playbackRate = 0.5;
+                  }
+                  else{
+                    this.vidQuery.playbackRate = this.playRate;
+                  }
+                }
+              }
+              this.scoreArr.push(this.smaSlope);
+            }
+            this.updateTable();  
+          }
+        }
+      }
+
+      init() {
+         this.vidQuery = document.getElementById(this.vidId);
+         this.c = document.getElementById(this.vidcanvasId);
+         this.c.width = this.vidQuery.width;
+         this.c.height = this.vidQuery.height;
+         this.gl = this.c.getContext("webgl");
+         this.gl.clearColor(0,0,0.1,0);
+         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+         this.animateRect();
+
+         document.getElementById("useAlpha").onclick = function(){
+          if(useAlpha == true){
+            this.useAlpha = false;
+            this.alpha = 0;
+          }
+          else{ this.useAlpha = true; }
+         }
+
+         document.getElementById("useRate").onclick = function() {
+          if(useRate == true){
+            this.useRate = false;
+            this.playRate = 1;
+            this.vidQuery.playbackRate = 1;
+          }
+          else{ this.useRate = true; }
+         }
+       }
+     }
 </script>
 </head>
 <body id="main_body">
     <script>
       var s = new HEGwebAPI();
 
-      var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="canvas1" height="400px" width="400px"></canvas></div>'
-      var shaderHTML = '<div id="shaderContainer"> \
-      <canvas class="webglcss" id="graph1"></canvas><canvas class="webglcss" id="graph1text"></canvas> \
-      <div class="scale"> \
-        X Scale:<br><input type="range" id="xscale" min=11 max=3000 value=1000><button id="xscalebutton" class="button">Default</button><br> \
-        Y Scale:<br><input type="range" id="yscale" min=1 max=1000 value=100><button id="yscalebutton" class="button">Default</button> \
-      </div> \
-      </div> \
-      ';
-
-      //Setup page as fragments so updates to elements are asynchronous.
-      HEGwebAPI.appendFragment(canvasHTML,"main_body");
-      HEGwebAPI.appendFragment(shaderHTML,"main_body");
-
       var c = new circleJS("canvas1");
-      var graph1 = new graphJS("graph1",1500,[255,100,80,1]);
+      var g = new graphJS("g",1500,[255,100,80,1]);
 
-      var xscaleSlider = document.getElementById("xscale");
-      xscaleSlider.onchange = function() {
-        var len = graph1.graphY1.length;
-        if(xscaleSlider.value < len) { // Remove from front.
-          for(var i = 0; i < len - xscaleSlider.value; i++){
-            graph1.graphY1.shift();
+      var useCanvas = true;
+      var useVideo = false;
+      var useAudio = false;
+      var useGraph = true;
+
+      g.xoffsetSlider.onchange = () => {
+         if(g.xoffsetSlider.value > s.scoreArr.length) {
+           g.xoffsetSlider.value = s.scoreArr.length - 1;
+         }
+         g.offset = g.xoffsetSlider.value;
+         
+         if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
+          var endIndex = s.scoreArr.length - g.offset;
+          g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex);
+         }
+         else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
+          var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - g.offset);
+          if(g.graphY1.length == scoreslice){
+            g.graphY1 = scoreslice;
+          }
+          else{
+            g.graphY1 = [...Array(g.VERTEX_LENGTH - scoreslice.length).fill(0), ...scoreslice];
+          }
+         }
+      }
+
+      g.xscaleSlider.onchange = () => {
+        len = g.graphY1.length;
+        if(g.xscaleSlider.value < len) { // Remove from front.
+          for(var i = 0; i < len - g.xscaleSlider.value; i++){
+            g.graphY1.shift();
           }
         }
-        if(xscaleSlider.value > len) { // Add to front
-          for(var i = 0; i < xscaleSlider.value - len; i++){
-            if(i+len < s.scoreArr.length){
-              graph1.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - (i+len)]);
+        if(g.xscaleSlider.value > len) { // Add to front
+          for(var i = 0; i < g.xscaleSlider.value - len; i++){
+            if(i+len <= s.scoreArr.length){
+              g.graphY1.unshift(s.scoreArr[s.scoreArr.length - (len+i) + g.offset]);
             } 
             else{
-              graph1.graphY1.unshift(0);
+              g.graphY1.unshift(0);
             }
           }
         }
-        graph1.VERTEX_LENGTH = xscaleSlider.value;
+        g.VERTEX_LENGTH = g.graphY1.length;
       }
 
-      document.getElementById("xscalebutton").onclick = function() {
-        var len = graph1.graphY1.length;
-        xscaleSlider.value = 1000;
-        if(xscaleSlider.value < len) { // Remove from front.
-          for(var i = 0; i < len - xscaleSlider.value; i++){
-            graph1.graphY1.shift();
+      document.getElementById("xscalebutton").onclick = () => {
+        var len = g.graphY1.length;
+        g.xscaleSlider.value = 1000;
+        if(g.xscaleSlider.value < len) { // Remove from front.
+          for(var i = 0; i < len - g.xscaleSlider.value; i++){
+            g.graphY1.shift();
           }
         }
-        if(xscaleSlider.value > len) { // Add to front
-          for(var i = 0; i < xscaleSlider.value - len; i++){
-            if(xscaleSlider.value < s.scoreArr.length){
-              graph1.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - graph1.graphY1.length]);
+        if(g.xscaleSlider.value > len) { // Add to front
+          for(var i = 0; i < g.xscaleSlider.value - len; i++){
+            if(g.xscaleSlider.value < s.scoreArr.length){
+              g.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - g.graphY1.length + g.offset]);
             } 
             else{
-              graph1.graphY1.unshift(0);
+              g.graphY1.unshift(0);
             }
           }
         }
-        graph1.VERTEX_LENGTH = xscaleSlider.value;
-      }
-      
-      var yscaleSlider = document.getElementById("yscale");
-      yscaleSlider.oninput = function() {
-        graph1.yscale = yscaleSlider.value * .01;
-        graph1.invScale = 1/graph1.yscale;
-      }
-      document.getElementById("yscalebutton").onclick = function() {
-        yscaleSlider.value = 100;
-        graph1.yscale = 1;
-        graph1.invScale = 1;
+        g.VERTEX_LENGTH = g.xscaleSlider.value;
       }
 
-      s.replayCSV = () => {
-        if(s.csvIndex == 0){
-          s.ms.push(parseInt(s.csvDat[s.csvIndex][0]));
-          graph1.ms.push(s.ms[s.ms.length - 1]);
-          s.largeSavLay.push(parseFloat(s.csvDat[s.csvIndex][5]))
+      s.replayCSV = function() {
+        if(this.csvIndex == 0){
+          this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
+          g.ms.push(this.ms[this.ms.length - 1]);
+          this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]))
         }
-        if(s.csvIndex < s.csvDat.length - 1){
-          s.csvIndex++;
-          s.ms.push(parseInt(s.csvDat[s.csvIndex][0]));
-          graph1.ms = s.ms;
-          s.largeSavLay.push(parseFloat(s.csvDat[s.csvIndex][5]));
-          if(s.ms.length >= 2){
-            if(s.largeSavLay.length > 40){
-              s.smaScore();
-              c.angleChange = s.smaSlope*s.sensitivity.value*0.01;
-              graph1.graphY1.shift();
-              graph1.graphY1.push(s.smaSlope);
+        if(this.csvIndex < this.csvDat.length - 1){
+          this.csvIndex++;
+          this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
+          g.ms = this.ms;
+          this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]));
+          if(this.ms.length >= 2){
+            if(this.largeSavLay.length > 40){
+              this.smaScore();
+              c.angleChange = this.smaSlope*this.sensitivity.value*0.01;
+              g.graphY1.shift();
+              g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
+              
             }
             else {
-              s.smaSlope = 0;
+              this.smaSlope = 0;
               c.angleChange = 0;
-              graph1.graphY1.shift();
-              graph1.graphY1.push(0);
-              s.scoreArr.push(0);
+              g.graphY1.shift();
+              g.graphY1.push(0);
+              this.scoreArr.push(0);
             }
-            document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+s.csvDat[s.csvIndex][0]+'</td><td id="red">'+s.csvDat[s.csvIndex][1]+'</td><td id="ir">'+s.csvDat[s.csvIndex][2]+'</td><td id="ratio">'+s.csvDat[s.csvIndex][3]+'</td><td id="smallSavLay">'+s.csvDat[s.csvIndex][4]+'</td><td id="largeSavLay">'+s.csvDat[s.csvIndex][5]+'</td><td id="adcAvg">'+s.csvDat[s.csvIndex][6]+'</td><td id="ratioSlope">'+s.csvDat[s.csvIndex][7]+'</td><td id="AI">'+s.csvDat[s.csvIndex][8]+'</td><td class="scoreth">'+s.smaSlope.toFixed(4)+'</td></tr>'
-            setTimeout(() => {s.replayCSV();},(s.ms[s.csvIndex]-s.ms[s.csvIndex-1])); //Call until end of index. Need to make this async
+            this.updateTable();
+            setTimeout(() => {this.replayCSV();},(this.ms[this.csvIndex]-this.ms[this.csvIndex-1])); //Call until end of index.
           }
           else {
-            s.smaSlope = 0;
+            this.smaSlope = 0;
             c.angleChange = 0;
-            graph1.graphY1.shift();
-            graph1.graphY1.push(0);
-            s.scoreArr.push(0);
+            g.graphY1.shift();
+            g.graphY1.push(0);
+            this.scoreArr.push(0);
           }
         }
         else {
-          s.resetVars();
-          s.csvDat = [];
-          s.csvIndex = 0;
+          this.csvDat = [];
+          this.csvIndex = 0;
+        }
+        if(g.xoffsetSlider.max < this.scoreArr.length){
+          if(this.scoreArr.length % 20 == 0) { //only update every 20 samples
+            g.xoffsetSlider.max = this.scoreArr.length - 1;
+          }
         }
     }
 
-    s.handleData = (e) => {
+    s.handleData = function(e) {
       console.log("HEGDUINO", e.data);
       if(document.getElementById("heg").innerHTML != e.data){
         document.getElementById("heg").innerHTML = e.data;
         if(e.data.includes("|")) {
           var dataArray = e.data.split("|");
-          s.ms.push(parseInt(dataArray[0]));
-          s.red.push(parseInt(dataArray[1]));
-          s.ir.push(parseInt(dataArray[2]));
-          s.ratio.push(parseFloat(dataArray[3]));
-          s.smallSavLay.push(parseFloat(dataArray[4]));
-          s.largeSavLay.push(parseFloat(dataArray[5]));
-          s.adcAvg.push(parseInt(dataArray[6]));
-          s.ratioSlope.push(parseFloat(dataArray[7]));
-          s.AI.push(parseFloat(dataArray[8]));
+          this.ms.push(parseInt(dataArray[0]));
+          this.red.push(parseInt(dataArray[1]));
+          this.ir.push(parseInt(dataArray[2]));
+          this.ratio.push(parseFloat(dataArray[3]));
+          this.smallSavLay.push(parseFloat(dataArray[4]));
+          this.largeSavLay.push(parseFloat(dataArray[5]));
+          this.adcAvg.push(parseInt(dataArray[6]));
+          this.ratioSlope.push(parseFloat(dataArray[7]));
+          this.AI.push(parseFloat(dataArray[8]));
 
-          if(s.largeSavLay.length > 40){
-            s.smaScore();
-            graph1.ms = s.ms;
-            c.angleChange = s.smaSlope*s.sensitivity.value*0.01;
-            graph1.graphY1.shift();
-            graph1.graphY1.push(s.smaSlope);
+          if(this.largeSavLay.length > 40){
+            this.smaScore();
+            g.ms = this.ms;
+            c.angleChange = this.smaSlope*this.sensitivity.value*0.01;
+            g.graphY1.shift();
+            g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.offset]);
           }
-          document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+s.ms[s.ms.length-1-1]+'</td><td id="red">'+s.red[s.red.length-1-1]+'</td><td id="ir">'+s.ir[s.ir.length-1-1]+'</td><td id="ratio">'+s.ratio[s.ratio.length-1-1]+'</td><td id="smallSavLay">'+s.smallSavLay[s.smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+s.largeSavLay[s.largeSavLay.length-1-1]+'</td><td id="adcAvg">'+s.adcAvg[s.adcAvg.length-1-1]+'</td><td id="ratioSlope">'+s.ratioSlope[s.ratioSlope.length-1-1]+'</td><td id="AI">'+s.AI[s.AI.length-1]+'</td><td class="scoreth">'+s.scoreArr[s.scoreArr.length-1].toFixed(4)+'</td></tr>'
+          this.updateTable();
         }
       }
       else if (s.replay == false) {
-        s.smaSlope = 0;
+        this.smaSlope = 0;
         c.angleChange = 0;
-        graph1.graphY1.shift();
-        graph1.graphY1.push(0);
-        s.scoreArr.push(0);
+        g.graphY1.shift();
+        g.graphY1.push(0);
+        this.scoreArr.push(0);
+      }
+      if(g.xoffsetSlider.max < this.scoreArr.length){
+        if(this.scoreArr.length % 20 == 0) { 
+          g.xoffsetSlider.max = this.scoreArr.length - 1;
+        }
       }
     }
   </script>
