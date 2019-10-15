@@ -650,7 +650,7 @@ const char event_page[] PROGMEM = R"=====(
 
       handleData(e) {
         console.log("myevent", e.data);
-        if(document.getElementById("heg").innerHTML != e.data){
+        if(document.getElementById("heg").innerHTML != e.data){  //on new output
           document.getElementById("heg").innerHTML = e.data;
           if(e.data.includes("|")) {
             var dataArray = e.data.split("|");
@@ -663,7 +663,7 @@ const char event_page[] PROGMEM = R"=====(
             this.adcAvg.push(parseInt(dataArray[6]));
             this.ratioSlope.push(parseFloat(dataArray[7]));
             this.AI.push(parseFloat(dataArray[8]));
-
+            //handle new data
             if(this.largeSavLay.length-1 > 40){
               this.smaScore();
               if(this.useAlpha == true) {
@@ -702,6 +702,7 @@ const char event_page[] PROGMEM = R"=====(
             this.updateTable();  
           }
         }
+        //else {//handle if data not changed}
       }
 
       init() {
@@ -818,8 +819,15 @@ const char event_page[] PROGMEM = R"=====(
         if(this.csvIndex < this.csvDat.length - 1){
           this.csvIndex++;
           this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
-          g.ms = this.ms;
+          this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
+          this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
+          this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
+          this.smallSavLay.push(parseFloat(this.csvDat[this.csvIndex][4]));
           this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]));
+          this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][6]));
+          this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][7]));
+          this.AI.push(parseFloat(this.csvDat[this.csvIndex][8]));
+          g.ms = this.ms;
           if(this.ms.length >= 2){
             if(this.largeSavLay.length > 40){
               this.smaScore();
@@ -872,7 +880,7 @@ const char event_page[] PROGMEM = R"=====(
           this.adcAvg.push(parseInt(dataArray[6]));
           this.ratioSlope.push(parseFloat(dataArray[7]));
           this.AI.push(parseFloat(dataArray[8]));
-
+          //handle new data
           if(this.largeSavLay.length > 40){
             this.smaScore();
             g.ms = this.ms;
@@ -883,6 +891,7 @@ const char event_page[] PROGMEM = R"=====(
           this.updateTable();
         }
       }
+      //handle if data not changed
       else if (s.replay == false) {
         this.smaSlope = 0;
         c.angleChange = 0;
