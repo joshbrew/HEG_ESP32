@@ -102,6 +102,13 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/14/19
+------
+-x offset bar. Has a bug when offsetting when graph scale is lower than the array being sliced. page has to be reloaded if red line vanishes.
+-Even classier, almost finished streamlining code.
+-integrated hegvid code with main page, need to create options to swap once finished generalizing the data handling. this will be smoooooth
+
+
 10/13/19
 ------
 webGL graphing API improvements. More to come.
