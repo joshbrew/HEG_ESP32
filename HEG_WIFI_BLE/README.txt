@@ -5,9 +5,10 @@ HEG WiFi WIP implementation.
 You need the github version of the Arduino ESP32 libraries, follow steps accordingly for your OS.
 
 You need to change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
-OR: Arduino's default partition settings for the ESP32 need to be changed. A shell script has been provided to speed this up.
 
-Alternatively, to have increased SPIFFs:
+OR, to have increased SPIFFs:
+
+Arduino's default partition settings for the ESP32 need to be changed. A shell script has been provided to speed this up.
 
 In the Arduino>hardware>espressif>esp32 folder replace boards.txt with the one in this library
 
