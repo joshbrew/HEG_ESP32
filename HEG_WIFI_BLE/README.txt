@@ -4,9 +4,8 @@ HEG WiFi WIP implementation.
 
 You need the github version of the Arduino ESP32 libraries, follow steps accordingly for your OS.
 
-Arduino's default partition settings for the ESP32 need to be changed.
-
-You can change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
+You need to change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
+OR: Arduino's default partition settings for the ESP32 need to be changed. A shell script has been provided to speed this up.
 
 Alternatively, to have increased SPIFFs:
 
@@ -27,12 +26,11 @@ In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and cha
 xTaskCreateUniversal(loopTask, "loopTask", 8196, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
 to
 xTaskCreateUniversal(loopTask, "loopTask", 16384, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-
-The heap memory needs to be increased as the change in wifi is too much on for the default arduino config.
+The heap memory needs to be increased as the change in wifi can be too much on for the default arduino config. 
 *****
 
 After flashing this sketch onto the ESP32, you will find the new wifi
-access point at the SSID: ESPWebServer with password: 12345678.
+access point at the SSID: My_HEG with password: 12345678.
 
 After logging into the access point, access the interface at 192.168.4.1
 
@@ -67,9 +65,9 @@ The following demo pages are available:
 /       - Index page, basic site navigation.
 /sc     - State Changer demo page.
 /listen - HEG Output event listener test. Better than websockets for this use case.
-/stream - HEG Output websocket stream test. May crash the device.
-/update - Upload compiled binaries and flash the ESP32 over the web.
 /connect - connect HEG to router so it may be accessed via a router instead. 
+/update - Upload compiled binaries and flash the ESP32 over the web.
+
 -------
 
 Wifi code notes:
@@ -77,11 +75,8 @@ Wifi code notes:
 Use the /connect page to save Wifi credentials to EEPROM. The ESP32 will reset and attempt connection. 
 If connection fails, the access point opens (StateChanger in your WiFi scanner).
 
-The function setupStation(hostname, pword) crashes. It is disabled on the /connect page at the moment until I figure out a fix.
-The fix is to use vTaskCreate or vTaskCreateUniversal to call setupStation, so it splits the thread in memory, then wait for that task to finish before advancing in handleDoConnect();
-
-BLE and WiFi do not work concurrently at the moment, logging into WiFi with BLE enabled will cause the ESP32 to crash.
-Use the serial 'b' command for now to test switching modes. Will add an html toggle as well on next update.
+BLE and WiFi do not work concurrently at the moment, logging into WiFi with BLE enabled may cause the ESP32 to crash.
+Use the serial 'b' command for now to test switching modes or use the /connect page options.
 
 mDNS should allow the ESP32 to be accessed via http://esp32.local. It requires Bonjour service enabled. I have not had success yet, but it works on Apple systems apparently.
 
@@ -90,7 +85,7 @@ mDNS should allow the ESP32 to be accessed via http://esp32.local. It requires B
 
 Serial Port notes:
 Chrome app serial monitor (alternative to Arduino): https://chrome.google.com/webstore/detail/serial-monitor/ohncdkkhephpakbbecnkclhjkmbjnmlo/related?hl=en
-
+Arduino IDE has a debugger that comes with the ESP32 libs if there are some weird crashes happening.
 -------
 
 HEG Code notes:
@@ -102,6 +97,19 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+
+10/17/19
+------
+smooth mode switching on demo page. Audio and hill climbing (LIFE game re-creation) games incoming.
+change graph to show cumulative SMA 1s - 2s slope changes. This math is a simple noise filter that is still reactive to the current information, which can overcome noise issues. 
+split code up into multiple files to fit a cleaner traditional webapp format.
+web api improving and generalizing rapidly
+can set primary/secondary dns if needed, smart config type stuff incoming.
+
+couple bugs:
+X offset slider still, it's 3 lines of code causing a problem.
+the replay function works fine but goes over the index when resetting the data. This bit will be re-done as the code is spaghetti.
+
 10/14/19
 ------
 -x offset bar. Has a bug when offsetting when graph scale is lower than the array being sliced. page has to be reloaded if red line vanishes.

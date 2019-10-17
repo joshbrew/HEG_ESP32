@@ -19,10 +19,10 @@
 #include "update.h" //Update page
 #include "ws.h" // Websocket client page
 #include "connect.h" // Wifi connect page
-#include "webDemo.h" // Event Source page
 #include "sc.h" // State Changer page
 #include "HEGwebAPI.h" //HEG web javascript
-
+#include "webDemo.h" // Web app page
+#include "webDemoCSS.h" // Web app CSS page
 #include "HEG.h"
 
 AsyncWebServer server(80);
@@ -650,6 +650,9 @@ void setupWiFi(){
 
   server.on("/HEGwebAPI.js", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/javascript", HEGwebAPI);
+  });
+  server.on("/webDemoCSS.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/css", webDemoCSS);
   });
   //server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
   //  request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");

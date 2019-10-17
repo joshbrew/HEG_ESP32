@@ -82,7 +82,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
       this.fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
       this.smaSlope = this.fastSMA - this.slowSMA;
-      this.scoreArr.push(this.smaSlope);
+      this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
     }
 
     saveCSV(){
@@ -211,7 +211,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
 
 
   class graphJS {
-    constructor(parentId, canvasId="graph", nPoints=[1000], color=[0,255,0,1], defaultUI=true, res=[1400,400]){
+    constructor(parentId, canvasId="graph", nPoints=[1000], color=[0,255,0,1], yscale=1, defaultUI=true, res=[1400,400]){
       //WebGL graph based on: https://tinyurl.com/y5roydhe
       //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
       this.gl,
@@ -229,7 +229,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.VERTEX_LENGTH = nPoints;
       this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
 
-      this.yscale = 1;
+      this.yscale = yscale;
       this.invScale = 1/this.yscale;
       this.offset = 0; //Index offset
       
@@ -564,7 +564,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
             if(this.alpha - score < 0){
               this.alpha = 0;
             }
-            else if(alpha - score > 0.8){
+            else if(this.alpha - score > 0.8){
               this.alpha = 0.8;
             }
             else{
@@ -579,7 +579,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
             if((this.playRate < 0.05) && (this.playRate > 0)){
               this.vidQuery.playbackRate = 0;
             }
-            else if(playRate < 0) {
+            else if(this.playRate < 0) {
               this.vidQuery.currentTime += score;
             }
             else if((this.playRate > 0.05) && (this.playRate < 0.1)){

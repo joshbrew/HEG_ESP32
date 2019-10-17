@@ -2,112 +2,13 @@ const char event_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-  body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
-  msgDiv { color: white; }
-  eventDiv { color: white; }
-  input[type=text]{
-    border: 2px solid red;
-    border-radius: 4px;
-    height: 30px;
-    padding: 2px;
-    font-size: 16px;
-  }
-  .button {
-    border: none;
-    border-radius: 12px;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-   }
-   .dattable {
-      position: relative;
-      width: 75%;
-      min-width: 700px;
-      table-layout: fixed;
-   }
-   th {
-      color: chartreuse;
-      padding: 5px;
-      border: 1px solid white;
-      width: 10%;
-   }
-   td {
-      color: chartreuse;
-      padding: 5px;
-      border: 1px solid white;
-      width: 10%;
-   }
-   .scoreth { color: honeydew; }
-   .hegapi {
-      position: absolute;
-      width: 275px;
-      height: 300px;
-      top: 130px;
-      left: 0%;
-   }
-   .startbutton { background-color: #4CAF50; position: absolute; left: 0%; }
-   .stopbutton { background-color: #FF0000; position: absolute; left: 120px; }
-   .sendcommand{ position: absolute; top: 70px;   }
-   .sendbutton{ background-color: #0000FF; }
-   .saveLoadBar{ position: absolute; top: 240px; }
-   .saveLoadButtons{ background-color: teal; }
-   .sensBar { position: absolute; top: 150px; color: white; }
-   .label { padding: 4px; color: white; }
-   .canvascss {
-      position: absolute;
-      top:130px;
-      left:300px;
-   }
-   .webglcss {
-     position: absolute;
-     top: 550px;
-     left: 10px;
-     width: 75%;
-     height: 200px;
-     min-width: 400px;
-   }
-   .scale{
-     position: absolute;
-     bottom: 0px;
-     right: 50px;
-     color: white;
-   }
-   .menudiv{
-    position: absolute;
-    right: 0px;
-    top: 130px;
-   }
-   .cvbutton{
-    background-color: chartreuse;
-   }
-   .vdbutton{
-    background-color: royalblue;
-   }
-   .aubutton{
-    background-color: tomato;
-   }
-   .dummy {
-      position: absolute;
-      top: 130px;
-      left:325px;
-      width:0;
-      height:0;
-      border:0; 
-      border:none;
-   }
-</style>
+<link rel="stylesheet" type="text/css" href="webDemoCSS.css">
 <script src="HEGwebAPI.js"></script>
 </head>
-<body id="main_body">
-    <script>
+<body>
+  <div id="main_body"></div>
+  <script> //Rough scripts
       var s = new HEGwebAPI();
-
       var v = null;
       var c = new circleJS("main_body","canvas1");
       var g = new graphJS("main_body","g",1500,[255,100,80,1]);
@@ -119,29 +20,38 @@ const char event_page[] PROGMEM = R"=====(
 
       var modeHTML = '<div class="menudiv" id="menudiv"> \
         Modes:<br> \
-        <button class="button cvbutton" id="canvasmode">Canvas</button><button class="button vdbutton" id="videomode">Video</button><button class="button aubutton" id="audiomode">Audio</button> \
+        <button class="button cvbutton" id="canvasmode">Canvas</button><button class="button vdbutton" id="videomode">Video</button><button class="button aubutton" id="audiomode">Audio</button><br> \
+        <button class="button lfbutton" id="hillmode">Hill Climb</button> \
       </div>';
 
       HEGwebAPI.appendFragment(modeHTML,"main_body");
 
       document.getElementById("canvasmode").onclick = function() {
         if(useVideo == true){
-          var thisNode = document.getElementById(v.vidId);
-          thisNode.parentNode.removeChild(thisNode.parentNode);
+          var thisNode = document.getElementById(v.vidapiId);
+          thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+          thisNode = document.getElementById(v.vidContainerId);
+          thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+          v.deInit();
+          v = null;
         }
-        v.deInit();
-        v = null;
-        c = new circleJS("main_body","canvas1");
-        useVideo = false;
+        if(useCanvas == false){
+          c = new circleJS("main_body","canvas1");
+          useVideo = false;
+          useCanvas = true;
+        }
       }
 
       document.getElementById("videomode").onclick = function() {
         if(useCanvas == true){
-          c.c.parentNode.parentNode.removeChild(c.c.parentNode);
+          c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
+          c = null;
         }
-        c = null;
-        v = new videoJS("main_body");
-        useCanvas = false;
+        if(useVideo == false){
+          v = new videoJS("main_body");
+          useCanvas = false;
+          useVideo = true
+        }
       }
 
       g.xoffsetSlider.onchange = () => {
@@ -208,6 +118,13 @@ const char event_page[] PROGMEM = R"=====(
 
       s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         if(this.csvIndex < 2){
+          if(useVideo == true){
+            v.playRate = 1;
+            v.alpha = 0;
+          }
+          if(useCanvas == true){
+            c.angle = 1.57;
+          }
           this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
           this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
           this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
@@ -319,9 +236,7 @@ const char event_page[] PROGMEM = R"=====(
     s.handleData = (e) => {
       handleEventData(e);
     }
-
   </script>
-   
 </body>
 </html>
 )=====";

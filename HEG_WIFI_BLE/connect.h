@@ -46,7 +46,7 @@ input[type=submit]{
     SSID:<br>
       <input type='text' id='ssid' name='ssid'><br>
     Password:<br>
-      <input type='password' id='pw' name='pw'><br>
+      <input type='password' id='pw' name='pw'><br><br>
     Optional Static IP mode: <br>
     Static IP (e.g. 192.168.0.199, first 3 numbers must match gateway):<br>
       <input type='text' id='static' name='static'><br>
@@ -54,10 +54,10 @@ input[type=submit]{
       <input type='text' id='gateway' name='gateway'><br>
     Subnet Mask (e.g. 255.255.255.0):<br>
       <input type='text' id='subnet' name='subnet'><br>
-    For use with Static IP with DNS mode:
+    For use with Static IP with DNS mode:<br>
     Primary DNS:<br>
       <input type='text' id='primary' name='primary'><br>
-    Secondary DNS :<br>
+    Secondary DNS (optional):<br>
       <input type='text' id='secondary' name='secondary'><br>
       <input type='radio' id='defaultC' name='choices' value='9' checked>Default Connect<br>
       <input type='radio' id='use_static' name='choices' value='0'>Use Static IP<br>
