@@ -78,6 +78,20 @@ const char event_page[] PROGMEM = R"=====(
      right: 50px;
      color: white;
    }
+   .menudiv{
+    position: absolute;
+    right: 0px;
+    top: 130px;
+   }
+   .cvbutton{
+    background-color: chartreuse;
+   }
+   .vdbutton{
+    background-color: royalblue;
+   }
+   .aubutton{
+    background-color: tomato;
+   }
    .dummy {
       position: absolute;
       top: 130px;
@@ -117,16 +131,16 @@ const char event_page[] PROGMEM = R"=====(
     }
 
     //appendId is the element Id you want to append this fragment to
-    static appendFragment(HTMLtoAppend, appendId) {
+    static appendFragment(HTMLtoAppend, parentId) {
 
         var fragment = document.createDocumentFragment();
         var newDiv = document.createElement('div');
         newDiv.innerHTML = HTMLtoAppend;
-        newDiv.setAttribute("id", appendId + '_child');
+        newDiv.setAttribute("id", parentId + '_child');
 
         fragment.appendChild(newDiv);
 
-        document.getElementById(appendId).appendChild(fragment);
+        document.getElementById(parentId).appendChild(fragment);
     }
 
     //delete selected fragment. Will delete the most recent fragment if Ids are shared.
@@ -136,16 +150,16 @@ const char event_page[] PROGMEM = R"=====(
     }
 
     //Separates the appendId from the fragmentId so you can make multiple child threads with different Ids
-    static appendFragmentMulti(HTMLtoAppend, appendId, fragmentId) {
+    static appendFragmentMulti(HTMLtoAppend, parentId, fragmentId) {
 
         var fragment = document.createDocumentFragment();
         var newDiv = document.createElement('div');
         newDiv.innerHTML = HTMLtoAppend;
-        newDiv.setAttribute("id", fragmentId + '_child');
+        newDiv.setAttribute("id", parentId + '_child');
 
         fragment.appendChild(newDiv);
 
-        document.getElementById(appendId).appendChild(fragment);
+        document.getElementById(parentId).appendChild(fragment);
     }
 
     resetVars() {
@@ -301,7 +315,7 @@ const char event_page[] PROGMEM = R"=====(
 
 
   class graphJS {
-    constructor(canvasId, nPoints=[1000], color=[0,255,0,1], defaultUI=true, res=[1400,400]){
+    constructor(parentId, canvasId="graph", nPoints=[1000], color=[0,255,0,1], defaultUI=true, res=[1400,400]){
       //WebGL graph based on: https://tinyurl.com/y5roydhe
       //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
       this.gl,
@@ -309,6 +323,7 @@ const char event_page[] PROGMEM = R"=====(
       this.vertices,
       this.canvas;
 
+      this.parentId = parentId;
       this.canvasId = canvasId;
       this.textId = canvasId + "text";
       this.color = color;
@@ -363,7 +378,7 @@ const char event_page[] PROGMEM = R"=====(
       `;
 
       if(defaultUI == true){
-        this.createUI();
+        this.createUI(parentId);
       }
       this.initGL(canvasId);
       this.createShader();
@@ -379,7 +394,7 @@ const char event_page[] PROGMEM = R"=====(
       window.addEventListener('resize', this.setCanvasSize(this.canvasId), false);
     }
 
-    createUI(){
+    createUI(parentId){
       var shaderHTML = '<div id="shaderContainer"> \
       <canvas class="webglcss" id="'+this.canvasId+'"></canvas><canvas class="webglcss" id="'+this.canvasId+'text"></canvas> \
       <div class="scale"> \
@@ -390,7 +405,7 @@ const char event_page[] PROGMEM = R"=====(
       </div> \
       ';
 
-      HEGwebAPI.appendFragment(shaderHTML,"main_body");
+      HEGwebAPI.appendFragment(shaderHTML,parentId);
 
       this.xoffsetSlider = document.getElementById("xoffset");
 
@@ -514,9 +529,10 @@ const char event_page[] PROGMEM = R"=====(
   }
       
   class circleJS {
-    constructor(canvasId, defaultUI=true){
+    constructor(parentId, canvasId="circlecanvas", defaultUI=true){
+      this.parentId = parentId;
       if(defaultUI == true){
-        this.createCanvas(canvasId);
+        this.createCanvas(parentId, canvasId);
       }
       this.c = document.getElementById(canvasId);
       this.ctx = this.c.getContext('2d');
@@ -530,11 +546,19 @@ const char event_page[] PROGMEM = R"=====(
       this.draw();
     }
 
-    createCanvas(canvasId){
+    createCanvas(parentId,canvasId){
       var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="'+canvasId+'" height="400px" width="400px"></canvas></div>'
 
       //Setup page as fragments so updates to elements are asynchronous.
-      HEGwebAPI.appendFragment(canvasHTML,"main_body");
+      HEGwebAPI.appendFragment(canvasHTML,parentId);
+    }
+
+    onData(e) {
+      
+    }
+
+    onNoData(e) {
+      
     }
 
     draw = () => {
@@ -563,56 +587,52 @@ const char event_page[] PROGMEM = R"=====(
   }
 
     class videoJS {
-        constructor(parentId, vidId, vidcanvasId, defaultUI=true){
-          this.playRate = 0;
+        constructor(parentId, vidapiId="vidapi", vidContainerId="vidbox", defaultUI=true){
+          this.playRate = 1;
           this.alpha = 0;
           this.useAlpha = true;
           this.useRate = true;
           this.enableControls = false;
           this.parentId = parentId;
-          this.vidId = vidId
-          this.vidcanvasId = vidcanvasId
+          this.vidapiId = vidapiId
+          this.vidContainerId = vidContainerId
 
           this.vidQuery;
           this.c;
           this.gl;
           if(defaultUI=true){
-            this.addUI();
+            this.addUI(this.parentId);
           }
           this.init();
         }
 
         setupButtons() {
-          document.getElementById("start").onclick = function(){
+          document.getElementById("startbutton").onclick = () => {
             if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
             else{ this.vidQuery.playbackRate = this.playRate; }
           }
-          document.getElementById("stop").onclick = function(){this.vidQuery.playbackRate = 0;}
+          document.getElementById("stopbutton").onclick = () => {this.vidQuery.playbackRate = 0;}
         }
 
         deInit(){
-          document.getElementById("start").onclick = function(){
+          document.getElementById("startbutton").onclick = function(){
             return;
           }
-          document.getElementById("stop").onclick = function(){
+          document.getElementById("stopbutton").onclick = function(){
             return;
           }
-
-          HEGwebAPI.deleteFragment(this.parentId,this.vidId);
-          HEGwebAPI.deleteFragment(this.parentId,this.vidcanvasId);
         }
 
-        addUI(){
-         var videoapiHTML = '<div id="'+this.vidId+'" style="position:absolute; top:500px;"> \
+        addUI(parentId){
+         var videoapiHTML = '<div id="'+this.vidapiId+'" style="position:absolute; top:200px; right:10px;"> \
           <input class="button" id="fs" name="fs" type="file" accept="video/*"/><br> \
           <button class="button" id="useAlpha" name="useAlpha">Fade</button> \
           <button class="button" id="useRate" name="useRate">Speed</button> \
           </div>';
-         var videoHTML = '<video id="'+this.vidcanvasId+'" height="480px" width="640px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="vidcanvas"></canvas>';
-         HEGwebAPI.appendFragment(videoapiHTML);
-         HEGwebAPI.appendFragment(videoHTML);
+         var videoHTML = '<div id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="480px" width="640px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="'+this.vidContainerId+'canvas"></canvas></div>';
+         HEGwebAPI.appendFragment(videoapiHTML,parentId);
+         HEGwebAPI.appendFragment(videoHTML,parentId);
          this.localFileVideoPlayer();
-         this.setupButtons();
         }
 
        localFileVideoPlayer() {
@@ -641,82 +661,61 @@ const char event_page[] PROGMEM = R"=====(
         var inputNode = document.querySelector('input[name="fs"]');
         inputNode.addEventListener('change', playSelectedFile, false);
       }
+
+      onData(score){
+        if(this.useAlpha == true) {
+          if(((this.alpha < 0.8) || (score > 0)) && ((this.alpha > 0)||(score < 0))){
+            if(this.alpha - score < 0){
+              this.alpha = 0;
+            }
+            else if(alpha - score > 0.8){
+              this.alpha = 0.8;
+            }
+            else{
+              this.alpha -= score;
+            }
+          }
+        }
+        if(this.useRate == true){
+          if(((this.vidQuery.playbackRate < 3) || (score < 0)) && ((this.vidQuery.playbackRate > 0) || (score > 0)))
+          { 
+            this.playRate = this.vidQuery.playbackRate + score*0.5;
+            if((this.playRate < 0.05) && (this.playRate > 0)){
+              this.vidQuery.playbackRate = 0;
+            }
+            else if(playRate < 0) {
+              this.vidQuery.currentTime += score;
+            }
+            else if((this.playRate > 0.05) && (this.playRate < 0.1)){
+              this.vidQuery.playbackRate = 0.5;
+            }
+            else{
+              this.vidQuery.playbackRate = this.playRate;
+            }
+          }
+        }
+      }
       
       animateRect = () => {
-          this.gl.clearColor(0,0,0.1,alpha);
-          this.gl.clear(gl.COLOR_BUFFER_BIT);
+          this.gl.clearColor(0,0,0.1,this.alpha);
+          this.gl.clear(this.gl.COLOR_BUFFER_BIT);
           requestAnimationFrame(this.animateRect);
       }
 
-      handleData(e) {
-        console.log("myevent", e.data);
-        if(document.getElementById("heg").innerHTML != e.data){  //on new output
-          document.getElementById("heg").innerHTML = e.data;
-          if(e.data.includes("|")) {
-            var dataArray = e.data.split("|");
-            this.ms.push(parseInt(dataArray[0]));
-            this.red.push(parseInt(dataArray[1]));
-            this.ir.push(parseInt(dataArray[2]));
-            this.ratio.push(parseFloat(dataArray[3]));
-            this.smallSavLay.push(parseFloat(dataArray[4]));
-            this.largeSavLay.push(parseFloat(dataArray[5]));
-            this.adcAvg.push(parseInt(dataArray[6]));
-            this.ratioSlope.push(parseFloat(dataArray[7]));
-            this.AI.push(parseFloat(dataArray[8]));
-            //handle new data
-            if(this.largeSavLay.length-1 > 40){
-              this.smaScore();
-              if(this.useAlpha == true) {
-                if(((this.alpha < 0.8) || (this.smaSlope > 0)) && ((this.alpha > 0)||(this.smaSlope < 0))){
-                  if(this.alpha - this.smaSlope < 0){
-                    this.alpha = 0;
-                  }
-                  else if(alpha - this.smaSlope > 0.8){
-                    this.alpha = 0.8;
-                  }
-                  else{
-                    this.alpha -= this.smaSlope;
-                  }
-                }
-              }
-              if(this.useRate == true){
-                if(((this.vidQuery.playbackRate < 3) || (this.smaSlope < 0)) && ((this.vidQuery.playbackRate > 0) || (this.smaSlope > 0)))
-                { 
-                  this.playRate = this.vidQuery.playbackRate + this.smaSlope*0.5;
-                  if((this.playRate < 0.05) && (this.playRate > 0)){
-                    this.vidQuery.playbackRate = 0;
-                  }
-                  else if(playRate < 0) {
-                    this.vidQuery.currentTime += this.smaSlope;
-                  }
-                  else if((this.playRate > 0.05) && (this.playRate < 0.1)){
-                    this.vidQuery.playbackRate = 0.5;
-                  }
-                  else{
-                    this.vidQuery.playbackRate = this.playRate;
-                  }
-                }
-              }
-              this.scoreArr.push(this.smaSlope);
-            }
-            this.updateTable();  
-          }
-        }
-        //else {//handle if data not changed}
-      }
-
       init() {
-         this.vidQuery = document.getElementById(this.vidId);
-         this.c = document.getElementById(this.vidcanvasId);
+         this.vidQuery = document.getElementById(this.vidContainerId+'vid');
+         this.c = document.getElementById(this.vidContainerId+'canvas');
          this.c.width = this.vidQuery.width;
          this.c.height = this.vidQuery.height;
          this.gl = this.c.getContext("webgl");
          this.gl.clearColor(0,0,0.1,0);
          this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
+         this.setupButtons();
+
          this.animateRect();
 
-         document.getElementById("useAlpha").onclick = function(){
+         document.getElementById("useAlpha").onclick = () => {
           if(useAlpha == true){
             this.useAlpha = false;
             this.alpha = 0;
@@ -724,7 +723,7 @@ const char event_page[] PROGMEM = R"=====(
           else{ this.useAlpha = true; }
          }
 
-         document.getElementById("useRate").onclick = function() {
+         document.getElementById("useRate").onclick = () => {
           if(useRate == true){
             this.useRate = false;
             this.playRate = 1;
@@ -740,13 +739,41 @@ const char event_page[] PROGMEM = R"=====(
     <script>
       var s = new HEGwebAPI();
 
-      var c = new circleJS("canvas1");
-      var g = new graphJS("g",1500,[255,100,80,1]);
+      var v = null;
+      var c = new circleJS("main_body","canvas1");
+      var g = new graphJS("main_body","g",1500,[255,100,80,1]);
 
       var useCanvas = true;
       var useVideo = false;
       var useAudio = false;
       var useGraph = true;
+
+      var modeHTML = '<div class="menudiv" id="menudiv"> \
+        Modes:<br> \
+        <button class="button cvbutton" id="canvasmode">Canvas</button><button class="button vdbutton" id="videomode">Video</button><button class="button aubutton" id="audiomode">Audio</button> \
+      </div>';
+
+      HEGwebAPI.appendFragment(modeHTML,"main_body");
+
+      document.getElementById("canvasmode").onclick = function() {
+        if(useVideo == true){
+          var thisNode = document.getElementById(v.vidId);
+          thisNode.parentNode.removeChild(thisNode.parentNode);
+        }
+        v.deInit();
+        v = null;
+        c = new circleJS("main_body","canvas1");
+        useVideo = false;
+      }
+
+      document.getElementById("videomode").onclick = function() {
+        if(useCanvas == true){
+          c.c.parentNode.parentNode.removeChild(c.c.parentNode);
+        }
+        c = null;
+        v = new videoJS("main_body");
+        useCanvas = false;
+      }
 
       g.xoffsetSlider.onchange = () => {
          if(g.xoffsetSlider.value > s.scoreArr.length) {
@@ -756,7 +783,7 @@ const char event_page[] PROGMEM = R"=====(
          
          if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
           var endIndex = s.scoreArr.length - g.offset;
-          g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex);
+          g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex); // FIX 
          }
          else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
           var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - g.offset);
@@ -810,7 +837,7 @@ const char event_page[] PROGMEM = R"=====(
         g.VERTEX_LENGTH = g.xscaleSlider.value;
       }
 
-      s.replayCSV = function() {
+      s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         if(this.csvIndex < 2){
           this.ms.push(parseInt(this.csvDat[this.csvIndex][0]));
           this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
@@ -837,13 +864,20 @@ const char event_page[] PROGMEM = R"=====(
           if(this.ms.length >= 2){
             if(this.largeSavLay.length > 40){
               this.smaScore();
-              c.angleChange = this.smaSlope*this.sensitivity.value*0.01;
+              if(useCanvas == true){
+                c.angleChange = this.smaSlope*this.sensitivity.value*0.01;
+              }
+              else if (useVideo == true) {
+                v.onData(this.smaSlope*this.sensitivity.value*0.01);
+              }
               g.graphY1.shift();
               g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
             }
             else {
               this.smaSlope = 0;
-              c.angleChange = 0;
+              if(useCanvas == true){
+                c.angleChange = 0;
+              }
               g.graphY1.shift();
               g.graphY1.push(0);
               this.scoreArr.push(0);
@@ -864,46 +898,59 @@ const char event_page[] PROGMEM = R"=====(
         setTimeout(() => {this.replayCSV();},(this.ms[this.csvIndex]-this.ms[this.csvIndex-1])); //Call until end of index.
     }
 
-    s.handleData = function(e) {
-      console.log("HEGDUINO", e.data);
-      if(document.getElementById("heg").innerHTML != e.data){
-        document.getElementById("heg").innerHTML = e.data;
-        if(e.data.includes("|")) {
-          var dataArray = e.data.split("|");
-          this.ms.push(parseInt(dataArray[0]));
-          this.red.push(parseInt(dataArray[1]));
-          this.ir.push(parseInt(dataArray[2]));
-          this.ratio.push(parseFloat(dataArray[3]));
-          this.smallSavLay.push(parseFloat(dataArray[4]));
-          this.largeSavLay.push(parseFloat(dataArray[5]));
-          this.adcAvg.push(parseInt(dataArray[6]));
-          this.ratioSlope.push(parseFloat(dataArray[7]));
-          this.AI.push(parseFloat(dataArray[8]));
-          //handle new data
-          if(this.largeSavLay.length > 40){
-            this.smaScore();
-            g.ms = this.ms;
-            c.angleChange = this.smaSlope*this.sensitivity.value*0.01;
-            g.graphY1.shift();
-            g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.offset]);
+    var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
+        console.log("myevent", e.data);
+        if(document.getElementById("heg").innerHTML != e.data){  //on new output
+          document.getElementById("heg").innerHTML = e.data;
+          if(e.data.includes("|")) {
+            var dataArray = e.data.split("|");
+            s.ms.push(parseInt(dataArray[0]));
+            s.red.push(parseInt(dataArray[1]));
+            s.ir.push(parseInt(dataArray[2]));
+            s.ratio.push(parseFloat(dataArray[3]));
+            s.smallSavLay.push(parseFloat(dataArray[4]));
+            s.largeSavLay.push(parseFloat(dataArray[5]));
+            s.adcAvg.push(parseInt(dataArray[6]));
+            s.ratioSlope.push(parseFloat(dataArray[7]));
+            s.AI.push(parseFloat(dataArray[8]));
+            g.ms = s.ms;
+            //handle new data
+            if(s.largeSavLay.length-1 > 40){
+              s.smaScore();
+              if(useCanvas == true){
+                c.angleChange = s.smaSlope*s.sensitivity.value*0.01
+              }
+              else if(useVideo == true){
+                v.onData(s.smaSlope*s.sensitivity.value*0.01);
+              }
+              s.scoreArr.push(s.smaSlope);
+              g.graphY1.shift();
+              g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
+            }
+            s.updateTable();  
           }
-          this.updateTable();
         }
-      }
-      //handle if data not changed
-      else if (s.replay == false) {
-        this.smaSlope = 0;
-        c.angleChange = 0;
-        g.graphY1.shift();
-        g.graphY1.push(0);
-        this.scoreArr.push(0);
-      }
-      if(g.xoffsetSlider.max < this.scoreArr.length){
-        if(this.scoreArr.length % 20 == 0) { 
-          g.xoffsetSlider.max = this.scoreArr.length - 1;
+        //handle if data not changed
+        else if (s.replay == false) {
+          s.smaSlope = 0;
+          if(useCanvas == true){
+            c.angleChange = 0;
+          }
+          g.graphY1.shift();
+          g.graphY1.push(0);
+          s.scoreArr.push(0);
         }
+        if(g.xoffsetSlider.max < s.scoreArr.length){
+          if(s.scoreArr.length % 20 == 0) { 
+            g.xoffsetSlider.max = s.scoreArr.length - 1;
+          }
       }
     }
+    
+    s.handleData = (e) => {
+      handleEventData(e);
+    }
+
   </script>
    
 </body>

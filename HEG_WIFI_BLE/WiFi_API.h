@@ -39,14 +39,16 @@ char received;
 size_t content_len;
 unsigned long t_start,t_stop;
 
-String setSSID;
-String setPass;
-String myLocalIP;
-String staticIP;
-String gateway;
-String subnetM;
+String setSSID = "";
+String setPass = "";
+String myLocalIP = "";
+String staticIP = "";
+String gateway = "";
+String subnetM = "";
+String primaryDNS = "";
+String secondaryDNS = "";
 
-void saveWiFiLogin(bool ap_only, bool use_static, bool reset){
+void saveWiFiLogin(bool ap_only, bool use_static, bool use_dns, bool reset){
   //512 usable address bytes [default values: 0x00], each char uses a byte.
   EEPROM.begin(512);
   //Store SSID at address 1
@@ -63,13 +65,21 @@ void saveWiFiLogin(bool ap_only, bool use_static, bool reset){
   Serial.print("New saved password: ");
   Serial.println(setPass);
   EEPROM.writeString(address, setPass);
-  if(use_static == true){
+  if((use_static == true) && (use_dns == false)){
     EEPROM.write(255, 1);
     EEPROM.writeString(256, staticIP);
     EEPROM.writeString(320, gateway);
     EEPROM.writeString(384, subnetM);
   }
-  else { EEPROM.write(255,0); EEPROM.writeString(256, ""); EEPROM.writeString(320, ""); EEPROM.writeString(384, "");}
+  else if((use_static == true) && (use_dns == false)){
+    EEPROM.write(255, 2);
+    EEPROM.writeString(256, staticIP);
+    EEPROM.writeString(320, gateway);
+    EEPROM.writeString(384, subnetM);
+    EEPROM.writeString(400, primaryDNS);
+    EEPROM.writeString(416, secondaryDNS);
+  }
+  else { EEPROM.write(255,0); EEPROM.writeString(256, ""); EEPROM.writeString(320, ""); EEPROM.writeString(384, ""); EEPROM.writeString(400, ""); EEPROM.writeString(416, "");}
   if(ap_only == true){ EEPROM.write(1, 0); } //Address of whether to attempt a connection by default.
   else { EEPROM.write(1,1); }
   Serial.println("Committing to flash...");
@@ -100,28 +110,33 @@ IPAddress parseIP(String ipString){ //Parse IP from string
   return IPAddress(temp1.toInt(),temp2.toInt(),temp3.toInt(),temp4.toInt());
 }
 
-void setupStation(bool use_static){
+void setupStation(bool use_static, bool use_dns){
   Serial.println("Setting up WiFi Connection...");
-  //Serial.println("Disconnecting from previous network...");
-  //WiFi.softAPdisconnect();
-  //WiFi.disconnect();
-  //WiFi.mode(WIFI_OFF);
-  //delay(1000);
-  
+
   //WiFi.mode(WIFI_STA);
   if(use_static == true) {
     //str.split('.');
     if(staticIP.indexOf('.') != -1) {
       IPAddress staticIPAddress = parseIP(staticIP);
       IPAddress gateWay = parseIP(gateway);
-      IPAddress subnet_Mask = parseIP(subnetM);
+      IPAddress subnet= parseIP(subnetM);
       Serial.print("Static IP: ");
       Serial.println(staticIPAddress);
       Serial.print("Gateway IP: ");
       Serial.println(gateWay);
       Serial.print("Subnet Mask: ");
-      Serial.println(subnet_Mask);
-      WiFi.config(staticIPAddress, gateWay, subnet_Mask);
+      Serial.println(subnet);
+      if(use_dns == false){
+        WiFi.config(staticIPAddress, gateWay, subnet);
+      }
+      else {
+        IPAddress primary = parseIP(primaryDNS);
+        if(secondaryDNS != ""){
+          IPAddress secondary = parseIP(secondaryDNS);
+          WiFi.config(staticIPAddress, gateWay, subnet, primary, secondary);
+        }
+        WiFi.config(staticIPAddress, gateWay, subnet, primary);
+      }
     }  
     else { 
       Serial.println("No saved Static IP.");
@@ -194,7 +209,7 @@ void commandESP32(char received)
     } 
   }
   if (received == 'W') { //Reset wifi mode.
-    saveWiFiLogin(true,false,true);
+    saveWiFiLogin(true,false,false,true);
   }
   if (received == 's')
   { //Reset baseline and readings
@@ -352,6 +367,7 @@ void handleDoConnect(AsyncWebServerRequest *request) {
   bool save = true;
   bool ap_only = false;
   bool use_static = false;
+  bool use_dns = false;
   bool btSwitch = false;
   
   for(uint8_t i = 0; i < request->args(); i++){
@@ -360,10 +376,13 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     if(request->argName(i) == "static"){ staticIP = String(request->arg(i)); Serial.print("Static IP: "); Serial.println(staticIP);}
     if(request->argName(i) == "gateway"){ gateway = String(request->arg(i)); Serial.print("Gateway IP: "); Serial.println(gateway);}
     if(request->argName(i) == "subnet"){ subnetM = String(request->arg(i)); Serial.print("Subnet Mask: "); Serial.println(subnetM);  }
+    if(request->argName(i) == "primary"){ primaryDNS = String(request->arg(i)); Serial.print("Primary DNS: "); Serial.println(primaryDNS); }
+    if(request->argName(i) == "secondary"){ secondaryDNS = String(request->arg(i)); Serial.print("Secondary DNS: "); Serial.println(secondaryDNS); }
     if(request->argName(i) == "choices"){ 
       if(String(request->arg(i)) == "0"){use_static = true; Serial.println("Use Static IP: true");}
       else if (String(request->arg(i)) == "1") {ap_only = true; Serial.println("AP Only: true");}
       else if (String(request->arg(i)) == "2"){btSwitch = true; Serial.println("Use Bluetooth: true");}
+      else if (String(request->arg(i)) == "3") {use_dns = true; Serial.println("Use Static IP with DNS: true"); }
     }
     //if(request->argName(i) == "save"){save = bool(request->arg(i)); Serial.println(save);}
   }
@@ -375,20 +394,17 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     request->send(response);
     delay(100);
     if(save==true){
-      saveWiFiLogin(ap_only,use_static,false);
+      saveWiFiLogin(ap_only,use_static,use_dns,false);
     }
-    //if((save==false)&&(ap_only==true)){
-      //EEPROM.begin(512);
-      //EEPROM.write(1,0);
-      //EEPROM.commit();
-      //EEPROM.end();
-    //}
     if(setSSID.length() > 0) {
       if(use_static == true){
-        setupStation(true);
+        setupStation(true,false);
+      }
+      else if (use_dns == true) {
+        setupStation(true,true);
       }
       else { 
-        setupStation(false); 
+        setupStation(false,false); 
       }
     }
     else {
@@ -502,7 +518,6 @@ void setupWiFi(){
   //  return;
   //}
 
-  //WiFi.mode(AP_STA_MODE);
   EEPROM.begin(512);
   //Serial.println(EEPROM.read(0));
   //Serial.println(EEPROM.readString(2));
@@ -515,13 +530,22 @@ void setupWiFi(){
       staticIP = EEPROM.readString(256);
       gateway = EEPROM.readString(320);
       subnetM = EEPROM.readString(384);
-      //setupStation(setSSID,setPass);
+      primaryDNS = EEPROM.readString(400);
+      secondaryDNS = EEPROM.readString(416);
     }
     else{
       setSSID = String(ssid);
       setPass = String(password);
     }
-    setupStation(bool(EEPROM.read(255)));
+    if(EEPROM.read(255) == 1){
+      setupStation(true, false);
+    }
+    else if(EEPROM.read(255) == 2){
+      setupStation(true, true);
+    }
+    else{
+      setupStation(false,false);
+    }
   //----------------------------------------------------------------
   }
   else {
@@ -598,7 +622,7 @@ void setupWiFi(){
       request->send(response);
       },
     [](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data,
-                  size_t len, bool final) {handleDoUpdate(request, filename, index, data, len, final);}
+      size_t len, bool final) {handleDoUpdate(request, filename, index, data, len, final);}
   );
   server.onNotFound([](AsyncWebServerRequest *request){request->send(404);});
 
