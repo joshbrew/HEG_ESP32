@@ -21,7 +21,7 @@
 #include "connect.h" // Wifi connect page
 #include "webDemo.h" // Event Source page
 #include "sc.h" // State Changer page
-#include "hegvid.h" //HEGstudio clone (WIP)
+#include "HEGwebAPI.h" //HEG web javascript
 
 #include "HEG.h"
 
@@ -576,12 +576,6 @@ void setupWiFi(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", MAIN_page); //Send web page 
   });      //This is the default display page
-  server.on("/video",HTTP_GET,[](AsyncWebServerRequest *request) {
-    request->send_P(200,"text/html",video_page);
-  });
-  //server.on("/music",HTTP_GET,[](AsyncWebServerRequest *request) {
-    //request->send_P(200,"text/html",audio_page);
-  //});
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
     request->send_P(200,"text/html", sc_page);
   });
@@ -654,6 +648,9 @@ void setupWiFi(){
     commandESP32('n');
   });
 
+  server.on("/HEGwebAPI.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/javascript", HEGwebAPI);
+  });
   //server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
   //  request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
   //});
