@@ -93,11 +93,11 @@ body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
    }
    .vdspeed {
     float: right;
-    background-color:  palegoldenrod;
+    background-color: palegoldenrod;
    }
    .vdvol {
     float: right;
-    background-color: 
+    background-color: chocolate;
    }
    .cvbutton{
     background-color: chartreuse;

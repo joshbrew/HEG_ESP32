@@ -491,7 +491,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         constructor(parentId, vidapiId="vidapi", vidContainerId="vidbox", res=["640","480"], defaultUI=true){
           this.playRate = 1;
           this.alpha = 0;
-          this.volume = 1;
+          this.volume = 0.5;
           this.useAlpha = true;
           this.useRate = true;
           this.useVolume = true;
@@ -535,12 +535,17 @@ const char HEGwebAPI[] PROGMEM = R"=====(
           }
 
           document.getElementById("useVol").onclick = () => {
-           if(useRate == true){
-             this.useRate = false;
-             this.volume = 1;
-             this.vidQuery.volume = 1;
+           if(this.useVolume == true){
+             this.vidQuery.muted = true;
+             this.useVolume = false;
+             this.volume = 0;
+             this.vidQuery.volume = 0;
            }
-           else{ this.useVol = true; }
+           else{ 
+            this.useVolume = true; 
+            this.vidQuery.muted = false; 
+            this.volume = 0.5; 
+            this.vidQuery.volume = 0.5; }
           }
         }
 
@@ -651,6 +656,11 @@ const char HEGwebAPI[] PROGMEM = R"=====(
 
       init() {
          this.vidQuery = document.getElementById(this.vidContainerId+'vid');
+         if(this.useVolume == true){
+          this..vidQuery.muted = false;
+          this..vidQuery.volume = 0.5;
+          this.volume = 0.5;
+         } 
          this.c = document.getElementById(this.vidContainerId+'canvas');
          this.c.width = this.vidQuery.width;
          this.c.height = this.vidQuery.height;
