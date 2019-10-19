@@ -39,6 +39,8 @@ document.getElementById("canvasmode").onclick = function() {
       v = null;
     }
     if(useAudio == true){
+      a.stopAudio();
+      a.endAudio(a);
       var thisNode = document.getElementById(a.audId);
       thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
       thisNode = document.getElementById(a.audmenuId);
@@ -60,6 +62,8 @@ document.getElementById("videomode").onclick = function() {
       c = null;
     }
     if(useAudio == true){
+      a.stopAudio(a);
+      a.endAudio(a);
       var thisNode = document.getElementById(a.audId);
       thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
       thisNode = document.getElementById(a.audmenuId);

@@ -202,7 +202,6 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       HEGwebAPI.appendFragment(tableHeadHTML,"container");
       HEGwebAPI.appendFragment(tableDatHTML,"container");
 
-      document.getElementById("startbutton").onclick = () => { this.resetVars(); }
       document.getElementById("savecsv").onclick = () => {this.saveCSV();}
       document.getElementById("replaycsv").onclick = () => {this.openCSV();}
       this.sensitivity = document.getElementById("sensitivity");
@@ -701,18 +700,28 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.c = document.getElementById(this.audId+"canvas");
       this.ctx = this.c.getContext("2d");
 
-      this.meterWidth = 10; //width of the meters in the spectrum
+      this.meterWidth = 14; //width of the meters in the spectrum
       this.gap = 2; //gap between meters
       this.capHeight = 2;
       this.capStyle = '#fff';
-      this.meterNum = 75; //count of the meters
+      this.meterNum = 60; //count of the meters
       
       this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
       this.gradient.addColorStop(1, 'springgreen');
-      this.gradient.addColorStop(0.6, 'yellow');
+      this.gradient.addColorStop(0.75, 'yellow');
       this.gradient.addColorStop(0, 'red');
       
       this.init();
+    }
+
+    stopAudio(){
+      //stop the previous sound if any
+      if (this.animationId !== null) {
+          cancelAnimationFrame(this.animationId);
+      }
+      if (this.source !== null) {
+          this.source.stop(0);
+      }
     }
 
     createVisualizer(audioContext, buffer){
@@ -732,13 +741,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
             audioBufferSourceNode.start = audioBufferSourceNode.noteOn //in old browsers use noteOn method
             audioBufferSourceNode.stop = audioBufferSourceNode.noteOff //in old browsers use noteOff method
         };
-        //stop the previous sound if any
-        if (this.animationId !== null) {
-            cancelAnimationFrame(this.animationId);
-        }
-        if (this.source !== null) {
-            this.source.stop(0);
-        }
+        this.stopAudio();
         audioBufferSourceNode.start(0);
         this.status = 1;
         this.source = audioBufferSourceNode;
@@ -938,14 +941,15 @@ const char HEGwebAPI[] PROGMEM = R"=====(
                 };
                 that.ctx.fillStyle = that.capStyle;
                 //draw the cap, with transition effect
+                var xoffset = that.meterWidth + that.gap;
                 if (value < capYPositionArray[i]) {
-                    that.ctx.fillRect(i * 12, cheight - (--capYPositionArray[i]), that.meterWidth, that.capHeight);
+                    that.ctx.fillRect(i * xoffset, cheight - (--capYPositionArray[i]), that.meterWidth, that.capHeight);
                 } else {
-                    that.ctx.fillRect(i * 12, cheight - value, that.meterWidth, that.capHeight);
+                    that.ctx.fillRect(i * xoffset, cheight - value, that.meterWidth, that.capHeight);
                     capYPositionArray[i] = value;
                 };
                 that.ctx.fillStyle = that.gradient; //set the fillStyle to gradient for a better look
-                that.ctx.fillRect(i * 12 /*meterWidth+gap*/ , cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
+                that.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
             }
             that.animationId = requestAnimationFrame(drawMeter);
         }

@@ -121,6 +121,9 @@ body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
     opacity: 1 !important;
    }
    .visualizerDiv {
+    position:absolute;
+    top:100px;
+    left:300px;
     text-align: center;
    }
    .dummy {
