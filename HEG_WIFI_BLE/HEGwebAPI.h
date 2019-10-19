@@ -723,8 +723,6 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         //Create audio graph
         audioBufferSourceNode.connect(this.analyser);
         this.analyser.connect(this.gainNode);
-        //connect the analyser to the destination(the speaker), or we won't hear the sound
-        this.analyser.connect(audioContext.destination);
         this.gainNode.connect(audioContext.destination);
         //then assign the buffer to the buffer source node
         audioBufferSourceNode.buffer = buffer;
