@@ -705,12 +705,12 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.gap = 2; //gap between meters
       this.capHeight = 2;
       this.capStyle = '#fff';
-      this.meterNum = 800 / (10 + 2); //count of the meters
+      this.meterNum = 75; //count of the meters
       
       this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
-      this.gradient.addColorStop(1, '#0f0');
-      this.gradient.addColorStop(0.5, '#ff0');
-      this.gradient.addColorStop(0, '#f00');
+      this.gradient.addColorStop(1, 'springgreen');
+      this.gradient.addColorStop(0.6, 'yellow');
+      this.gradient.addColorStop(0, 'red');
       
       this.init();
     }
@@ -720,10 +720,11 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         this.analyser = audioContext.createAnalyser();
         this.gainNode = audioContext.createGain();
         var that = this;
-        //Create audio graph
-        audioBufferSourceNode.connect(this.analyser);
-        this.analyser.connect(this.gainNode);
-        this.gainNode.connect(audioContext.destination);
+        //connect the source to the modifier nodes
+        audioBufferSourceNode.connect(this.gainNode);
+        this.gainNode.connect(this.analyser);
+        //connect the last node to the destination(the speaker), or we won't hear the sound
+        this.analyser.connect(audioContext.destination);
         //then assign the buffer to the buffer source node
         audioBufferSourceNode.buffer = buffer;
         //play the source
@@ -930,7 +931,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
             };
             var step = Math.round(array.length / that.meterNum); //sample limited data from the total array
             that.ctx.clearRect(0, 0, cwidth, cheight);
-            for (var i = 0; i < that.meterNum; i++) {
+            for (var i = 0; i < that.meterNum * 0.85; i++) {
                 var value = array[i * step];
                 if (capYPositionArray.length < Math.round(that.meterNum)) {
                     capYPositionArray.push(value);
@@ -938,13 +939,13 @@ const char HEGwebAPI[] PROGMEM = R"=====(
                 that.ctx.fillStyle = that.capStyle;
                 //draw the cap, with transition effect
                 if (value < capYPositionArray[i]) {
-                    that.ctx.fillRect(i * 12, that.gainNode.gain.value*cheight - (--capYPositionArray[i]), that.meterWidth, that.capHeight);
+                    that.ctx.fillRect(i * 12, cheight - (--capYPositionArray[i]), that.meterWidth, that.capHeight);
                 } else {
-                    that.ctx.fillRect(i * 12, that.gainNode.gain.value*cheight - value, that.meterWidth, that.capHeight);
+                    that.ctx.fillRect(i * 12, cheight - value, that.meterWidth, that.capHeight);
                     capYPositionArray[i] = value;
                 };
                 that.ctx.fillStyle = that.gradient; //set the fillStyle to gradient for a better look
-                that.ctx.fillRect(i * 12 /*meterWidth+gap*/ , that.gainNode.gain.value*cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
+                that.ctx.fillRect(i * 12 /*meterWidth+gap*/ , cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
             }
             that.animationId = requestAnimationFrame(drawMeter);
         }
