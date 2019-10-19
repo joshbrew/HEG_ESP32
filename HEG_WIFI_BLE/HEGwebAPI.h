@@ -1,6 +1,6 @@
 const char HEGwebAPI[] PROGMEM = R"=====(
   class HEGwebAPI {
-    constructor(defaultUI=true, parentId="main_body"){
+    constructor(parentId="main_body", defaultUI=true){
       this.ms=[];
       this.red=[];
       this.ir=[];
@@ -21,6 +21,9 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.csvIndex = 0;
 
       this.sensitivity = null;
+      
+      window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
+      window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.msCancelAnimationFrame;
       if(defaultUI==true){
         this.createHegUI(parentId);
       }
@@ -152,7 +155,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         }, false);
 
         source.addEventListener('message', function(e) {
-            document.getElementById("message").innerHTML = e.data;
+            //document.getElementById("message").innerHTML = e.data;
             console.log("HEGDUINO", e.data);
         }, false);
 
@@ -209,7 +212,6 @@ const char HEGwebAPI[] PROGMEM = R"=====(
     }
   }
 
-
   class graphJS {
     constructor(parentId, canvasId="graph", nPoints=[1000], color=[0,255,0,1], yscale=1, defaultUI=true, res=[1400,400]){
       //WebGL graph based on: https://tinyurl.com/y5roydhe
@@ -218,8 +220,8 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.shaderProgram,
       this.vertices,
       this.canvas;
+      this.animationId = null;
 
-      this.parentId = parentId;
       this.canvasId = canvasId;
       this.textId = canvasId + "text";
       this.color = color;
@@ -383,6 +385,10 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.gl.useProgram(this.shaderProgram);
     }
 
+    deInit() {
+      cancelAnimationFrame(this.animationId);
+    }
+
     draw = () => {
       //Create main graph
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -418,86 +424,87 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.graphtext.fillText((this.invScale * -0.25).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
       this.graphtext.fillText((this.invScale * -0.5).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
       this.graphtext.fillText((this.invScale * -0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
-      requestAnimationFrame(this.draw);
+      this.animationId = requestAnimationFrame(this.draw);
     }
-
     normalize(val, max=255, min=0) { return (val - min) / (max - min); }
   }
       
   class circleJS {
-    constructor(parentId, canvasId="circlecanvas", defaultUI=true){
-      this.parentId = parentId;
+    constructor(parentId, canvasId="circlecanvas", bgColor="#34baeb", cColor="#ff3a17", res=[550,450], defaultUI=true){
       if(defaultUI == true){
-        this.createCanvas(parentId, canvasId);
+        this.createCanvas(parentId, canvasId, res);
       }
       this.c = document.getElementById(canvasId);
       this.ctx = this.c.getContext('2d');
        
-      this.cWidth = this.c.width;
-      this.cHeight = this.c.height;
+      this.cWidth = res[0];
+      this.cHeight = res[1];
+
+      this.animationId = null;
  
       this.angle = 1.57;
       this.angleChange = 0;
 
+      this.bgColor = bgColor;
+      this.cColor = cColor;
       this.draw();
     }
 
-    createCanvas(parentId,canvasId){
-      var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="'+canvasId+'" height="400px" width="400px"></canvas></div>'
+    createCanvas(parentId,canvasId,res=[400,400]){
+      var canvasHTML = '<div id="canvasContainer"><canvas class="canvascss" id="'+canvasId+'" height="'+res[1]+'px" width="'+res[0]+'px"></canvas></div>';
 
       //Setup page as fragments so updates to elements are asynchronous.
       HEGwebAPI.appendFragment(canvasHTML,parentId);
     }
 
-    onData(e) {
-      
-    }
-
-    onNoData(e) {
-      
+    deInit() {
+      cancelAnimationFrame(this.animationId);
     }
 
     draw = () => {
         this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
          
         // color in the background
-        this.ctx.fillStyle = "#2751CE";
+        this.ctx.fillStyle = this.bgColor;
         this.ctx.fillRect(0, 0, this.cWidth, this.cHeight);
          
         // draw the circle
         this.ctx.beginPath();
          
-        var radius = 25 + 175 * Math.abs(Math.cos(this.angle));
-        this.ctx.arc(200, 200, radius, 0, Math.PI * 2, false);
+        var radius = this.cHeight*0.04 + (this.cHeight*0.46) * Math.abs(Math.cos(this.angle));
+        this.ctx.arc(this.cWidth*0.5, this.cHeight*0.5, radius, 0, Math.PI * 2, false);
         this.ctx.closePath();
          
         // color in the circle
-        this.ctx.fillStyle = "#EE1818";
+        this.ctx.fillStyle = this.cColor;
         this.ctx.fill();
 
-        if(((this.angle > 1.57) || (s.smaSlope > 0)) && ((this.angle < 3.14) || (s.smaSlope < 0))) {
+        if(((this.angle > 1.57) || (s.smaSlope > 0)) && ((this.angle < 3.14) || (s.smaSlope < 0))) { //generalize
           this.angle += this.angleChange;
         }
-        requestAnimationFrame(this.draw);
+        
+        this.animationId = requestAnimationFrame(this.draw);
     }
   }
 
     class videoJS {
-        constructor(parentId, vidapiId="vidapi", vidContainerId="vidbox", defaultUI=true){
+        constructor(parentId, vidapiId="vidapi", vidContainerId="vidbox", res=["640","480"], defaultUI=true){
           this.playRate = 1;
           this.alpha = 0;
+          this.volume = 1;
           this.useAlpha = true;
           this.useRate = true;
+          this.useVolume = true;
           this.enableControls = false;
-          this.parentId = parentId;
           this.vidapiId = vidapiId
-          this.vidContainerId = vidContainerId
+          this.vidContainerId = vidContainerId;
+          this.animationId = null;
 
           this.vidQuery;
           this.c;
           this.gl;
           if(defaultUI=true){
-            this.addUI(this.parentId);
+            this.addUI(parentId, res);
           }
           this.init();
         }
@@ -507,7 +514,34 @@ const char HEGwebAPI[] PROGMEM = R"=====(
             if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
             else{ this.vidQuery.playbackRate = this.playRate; }
           }
+          
           document.getElementById("stopbutton").onclick = () => {this.vidQuery.playbackRate = 0;}
+          
+          document.getElementById("useAlpha").onclick = () => {
+           if(useAlpha == true){
+             this.useAlpha = false;
+             this.alpha = 0;
+           }
+           else{ this.useAlpha = true; }
+          }
+
+          document.getElementById("useRate").onclick = () => {
+           if(useRate == true){
+             this.useRate = false;
+             this.playRate = 1;
+             this.vidQuery.playbackRate = 1;
+           }
+           else{ this.useRate = true; }
+          }
+
+          document.getElementById("useVol").onclick = () => {
+           if(useRate == true){
+             this.useRate = false;
+             this.volume = 1;
+             this.vidQuery.volume = 1;
+           }
+           else{ this.useVol = true; }
+          }
         }
 
         deInit(){
@@ -517,15 +551,17 @@ const char HEGwebAPI[] PROGMEM = R"=====(
           document.getElementById("stopbutton").onclick = function(){
             return;
           }
+          cancelAnimationFrame(this.animationId);
         }
 
-        addUI(parentId){
-         var videoapiHTML = '<div id="'+this.vidapiId+'" style="position:absolute; top:200px; right:0px;"> \
-          <input class="button" id="fs" name="fs" type="file" accept="video/*"/><br> \
-          <button class="button" id="useAlpha" name="useAlpha">Fade</button> \
-          <button class="button" id="useRate" name="useRate">Speed</button> \
+        addUI(parentId, res=["640","480"]){
+         var videoapiHTML = '<div id="'+this.vidapiId+'" class="vidapi"> \
+          <input id="fs" name="fs" type="file" accept="video/*"/><br> \
+          <button class="button vdfade" id="useAlpha" name="useAlpha">Fade</button> \
+          <button class="button vdspeed" id="useRate" name="useRate">Speed</button> \
+          <button class="button vdvol" id="useVol" name="useVol">Volume</button> \
           </div>';
-         var videoHTML = '<div id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="480px" width="640px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="'+this.vidContainerId+'canvas"></canvas></div>';
+         var videoHTML = '<div id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="'+this.vidContainerId+'canvas"></canvas></div>';
          HEGwebAPI.appendFragment(videoapiHTML,parentId);
          HEGwebAPI.appendFragment(videoHTML,parentId);
          this.localFileVideoPlayer();
@@ -583,10 +619,25 @@ const char HEGwebAPI[] PROGMEM = R"=====(
               this.vidQuery.currentTime += score;
             }
             else if((this.playRate > 0.05) && (this.playRate < 0.1)){
-              this.vidQuery.playbackRate = 0.5;
+              this.vidQuery.playbackRate = 0.1;
             }
             else{
               this.vidQuery.playbackRate = this.playRate;
+            }
+          }
+        }
+        if(this.useVol == true){
+          if(((this.vidQuery.volume < 1) || (score < 0)) && ((this.vidQuery.volume > 0) || (score > 0)))
+          {
+            this.volume = this.vidQuery.volume + score*0.5;
+            if(this.volume < 0){
+              this.vidQuery.volume = 0;
+            }
+            else if(this.volume > 1){
+              this.vidQuery.volume = 1;
+            }
+            else {
+              this.vidQuery.volume = this.volume;
             }
           }
         }
@@ -595,7 +646,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       animateRect = () => {
           this.gl.clearColor(0,0,0.1,this.alpha);
           this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-          requestAnimationFrame(this.animateRect);
+          this.animationId = requestAnimationFrame(this.animateRect);
       }
 
       init() {
@@ -610,23 +661,300 @@ const char HEGwebAPI[] PROGMEM = R"=====(
          this.setupButtons();
 
          this.animateRect();
-
-         document.getElementById("useAlpha").onclick = () => {
-          if(useAlpha == true){
-            this.useAlpha = false;
-            this.alpha = 0;
-          }
-          else{ this.useAlpha = true; }
-         }
-
-         document.getElementById("useRate").onclick = () => {
-          if(useRate == true){
-            this.useRate = false;
-            this.playRate = 1;
-            this.vidQuery.playbackRate = 1;
-          }
-          else{ this.useRate = true; }
-         }
        }
-     }
+   }
+   
+   class audioJS { //https://codepen.io/jackfuchs/pen/yOqzEW
+    constructor(parentId, audioId="audio", audmenuId="audmenu", defaultUI=true) {
+      this.audioId = audioId;
+      this.audmenuId = audmenuId;
+      
+      if(defaultUI==true) {
+        this.initUI(parentId);
+      }
+
+      this.maxVol = 1;
+      this.file = null; //the current file
+      this.fileName = null; //the current file name
+      this.audioContext = null;
+      this.source = null; //the audio source
+      this.analyser = null;
+      this.gainNode = null;
+      this.info = document.getElementById('fileinfo').innerHTML; //this used to upgrade the UI information
+      this.menu = document.getElementById(this.audmenuId);
+      this.infoUpdateId = null; //to sotore the setTimeout ID and clear the interval
+      this.animationId = null;
+      this.status = 0; //flag for sound is playing 1 or stopped 0
+      this.forceStop = false;
+      this.allCapsReachBottom = false;
+
+      this.c = document.getElementById(this.audId+"canvas");
+      this.ctx = this.c.getContext("2d");
+
+      this.meterWidth = 10; //width of the meters in the spectrum
+      this.gap = 2; //gap between meters
+      this.capHeight = 2;
+      this.capStyle = '#fff';
+      this.meterNum = 800 / (10 + 2); //count of the meters
+      
+      this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
+      this.gradient.addColorStop(1, '#0f0');
+      this.gradient.addColorStop(0.5, '#ff0');
+      this.gradient.addColorStop(0, '#f00');
+      
+      this.init();
+    }
+
+    createVisualizer(audioContext, buffer){
+        var audioBufferSourceNode = audioContext.createBufferSource();
+        this.analyser = audioContext.createAnalyser();
+        this.gainNode = audioContext.createGain();
+        var that = this;
+        //connect the source to the analyser
+        audioBufferSourceNode.connect(this.analyser);
+        audioBufferSourceNode.connect(this.gainNode);
+        //connect the analyser to the destination(the speaker), or we won't hear the sound
+        this.analyser.connect(audioContext.destination);
+        this.gainNode.connect(audioContext.destination);
+        //then assign the buffer to the buffer source node
+        audioBufferSourceNode.buffer = buffer;
+        //play the source
+        if (!audioBufferSourceNode.start) {
+            audioBufferSourceNode.start = audioBufferSourceNode.noteOn //in old browsers use noteOn method
+            audioBufferSourceNode.stop = audioBufferSourceNode.noteOff //in old browsers use noteOff method
+        };
+        //stop the previous sound if any
+        if (this.animationId !== null) {
+            cancelAnimationFrame(this.animationId);
+        }
+        if (this.source !== null) {
+            this.source.stop(0);
+        }
+        audioBufferSourceNode.start(0);
+        this.status = 1;
+        this.source = audioBufferSourceNode;
+        audioBufferSourceNode.onended = function() {
+            that.endAudio(that);
+        };
+        this.updateInfo('Playing ' + this.fileName, false);
+        this.info = 'Playing ' + this.fileName;
+        document.getElementById('fileWrapper').style.opacity = 0.2;
+        this.draw(this.analyser);
+    }
+
+    initUI(parentId){
+        var audiomenuHTML = '<div id="'+this.audmenuId+'"> \
+          <div id="fileWrapper" class="file_wrapper"> \
+            <div id="fileinfo"></div> \
+            <input type="file" id="uploadedFile"></input> \
+          </div></div> \
+        ';
+        
+        var visualizerHTML = '<div id="'+this.audId+'" class="visualizerDiv"> \
+          <canvas id="'+this.audId+'canvas" width="800" height="350"></canvas> \
+        </div> \
+        ';
+
+        HEGwebAPI.appendFragment(audiomenuHTML, parentId);
+        HEGwebAPI.appendFragment(visualizerHTML, parentId);
+    }
+
+    decodeAudio(){
+        //read and decode the file into audio array buffer 
+        var that = this;
+        var file = this.file;
+        var fr = new FileReader();
+        fr.onload = function(e) {
+            var fileResult = e.target.result;
+            var audioContext = that.audioContext;
+            if (audioContext === null) {
+                return;
+            };
+            that.updateInfo('Decoding the audio', true);
+            audioContext.decodeAudioData(fileResult, function(buffer) {
+                that.updateInfo('Decode succussful, starting the visualizer', true);
+                that.createVisualizer(audioContext, buffer);
+            }, function(e) {
+                that.updateInfo('!Fail to decode the file', false);
+                console.log(e);
+            });
+        };
+        fr.onerror = function(e) {
+            that.updateInfo('!Fail to read the file', false);
+            console.log(e);
+        };
+        //assign the file to the reader
+        this.updateInfo('Starting read the file', true);
+        fr.readAsArrayBuffer(file);
+    }
+
+    onData(score){
+      var newVol = this.gainNode.gain.value + score;
+      if(newVol > this.maxVol){
+        newVol = this.maxVol;
+      }
+      if(newVol < 0){
+        newVol = 0;
+      }
+      this.gainNode.gain.setValueAtTime(newVol, this.audioContext.currentTime);
+    }
+
+    endAudio(instance){
+      if (this.forceStop) {
+        this.forceStop = false;
+        this.status = 1;
+        return;
+      };
+      this.status = 0;
+      var text = 'HTML5 Audio API showcase | An Audio Visualizer';
+      document.getElementById('fileWrapper').style.opacity = 1;
+      document.getElementById('fileinfo').innerHTML = text;
+      instance.info = text;
+      document.getElementById('uploadedFile').value = '';
+    }
+
+    updateInfo(text, processing) {
+      var infoBar = document.getElementById('fileinfo'),
+      dots = '...',
+      i = 0,
+      that = this;
+      infoBar.innerHTML = text + dots.substring(0, i++);
+      if (this.infoUpdateId !== null) {
+          clearTimeout(this.infoUpdateId);
+      };
+      if (processing) {
+          //animate dots at the end of the info text
+          var animateDot = function() {
+              if (i > 3) {
+                  i = 0
+              };
+              infoBar.innerHTML = text + dots.substring(0, i++);
+              that.infoUpdateId = setTimeout(animateDot, 250);
+          }
+          this.infoUpdateId = setTimeout(animateDot, 250);
+      };
+    }
+
+    init(){
+        window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
+        try {
+            this.audioContext = new AudioContext();
+        } catch (e) {
+            this.updateInfo('!Your browser does not support AudioContext', false);
+            console.log(e);
+        } 
+        var that = this;
+        var audioInput = document.getElementById('uploadedFile');
+        var dropContainer = document.getElementById(this.audId+"canvas");
+        //listen the file upload
+        audioInput.onchange = function() {
+          if (that.audioContext===null) {return;};
+          
+          //the if statement fixes the file selction cancle, because the onchange will trigger even the file selection been canceled
+          if (audioInput.files.length !== 0) {
+              //only process the first file
+              that.file = audioInput.files[0];
+              that.fileName = that.file.name;
+              if (that.status === 1) {
+                  //the sound is still playing but we upload another file, so set the forceStop flag to true
+                  that.forceStop = true;
+              };
+              document.getElementById('fileWrapper').style.opacity = 1;
+              that.updateInfo('Uploading', true);
+              //once the file is ready,start the visualizer
+              that.decodeAudio();
+          };
+        };
+        //listen the drag & drop
+        dropContainer.addEventListener("dragenter", function() {
+            document.getElementById('fileWrapper').style.opacity = 1;
+            that.updateInfo('Drop it on the page', true);
+        }, false);
+        dropContainer.addEventListener("dragover", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            //set the drop mode
+            e.dataTransfer.dropEffect = 'copy';
+        }, false);
+        dropContainer.addEventListener("dragleave", function() {
+            document.getElementById('fileWrapper').style.opacity = 0.2;
+            that.updateInfo(that.info, false);
+        }, false);
+        dropContainer.addEventListener("drop", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            if (that.audioContext===null) {return;};
+            document.getElementById('fileWrapper').style.opacity = 1;
+            that.updateInfo('Uploading', true);
+            //get the dropped file
+            that.file = e.dataTransfer.files[0];
+            if (that.status === 1) {
+                document.getElementById('fileWrapper').style.opacity = 1;
+                that.forceStop = true;
+            };
+            that.fileName = that.file.name;
+            //once the file is ready,start the visualizer
+            that.decodeAudio();
+        }, false);
+      }
+
+      draw = (analyser) => {
+        var that = this;
+        var cwidth = this.c.width;
+        var cheight = this.c.height - 2;
+        var capYPositionArray = []; ////store the vertical position of the caps for the previous frame
+        var drawMeter = function() {
+            var array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(array);
+            if (that.status === 0) {
+                //fix when some sounds end the value still not back to zero
+                for (var i = array.length - 1; i >= 0; i--) {
+                    array[i] = 0;
+                };
+                that.allCapsReachBottom = true;
+                for (var i = capYPositionArray.length - 1; i >= 0; i--) {
+                    that.allCapsReachBottom = that.allCapsReachBottom && (capYPositionArray[i] === 0);
+                };
+                if (that.allCapsReachBottom) {
+                    cancelAnimationFrame(that.animationId); //since the sound is stopped and animation finished, stop the requestAnimation to prevent potential memory leak,THIS IS VERY IMPORTANT!
+                    return;
+                };
+            };
+            var step = Math.round(array.length / that.meterNum); //sample limited data from the total array
+            that.ctx.clearRect(0, 0, cwidth, cheight);
+            for (var i = 0; i < that.meterNum; i++) {
+                var value = array[i * step];
+                if (capYPositionArray.length < Math.round(that.meterNum)) {
+                    capYPositionArray.push(value);
+                };
+                that.ctx.fillStyle = that.capStyle;
+                //draw the cap, with transition effect
+                if (value < capYPositionArray[i]) {
+                    that.ctx.fillRect(i * 12, that.gainNode.gain.value*cheight - (--capYPositionArray[i]), that.meterWidth, that.capHeight);
+                } else {
+                    that.ctx.fillRect(i * 12, that.gainNode.gain.value*cheight - value, that.meterWidth, that.capHeight);
+                    capYPositionArray[i] = value;
+                };
+                that.ctx.fillStyle = that.gradient; //set the fillStyle to gradient for a better look
+                that.ctx.fillRect(i * 12 /*meterWidth+gap*/ , that.gainNode.gain.value*cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
+            }
+            that.animationId = requestAnimationFrame(drawMeter);
+        }
+        this.animationId = requestAnimationFrame(drawMeter);
+      }
+   }
+
+   class HillsJS {
+    constructor(parentId, hillsId="hills", hillsmenuId="hillsmenu") {
+     this.hillsId = hillsId;
+     this.hillsmenuId = hillsmenuId;
+    }
+
+    draw = () => {
+      // Get data interval
+      // Create background and bars
+      // Change height of bars based on avg or rms. (all at 0 on fresh session)
+      // Update last bar for every t time interval based on change
+    }
+   }
 )=====";

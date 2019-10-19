@@ -95,6 +95,10 @@ body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
     float: right;
     background-color:  palegoldenrod;
    }
+   .vdvol {
+    float: right;
+    background-color: 
+   }
    .cvbutton{
     background-color: chartreuse;
    }
@@ -106,6 +110,18 @@ body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
    }
    .lfbutton{
     background-color: plum;
+   }
+   .file_wrapper {
+    position: absolute;
+    transition: all 0.5s ease;
+    right:0px;
+    top: 300px;
+   }
+   .file_wrapper:hover {
+    opacity: 1 !important;
+   }
+   .visualizerDiv {
+    text-align: center;
    }
    .dummy {
       position: absolute;

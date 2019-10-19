@@ -6,7 +6,24 @@ You need the github version of the Arduino ESP32 libraries, follow steps accordi
 
 You need to change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
 
-OR, to have increased SPIFFs:
+*****
+IMPORTANT STEP
+In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and change 
+xTaskCreateUniversal(loopTask, "loopTask", 8196, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
+to
+xTaskCreateUniversal(loopTask, "loopTask", 16384, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
+The heap memory needs to be increased as the change in wifi can be too much on for the default arduino config. 
+*****
+
+After flashing this sketch onto the ESP32, you will find the new wifi
+access point at the SSID: My_HEG with password: 12345678.
+
+After logging into the access point, access the interface at 192.168.4.1
+
+********************************
+
+**
+Optional - to have increased SPIFFs:
 
 Arduino's default partition settings for the ESP32 need to be changed. A shell script has been provided to speed this up.
 
@@ -20,20 +37,7 @@ Extra SPIFFS notes:
 You need the SPIFFs tools: https://github.com/me-no-dev/arduino-esp32fs-plugin
 You also need to copy the esptool and mkspiffs EXE files in Arduino/hardware/espressif/esp32/tools/esptool and .../tools/mkspiffs into the
 upper .../tools directory so the SPIFFs tool can find them.
-
-
-*****
-In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and change 
-xTaskCreateUniversal(loopTask, "loopTask", 8196, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-to
-xTaskCreateUniversal(loopTask, "loopTask", 16384, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-The heap memory needs to be increased as the change in wifi can be too much on for the default arduino config. 
-*****
-
-After flashing this sketch onto the ESP32, you will find the new wifi
-access point at the SSID: My_HEG with password: 12345678.
-
-After logging into the access point, access the interface at 192.168.4.1
+**
 
 --DEVICE INSTRUCTIONS--
 
@@ -98,7 +102,18 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/18/19
+------
+-integrated audio mode
+-added volume feedback for video option
+-code feng shui improvements
 
+FYI: not all buttons hooked up yet
+
+Known bugs:
+-not every browser works on canvas demo
+-poor audio quality on visualizer mode - try manual buffering. Bug not present in standalone visualizer.
+-offset button bugged when offsetting more than the number of graph vertices (look at xoffsetSlider.onclick setting)
 10/17/19
 ------
 smooth mode switching on demo page. Audio and hill climbing (LIFE game re-creation) games incoming.
