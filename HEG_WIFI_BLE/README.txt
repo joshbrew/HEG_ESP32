@@ -112,7 +112,6 @@ FYI: not all buttons hooked up yet
 
 Known bugs:
 -not every browser works on canvas demo
--poor audio quality on visualizer mode - try manual buffering. Bug not present in standalone visualizer.
 -offset button bugged when offsetting more than the number of graph vertices (look at xoffsetSlider.onclick setting)
 10/17/19
 ------
