@@ -720,9 +720,9 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         this.analyser = audioContext.createAnalyser();
         this.gainNode = audioContext.createGain();
         var that = this;
-        //connect the source to the analyser
+        //Create audio graph
         audioBufferSourceNode.connect(this.analyser);
-        audioBufferSourceNode.connect(this.gainNode);
+        this.analyser.connect(this.gainNode);
         //connect the analyser to the destination(the speaker), or we won't hear the sound
         this.analyser.connect(audioContext.destination);
         this.gainNode.connect(audioContext.destination);
