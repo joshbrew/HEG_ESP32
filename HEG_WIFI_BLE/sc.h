@@ -57,9 +57,9 @@ const char sc_page[] PROGMEM = R"=====(
                 <!-- Web interface -->
             }, false);
 
-            source.addEventListener('myevent', function(e) {
-                //document.getElementById("myevent").innerHTML = e.data;
-                console.log("myevent", e.data);
+            source.addEventListener('heg', function(e) {
+                //document.getElementById("heg").innerHTML = e.data;
+                console.log("heg", e.data);
                 
             }, false);
 
