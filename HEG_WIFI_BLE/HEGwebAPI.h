@@ -657,8 +657,8 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       init() {
          this.vidQuery = document.getElementById(this.vidContainerId+'vid');
          if(this.useVolume == true){
-          this..vidQuery.muted = false;
-          this..vidQuery.volume = 0.5;
+          this.vidQuery.muted = false;
+          this.vidQuery.volume = 0.5;
           this.volume = 0.5;
          } 
          this.c = document.getElementById(this.vidContainerId+'canvas');
