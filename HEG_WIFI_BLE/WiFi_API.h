@@ -4,7 +4,7 @@
  * Threading for events when involving multiple sensors
  *
  */
-
+#include <ArduinoJson.h>
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 //#include <WiFiClient.h>
@@ -38,6 +38,7 @@ char received;
 
 size_t content_len;
 unsigned long t_start,t_stop;
+bool connectionSuccess = false;
 
 String setSSID = "";
 String setPass = "";
@@ -96,7 +97,7 @@ void connectAP(){
   Serial.println("Log in at 192.168.4.1 or try http://"+String(host)+".local after connecting to the access point successfully");
   //WiFi.mode(WIFI_AP); //Access Point mode, creates a local access point
   WiFi.softAP(softAPName, "12345678");    //Password length minimum 8 char 
-  myLocalIP = "192.168.4.1";
+  //myLocalIP = "192.168.4.1";
 }
 
 IPAddress parseIP(String ipString){ //Parse IP from string
@@ -159,8 +160,11 @@ void setupStation(bool use_static, bool use_dns){
     Serial.println(setSSID);
     Serial.print("IP address: ");
     myLocalIP = WiFi.localIP().toString();
+    gateway = WiFi.gatewayIP().toString();
+    subnetM = WiFi.subnetMask().toString();
     Serial.println(myLocalIP);  //IP address assigned to your ESP
     Serial.println("Connect to host and access via the new local IP assigned to the ESP32, or try http://" + String(host) +".local");
+    connectionSuccess = true;
   }
   else{
     WiFi.disconnect();
@@ -169,6 +173,7 @@ void setupStation(bool use_static, bool use_dns){
     Serial.print("Attempted at SSID: ");
     Serial.println(setSSID);
     delay(100);
+    connectionSuccess = false;
     connectAP();
   }
 }
@@ -358,8 +363,10 @@ void handleDoCommand(AsyncWebServerRequest *request){
 }
 
 void handleWiFiSetup(AsyncWebServerRequest *request){
+  String suggestedIP = "";
+  if(connectionSuccess == true){suggestedIP = "Suggested IP config for SSID " + setSSID + ":: Static IP: " + myLocalIP + " | Gateway IP: " + gateway + " | Subnet Mask: " + subnetM + "<br>";}
   String scanResult = scanWiFi();
-  request->send(200, "text/html", connect_page1 + scanResult + connect_page2); //Send web page 
+  request->send(200, "text/html", connect_page1 + suggestedIP + scanResult + connect_page2); //Send web page 
 }
 
 void handleDoConnect(AsyncWebServerRequest *request) {
@@ -369,6 +376,7 @@ void handleDoConnect(AsyncWebServerRequest *request) {
   bool use_static = false;
   bool use_dns = false;
   bool btSwitch = false;
+  bool suggestIP = false;
   
   for(uint8_t i = 0; i < request->args(); i++){
     if(request->argName(i) == "ssid"){setSSID = String(request->arg(i)); Serial.print("SSID: "); Serial.println(setSSID);}
@@ -379,10 +387,11 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     if(request->argName(i) == "primary"){ primaryDNS = String(request->arg(i)); Serial.print("Primary DNS: "); Serial.println(primaryDNS); }
     if(request->argName(i) == "secondary"){ secondaryDNS = String(request->arg(i)); Serial.print("Secondary DNS: "); Serial.println(secondaryDNS); }
     if(request->argName(i) == "choices"){ 
-      if(String(request->arg(i)) == "0"){use_static = true; Serial.println("Use Static IP: true");}
+      if      (String(request->arg(i)) == "0"){use_static = true; Serial.println("Use Static IP: true");}
       else if (String(request->arg(i)) == "1") {ap_only = true; Serial.println("AP Only: true");}
       else if (String(request->arg(i)) == "2"){btSwitch = true; Serial.println("Use Bluetooth: true");}
       else if (String(request->arg(i)) == "3") {use_dns = true; Serial.println("Use Static IP with DNS: true"); }
+      else if (String(request->arg(i)) == "4") {suggestIP = true; Serial.println("Suggesting IP...");}
     }
     //if(request->argName(i) == "save"){save = bool(request->arg(i)); Serial.println(save);}
   }
@@ -393,22 +402,35 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     response->addHeader("Location", "/");
     request->send(response);
     delay(100);
-    if(save==true){
+    if(suggestIP==true){
+      setupStation(false,false); //IP temp saved in localIP variable
+      if(connectionSuccess == true){
+        Serial.print("Suggested IP: "); Serial.println(myLocalIP);
+        Serial.print("Gateway IP: "); Serial.println(gateway);
+        Serial.print("Subnet Mask: "); Serial.println(subnetM);
+        delay(1000);
+        WiFi.disconnect();
+        delay(100);
+        connectAP(); //Now go to /connect again and it will suggest the last IP for this SSID.
+      }
+    }
+    else { if(save==true){
       saveWiFiLogin(ap_only,use_static,use_dns,false);
-    }
-    if(setSSID.length() > 0) {
-      if(use_static == true){
-        setupStation(true,false);
       }
-      else if (use_dns == true) {
-        setupStation(true,true);
+      if(setSSID.length() > 0) {
+        if(use_static == true){
+          setupStation(true,false);
+        }
+        else if (use_dns == true) {
+          setupStation(true,true);
+        }
+        else { 
+          setupStation(false,false); 
+        }
       }
-      else { 
-        setupStation(false,false); 
+      else {
+        ESP.restart();
       }
-    }
-    else {
-      ESP.restart();
     }
   }
   else {
@@ -619,6 +641,15 @@ void setupWiFi(){
       size_t len, bool final) {handleDoUpdate(request, filename, index, data, len, final);}
   );
   server.onNotFound([](AsyncWebServerRequest *request){request->send(404);});
+  
+  server.on("/discovery", HTTP_GET, [](AsyncWebServerRequest *request) {
+    StaticJsonDocument<100> sjd; 
+    sjd["name"] =  String(softAPName) ; 
+    sjd["ipAddress"] = WiFi.localIP().toString();   
+    char response[100]; 
+    serializeJson(sjd, response); 
+    request->send_P(200, "text/javascript", response); 
+  });
 
   //Text-based commands. Send char corresponding to known commands.
   server.on("/command",HTTP_POST,[](AsyncWebServerRequest *request){

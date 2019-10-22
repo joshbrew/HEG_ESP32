@@ -6,6 +6,15 @@ You need the github version of the Arduino ESP32 libraries, follow steps accordi
 
 You need to change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
 
+Required Libraries: 
+Arduino ESP32 latest dev or official build via git
+AsyncTCP 
+ESPAsyncWebServer 
+SavLay Filter
+Arduino ADS1X15 
+ArduinoJson
+
+
 *****
 IMPORTANT STEP
 In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and change 
@@ -104,6 +113,8 @@ Changelog:
 *-*-*-*-*-*-*
 10/21/19
 ------
+-connect page now has a suggest IP option. Return to the /connect page after reconnecting to the access point.
+If it works correctly you get booted to the main page and can go straight to the /connect page again, scroll down, and see the suggested info above the wifi scan text.
 -proof of concept hill climb game
 -more cleanup (not all the way there yet)
 
@@ -121,7 +132,8 @@ More controls for modes.
 FYI: not all buttons hooked up yet
 
 Known bugs:
--not every browser works on canvas demo (they should)
+-not every browser works on canvas demo
+-poor audio quality on visualizer mode - try manual buffering. Bug not present in standalone visualizer.
 -offset button bugged when offsetting more than the number of graph vertices (look at xoffsetSlider.onclick setting)
 10/17/19
 ------

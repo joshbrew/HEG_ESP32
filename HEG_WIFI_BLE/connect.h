@@ -62,14 +62,17 @@ input[type=submit]{
       <input type='radio' id='defaultC' name='choices' value='9' checked>Default Connect<br>
       <input type='radio' id='use_static' name='choices' value='0'>Use Static IP<br>
       <input type='radio' id='use_dns' name='choices' value = '3'>Use Static IP with DNS<br>
+      <input type='radio' id='suggestIP' name='choices' value = '4'>Suggest Static IP<br>
       <input type='radio' id='AP_ONLY' name='choices' value='1'>Access Point Only<br>
       <input type='radio' id='btSwitch' name='choices' value='2'>Use Bluetooth<br>
     <input type='submit' id='Connect' value='Connect'>
    </div>
   </form>
+  <div id="scanResults">
 )=====";
 
 const char connect_page2[] PROGMEM = R"=====(
+  </div>
 </body>
 </html>
 )=====";
