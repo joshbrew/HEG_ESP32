@@ -648,7 +648,7 @@ void setupWiFi(){
     sjd["ipAddress"] = WiFi.localIP().toString();   
     char response[100]; 
     serializeJson(sjd, response); 
-    request->send_P(200, "text/javascript", response); 
+    request->send(200, "text/javascript", response); 
   });
 
   //Text-based commands. Send char corresponding to known commands.
