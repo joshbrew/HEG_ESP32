@@ -90,7 +90,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
 
     saveCSV(){
       var csv = "ms,red,ir,ratio,sSavLay,lSavLay,adcAvg,ratioSlope,AI\n"; //csv header
-      for(var i = 0; i<this.ms.length - 1; i++){
+      for(var i = 0; i<this.ms.length - 1; i++) {
         var temp = [this.ms[i],this.red[i],this.ir[i],this.ratio[i],this.smallSavLay[i],this.largeSavLay[i],this.adcAvg[i],this.ratioSlope[i],this.AI[i],].join(',') + "\n";
         csv += temp;
       }
@@ -110,27 +110,27 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       input.type = 'file';
 
       input.onchange = e => {
-        this.csvDat = [];
-        this.csvIndex = 0;
-        var file = e.target.files[0];
-        var reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = event => {
-          this.resetVars();
-          var tempcsvData = event.target.result;
-          var tempcsvArr = tempcsvData.split("\n");
-          tempcsvArr.pop();
-          tempcsvArr.forEach((row,i) => {
-            if(i==0){ var temp = row.split(","); }
-            else{
-              var temp = row.split(",");
-              this.csvDat.push(temp);
-            }
-          });
-          this.replay = true;
-          this.replayCSV();
-        }
-        input.value = '';
+      this.csvDat = [];
+      this.csvIndex = 0;
+      var file = e.target.files[0];
+      var reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = event => {
+        this.resetVars();
+        var tempcsvData = event.target.result;
+        var tempcsvArr = tempcsvData.split("\n");
+        tempcsvArr.pop();
+        tempcsvArr.forEach((row,i) => {
+         if(i==0){ var temp = row.split(","); }
+          else{
+            var temp = row.split(",");
+            this.csvDat.push(temp);
+         }
+        });
+        this.replay = true;
+        this.replayCSV();
+       }
+       input.value = '';
       }
       input.click();
     }
@@ -436,8 +436,8 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.c = document.getElementById(canvasId);
       this.ctx = this.c.getContext('2d');
        
-      this.cWidth = res[0];
-      this.cHeight = res[1];
+      this.c.width = res[0];
+      this.c.height = res[1];
 
       this.animationId = null;
  
@@ -460,27 +460,31 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       cancelAnimationFrame(this.animationId);
     }
 
+    onData(score){
+      if(((this.angle > 1.57) || (score > 0)) && ((this.angle < 3.14) || (score < 0))) { //generalize
+          this.angle += score;
+      }
+    }
+
     draw = () => {
-        this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
+        var cWidth = this.c.width;
+        var cHeight = this.c.height;
+        this.ctx.clearRect(0, 0, cWidth, cHeight);
          
         // color in the background
         this.ctx.fillStyle = this.bgColor;
-        this.ctx.fillRect(0, 0, this.cWidth, this.cHeight);
+        this.ctx.fillRect(0, 0, cWidth, cHeight);
          
         // draw the circle
         this.ctx.beginPath();
          
-        var radius = this.cHeight*0.04 + (this.cHeight*0.46) * Math.abs(Math.cos(this.angle));
-        this.ctx.arc(this.cWidth*0.5, this.cHeight*0.5, radius, 0, Math.PI * 2, false);
+        var radius = cHeight*0.04 + (cHeight*0.46) * Math.abs(Math.cos(this.angle));
+        this.ctx.arc(cWidth*0.5, cHeight*0.5, radius, 0, Math.PI * 2, false);
         this.ctx.closePath();
          
         // color in the circle
         this.ctx.fillStyle = this.cColor;
         this.ctx.fill();
-
-        if(((this.angle > 1.57) || (s.smaSlope > 0)) && ((this.angle < 3.14) || (s.smaSlope < 0))) { //generalize
-          this.angle += this.angleChange;
-        }
         
         this.animationId = requestAnimationFrame(this.draw);
     }
@@ -549,12 +553,8 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         }
 
         deInit(){
-          document.getElementById("startbutton").onclick = function(){
-            return;
-          }
-          document.getElementById("stopbutton").onclick = function(){
-            return;
-          }
+          document.getElementById("startbutton").onclick = function(){return;}
+          document.getElementById("stopbutton").onclick = function(){return;}
           cancelAnimationFrame(this.animationId);
         }
 
@@ -673,13 +673,14 @@ const char HEGwebAPI[] PROGMEM = R"=====(
        }
    }
    
-   class audioJS { //https://codepen.io/jackfuchs/pen/yOqzEW
-    constructor(parentId, audioId="audio", audmenuId="audmenu", defaultUI=true) {
+   class audioJS { //Modified from: https://codepen.io/jackfuchs/pen/yOqzEW
+    constructor(parentId, audioId="audio", audmenuId="audmenu", res=["800","400"],defaultUI=true) {
       this.audioId = audioId;
       this.audmenuId = audmenuId;
       
       if(defaultUI==true) {
-        this.initUI(parentId);
+        this.initUI(parentId, res);
+        this.c = document.getElementById(this.audId+"canvas");
       }
 
       this.maxVol = 1;
@@ -697,7 +698,6 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.forceStop = false;
       this.allCapsReachBottom = false;
 
-      this.c = document.getElementById(this.audId+"canvas");
       this.ctx = this.c.getContext("2d");
 
       this.meterWidth = 14; //width of the meters in the spectrum
@@ -754,7 +754,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         this.draw(this.analyser);
     }
 
-    initUI(parentId){
+    initUI(parentId, res=["800","400"]){
         var audiomenuHTML = '<div id="'+this.audmenuId+'"> \
           <div id="fileWrapper" class="file_wrapper"> \
             <div id="fileinfo"></div> \
@@ -762,13 +762,13 @@ const char HEGwebAPI[] PROGMEM = R"=====(
           </div></div> \
         ';
         
-        var visualizerHTML = '<div id="'+this.audId+'" class="visualizerDiv"> \
-          <canvas id="'+this.audId+'canvas" width="800" height="350"></canvas> \
+        var visualizerHTML = '<div id="'+this.audioId+'" class="visualizerDiv"> \
+          <canvas id="'+this.audId+'canvas" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
         </div> \
         ';
 
-        HEGwebAPI.appendFragment(audiomenuHTML, parentId);
         HEGwebAPI.appendFragment(visualizerHTML, parentId);
+        HEGwebAPI.appendFragment(audiomenuHTML, parentId);
     }
 
     decodeAudio(){
@@ -919,7 +919,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
             var array = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(array);
             if (that.status === 0) {
-                //fix when some sounds end the value still not back to zero
+                //fix when some sounds and the value still not back to zero
                 for (var i = array.length - 1; i >= 0; i--) {
                     array[i] = 0;
                 };
@@ -957,10 +957,73 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       }
    }
 
-   class HillsJS {
-    constructor(parentId, hillsId="hills", hillsmenuId="hillsmenu") {
+   class hillJS {
+    constructor(parentId, hillsId="hillscanvas", hillsmenuId="hillsmenu", res=["800","400"], updateInterval=1000, defaultUI=true) {
      this.hillsId = hillsId;
      this.hillsmenuId = hillsmenuId;
+
+     if(defaultUI == true){
+      this.initUI(parentId, res);
+     }
+     
+     this.c = document.getElementById(this.hillsId);
+     this.ctx = this.c.getContext("2d");
+     this.menu = document.getElementById(this.hillsmenuId);
+      
+     this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
+     this.gradient.addColorStop(1, 'springgreen');
+     this.gradient.addColorStop(0.75, 'yellow');
+     this.gradient.addColorStop(0, 'red');
+     
+     this.allCapsReachBottom = false;
+     this.meterWidth = 12;
+     this.gap = 2;
+     this.capHeight = 2;
+     this.capStyle = '#fff';
+     this.hillNum = 50; //count of the meters
+     this.updateInterval = updateInterval; //ms between update
+     this.hillScore = [...Array(this.hillNum).fill(50)]; //
+     this.animationId = null;
+
+     this.start = Date.now();
+     this.draw();
+    }
+
+    initUI(parentId, res=["800","400"]){
+      var canvasHTML = '<div id="canvasContainer"> \
+        <canvas class="canvascss" id="'+this.hillsId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
+        ';
+      var menuHTML = '<div id="'+this.hillsmenuId+'" class="vidapi"> \
+      <button class="button" id="hillsRbutton">Reset</button> \
+      </div>';
+        
+      HEGwebAPI.appendFragment(canvasHTML,parentId);
+      HEGwebAPI.appendFragment(menuHTML,parentId);
+
+      document.getElementById("hillsRbutton").onclick = () => {
+        this.hillScore = [...Array(this.hillNum).fill(50)];
+        if(this.animationId != null){
+          cancelAnimationFrame(this.animationId);
+          this.animationId = null;
+        }
+        this.draw();
+      }
+      document.getElementById("startbutton").onclick = () => { this.draw(); }
+      document.getElementById("stopbutton").onclick = () => {
+        if(this.animationId != null){
+          cancelAnimationFrame(this.animationId);
+          this.animationId = null;
+        }
+      }
+    }
+
+    deInit(){
+      document.getElementById("startbutton").onclick = () => {return;}
+      document.getElementById("stopbutton").onclick = () => {return;}
+    }
+
+    onData(score){
+      this.hillScore[this.hillScore.length - 1] += score; 
     }
 
     draw = () => {
@@ -968,6 +1031,35 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       // Create background and bars
       // Change height of bars based on avg or rms. (all at 0 on fresh session)
       // Update last bar for every t time interval based on change
+      var now = Date.now();
+      if(now - this.start > this.updateInterval){
+        this.start = now;
+        var cwidth = this.c.width;
+        var cheight = this.c.height - 2;
+        var capYPositionArray = [];
+        this.ctx.clearRect(0, 0, cwidth, cheight);
+        for (var i = 0; i < this.hillNum; i++) {
+            var value = this.hillScore[i];
+            if(value < 0){ value = 0;}
+            if (capYPositionArray.length < Math.round(this.hillNum)) {
+                capYPositionArray.push(value);
+            };
+            this.ctx.fillStyle = this.capStyle;
+            //draw the cap, with transition effect
+            var xoffset = this.meterWidth + this.gap;
+            if (value < capYPositionArray[i]) {
+                this.ctx.fillRect(i * xoffset, cheight - (--capYPositionArray[i]), this.meterWidth, this.capHeight);
+            } else {
+                this.ctx.fillRect(i * xoffset, cheight - value, this.meterWidth, this.capHeight);
+                capYPositionArray[i] = value;
+            };
+            this.ctx.fillStyle = this.gradient; 
+            this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + this.capHeight, this.meterWidth, cheight);
+        }
+        this.hillScore.shift();
+        this.hillScore.push(this.hillScore[this.hillScore.length - 1]);
+      }
+      this.animationId = requestAnimationFrame(this.draw);
     }
    }
 )=====";

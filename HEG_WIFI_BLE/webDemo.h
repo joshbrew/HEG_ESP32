@@ -13,11 +13,13 @@ var g = new graphJS("main_body","g",1500,[255,100,80,1]);
 var c = new circleJS("main_body","canvas1"); //Default animation
 var v = null;
 var a = null;
+var h = null;
 
 var useGraph = true;
 var useCanvas = true;
 var useVideo = false;
 var useAudio = false;
+var useHills = false;
 
 var modeHTML = '<div class="menudiv" id="menudiv"> \
   Modes:<br> \
@@ -27,27 +29,44 @@ var modeHTML = '<div class="menudiv" id="menudiv"> \
 
 HEGwebAPI.appendFragment(modeHTML,"main_body");
 
+function deInitMode(){
+  if(useVideo == true){
+    var thisNode = document.getElementById(v.vidapiId);
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+    thisNode = document.getElementById(v.vidContainerId);    
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+    v.deInit();
+    useVideo = false;
+    v = null;
+  }
+  if(useAudio == true){
+    a.stopAudio();
+    a.endAudio(a);
+    var thisNode = document.getElementById(a.audioId);
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+    thisNode = document.getElementById(a.audmenuId);
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+    useAudio = false;
+    a = null;
+  }
+  if(useCanvas == true){
+    c.deInit();
+    c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
+    useCanvas = false;
+    c = null;
+  }
+  if(useHills == true){
+    h.deInit();
+    h.c.parentNode.parentNode.parentNode.removeChild(h.c.parentNode.parentNode);
+    h.menu.parentNode.removeChild(h.menu);
+    useHills = false;
+    h = null;
+  }
+}
+
 document.getElementById("canvasmode").onclick = function() {
   if(useCanvas == false){
-    if(useVideo == true){
-      var thisNode = document.getElementById(v.vidapiId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      thisNode = document.getElementById(v.vidContainerId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      v.deInit();
-      useVideo = false;
-      v = null;
-    }
-    if(useAudio == true){
-      a.stopAudio();
-      a.endAudio(a);
-      var thisNode = document.getElementById(a.audId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      thisNode = document.getElementById(a.audmenuId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      useAudio = false;
-      a = null;
-    }
+    deInitMode();
     c = new circleJS("main_body","canvas1");
     useCanvas = true;
   }
@@ -55,22 +74,7 @@ document.getElementById("canvasmode").onclick = function() {
 
 document.getElementById("videomode").onclick = function() {
   if(useVideo == false){
-    if(useCanvas == true){
-      c.deInit();
-      c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
-      useCanvas = false;
-      c = null;
-    }
-    if(useAudio == true){
-      a.stopAudio(a);
-      a.endAudio(a);
-      var thisNode = document.getElementById(a.audId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      thisNode = document.getElementById(a.audmenuId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      useAudio = false;
-      a = null;
-    }
+    deInitMode();
     v = new videoJS("main_body");
     useVideo = true
   }
@@ -78,23 +82,17 @@ document.getElementById("videomode").onclick = function() {
 
 document.getElementById("audiomode").onclick = function() {
   if(useAudio == false){
-    if(useCanvas == true){
-      c.deInit();
-      c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
-      useCanvas = false;
-      c = null;
-    }
-    if(useVideo == true){
-      var thisNode = document.getElementById(v.vidapiId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      thisNode = document.getElementById(v.vidContainerId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      v.deInit();
-      useVideo = false;
-      v = null;
-    }
+    deInitMode();
     a = new audioJS("main_body");
     useAudio = true; 
+  }
+}
+
+document.getElementById("hillmode").onclick = function() {
+  if(useHills == false){
+    deInitMode();
+    h = new hillJS("main_body");
+    useHills = true;
   }
 }
 
@@ -196,7 +194,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         this.smaScore();
         var score = this.smaSlope*this.sensitivity.value*0.01;
         if(useCanvas == true){
-          c.angleChange = score;
+          c.onData(score);
         }
         if (useVideo == true) {
           v.onData(score);
@@ -204,14 +202,14 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         if(useAudio == true) {
           a.onData(score);
         }
+        if(useHills == true) {
+          h.onData(score*10);
+        }
         g.graphY1.shift();
         g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
       }
       else {
         this.smaSlope = 0;
-        if(useCanvas == true){
-          c.angleChange = 0;
-        }
         g.graphY1.shift();
         g.graphY1.push(0);
         this.scoreArr.push(0);
@@ -253,13 +251,16 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
         s.smaScore();
         var score = s.smaSlope*s.sensitivity.value*0.01;
         if(useCanvas == true){
-          c.angleChange = score;
+          c.onData(score);
         }
         if (useVideo == true) {
           v.onData(score);
         }
         if(useAudio == true) {
           a.onData(score);
+        }
+        if(useHills == true) {
+          h.onData(score*10);
         }
         s.scoreArr.push(s.smaSlope);
         g.graphY1.shift();
@@ -271,9 +272,6 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
   //handle if data not changed
   else if (s.replay == false) {
     s.smaSlope = 0;
-    if(useCanvas == true){
-      c.angleChange = 0;
-    }
     g.graphY1.shift();
     g.graphY1.push(0);
     s.scoreArr.push(0);

@@ -1,5 +1,5 @@
 const char webDemoCSS[] PROGMEM = R"=====(
-body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
+body { background-color: #707070; font-family: Console, Lucida, monospace; font-weight: bold; }
   msgDiv { display: none; }
   eventDiv { display: none; }
   input[type=text]{
@@ -69,6 +69,10 @@ body { background-color: #707070; font-family: Arial, Helvetica, sans-serif; }
      width: 75%;
      height: 200px;
      min-width: 400px;
+   }
+   .visualizer {
+    height: 400;
+    width: 800;
    }
    .scale{
      position: absolute;

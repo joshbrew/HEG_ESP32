@@ -102,6 +102,16 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/21/19
+------
+-proof of concept hill climb game
+-more cleanup (not all the way there yet)
+
+More to do:
+Audio mode that just plays a tone that gets louder or quieter? 
+Device search on local wifi when in STA mode.
+More controls for modes.
+
 10/18/19
 ------
 -integrated audio mode
@@ -111,7 +121,7 @@ Changelog:
 FYI: not all buttons hooked up yet
 
 Known bugs:
--not every browser works on canvas demo
+-not every browser works on canvas demo (they should)
 -offset button bugged when offsetting more than the number of graph vertices (look at xoffsetSlider.onclick setting)
 10/17/19
 ------
