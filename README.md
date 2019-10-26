@@ -3,7 +3,7 @@ Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! In
 
 Use the HEG_WIFI_BLE sketch in the arduino IDE on your ESP32. Pin definitions in HEG.h for the SDA/SCL, and LEDs need to be adjusted according to your setup.
 
-Requires these arduino libraries: Arduino ESP32 latest dev build via git, AsyncTCP, ESPAsyncWebServer, SavLay Filter, Arduino ADS1X15, and either the Minimal_SPIFFS partition scheme or the different default build options provided in /HEG_WIFI_BLE/replace_these. See Wifi_Readme.md for info on serial and wifi controls. Gonna re-do this page soon.
+See the README in the Arduino sketch folder for installation instructions.
 
 -------------------------------------------------------------------------------------------
 
@@ -28,6 +28,12 @@ Hemoencephalography is a method that allows you to measure and influence control
 It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the theory and resources section of the [Whitepaper](https://github.com/moothyknight/HEG_ESP32/blob/master/HEG%20Whitepaper.pdf) to educate yourself more deeply on this subject.
 
 ![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_Arduino/master/Pics/HEGExplained.png)
+
+## Software
+
+WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend.
+
+Incoming screenshots. You can demo it now via the firmware, it's evolving fast. We will be comparable to professional software, free of charge.
 
 ## Materials
 - Arduino Huzzah32 Feather (~$15) or Lolin32 V1.0.0 (~$5). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
@@ -75,19 +81,6 @@ Be sure to cover the photodiode pins and the LED contacts with electrical tape s
 If there is moisture expect ADC or score readings to decline to zero and even negative values.
 
 If your IR LED is not working the ratio will be positive as the red LED has a lower intensity. Ratio = Red / Infrared. You can reduce the flash rate in the arduino script to test conclusively via the ADC.
-
-
-
-## App Features
-React Native with SPP or custom BLE support.
-Still bare-bones at this point. Working on multi-threading.
-Packages for Android and iOS incoming!
-
-## Example Data
-Graph 1 is about 1 min of ratio data.
-Graph 2 is about 4 min of scoring data (a simple ratio - baseline, will be changed to the cumulative change in the SMA)
-Graph 3 is about 3 seconds of ADC data at 20hz LED flash frequency.
-![data](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/Screenshot_2019-01-23-21-18-36.jpg?raw=true)
 
 ## HEGstudio with this HEG
 ![](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/20190211_201736.jpg?raw=true)
