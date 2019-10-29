@@ -41,11 +41,12 @@ void setupStateChanger()
   }
 }
 
-
 bool USE_USB = true;          // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
 bool USE_BT = false;           // WRITE 'b' TO TOGGLE.
 bool pIR_MODE = false;        // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 bool NOISE_REDUCTION = false; // WRITE 'n' TO TOGGLE USING 4 LEDS FOR NOISE CANCELLING *EXPERIMENTAL*
+bool USE_DIFF = false;       // Use differential read mode, can reduce noise.
+bool USE_LED_DIFF = true; // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
 
 bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false; // FOR USE IN ARDUINO IDE
@@ -54,19 +55,19 @@ bool SEND_DUMMY_VALUE = false;
 
 bool BLE_ON, BLE_SETUP = false;
 
-const int8_t ledRate = 25;        // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
-const int8_t sampleRate = 2;      // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. Bluetooth limits it in Arduino to 125sps.
+const int8_t ledRate = 17;        // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
+const int8_t sampleRate = 8;      // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. Bluetooth limits it in Arduino to 125sps.
 const int8_t samplesPerRatio = 2; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
 const int8_t BTRate = 100;        // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 const int8_t USBRate = 0;         // No need to delay USB unless on old setups.
 
-const int nSensors = 2;
-const int nLEDs = 4;
+const int nSensors = 1; // Number of sensors (for automated testing)
+const int nLEDs = 1; // Number of LED pairs (for automated testing)
 // LED GPIO pin definitions. Default LOLIN32 Pinout, commented values are TTGO T1 pins.
-int RED = 12, IR = 13, REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
-int IR0 = 13;    // Default left 3cm LEDs
-int RED0 = 12; //33
-int IR1 = 0;//15              // Left 1cm LEDs
+int RED = 13, IR = 12 , REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
+int IR0 = 12;    // Default left 3cm LEDs
+int RED0 = 13; //33
+int IR1 = 15;//15              // Left 1cm LEDs
 int RED1 = 18;//2
 int IR2 = 26;             // Right 1cm LEDs
 int RED2 = 27;
@@ -79,8 +80,8 @@ const int LED = 5;  // Lolin32 V1.0.0 LED on Pin 5
 const int PWR = 14;//21; // Powers ADC and OPT101
 
 //SET NON-DEFAULT SDA AND SCL PINS
-#define SDA0_PIN 16//23 //5
-#define SCL0_PIN 4//19 //18
+#define SDA0_PIN 25//23 //5
+#define SCL0_PIN 26//19 //18
 
 //For dual i2c or i2c switching
 //#define SDA1_PIN ?
@@ -529,8 +530,7 @@ void switch_LEDs(int R, int Ir) {
   // Switch LEDs back and forth.
   if (currentMillis - LEDMillis >= ledRate)
   {
-    if ((red_led == false))
-    { // && (no_led == true)) { // Red on
+    if ((red_led == false) && ((USE_LED_DIFF == false) || (no_led == true))) { // Red on
       if (pIR_MODE == false)
       { // no LEDs in pIR mode, just raw IR from body heat emission.
         digitalWrite(R, HIGH);
@@ -603,9 +603,13 @@ void get_baseline() {
     {
       signalDetermined = true;
 
-      //rawAvg = rawValue / noLEDTicks;
       redAvg = (redValue / redTicks); // - rawAvg);
       irAvg = (irValue / irTicks);    // - rawAvg);
+      if(USE_LED_DIFF == true){
+        rawAvg = rawValue / noLEDTicks;
+        redAvg = redAvg - rawAvg;
+        irAvg = irAvg - rawAvg;
+      }
 
       baseline = ((redAvg) / (irAvg)) * scaling; // Set baseline ratio, multiply by 100 for scaling.
       ratioAvg += baseline;                               // First ratio sent via serial will be baseline.
@@ -645,9 +649,7 @@ void get_ratio(bool isNoise, bool getPos) {
       noLEDTicks++;
     }
   }
-  if ((redTicks >= samplesPerRatio) && (irTicks >= samplesPerRatio))
-  { // && (noLEDTicks >= samplesPerRatio)) { // Accumulate 50 samples per LED before taking reading
-    //rawAvg = rawValue / noLEDTicks;
+  if ((redTicks >= samplesPerRatio) && (irTicks >= samplesPerRatio) && ((USE_LED_DIFF == false) || (noLEDTicks >= samplesPerRatio))) { 
     //Serial.print("Red: ");
     //Serial.print(redValue);
     //Serial.print("|");
@@ -656,9 +658,14 @@ void get_ratio(bool isNoise, bool getPos) {
     //Serial.print(irValue);
     //Serial.print("|");
     //Serial.println(irTicks);
+    redGet = (redValue / redTicks); // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
+    irGet = (irValue / irTicks); // Can filter with log10() applied to each value before dividing.
     
-    redGet = (redValue / redTicks);                  // - rawAvg); // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
-    irGet = (irValue / irTicks);                     // - rawAvg); // Can filter with log10() applied to each value before dividing.
+    if(USE_LED_DIFF == true){
+      rawAvg = rawValue / noLEDTicks;
+      redGet = redGet - rawAvg;
+      irGet = irGet - rawAvg;
+    }
     ratio = ((redGet) / (irGet)) * scaling; // Get ratio, multiply by 100 for scaling.
     //Serial.println(ratio);
     if (isNoise == false) {
@@ -722,7 +729,12 @@ void core_program(bool doNoiseReduction)
       if (currentMillis - sampleMillis >= sampleRate)
       {
         // read the analog in value:
-        adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC
+        if(USE_DIFF == false){
+          adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
+        }
+        else{
+          adc0 = ads.readADC_Differential_0_1();
+        }
         //Voltage = (adc0 * bits2mv);
 
         // print the results to the Serial Monitor:

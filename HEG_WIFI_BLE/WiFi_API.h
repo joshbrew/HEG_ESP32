@@ -23,7 +23,8 @@
 #include "HEGwebAPI.h" //HEG web javascript
 #include "webDemo.h" // Web app page
 #include "webDemoCSS.h" // Web app CSS page
-#include "HEG.h"
+#include "HEG.h" // HEG driver for ESP32
+#include "help.h" // Help page
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -196,7 +197,7 @@ void commandESP32(char received)
     reset = true;
   }
   if (received == 'D'){ // for use with a Serial Monitor
-    if(coreProgramEnabled = false){
+    if(coreProgramEnabled == false){
       coreProgramEnabled = true;
       if(DEBUG_LEDS==false){
         DEBUG_LEDS = true;
@@ -207,11 +208,14 @@ void commandESP32(char received)
         DEBUG_ADC = false;
       }
     }
+  }
+  if (received == 'L') {
+    if(USE_LED_DIFF == false){
+      USE_LED_DIFF = true;
+    }
     else{
-      coreProgramEnabled = false;
-      DEBUG_LEDS = false;
-      DEBUG_ADC = false;
-    } 
+      USE_LED_DIFF = false;
+    }
   }
   if (received == 'W') { //Reset wifi mode.
     saveWiFiLogin(true,false,false,true);
@@ -278,6 +282,14 @@ void commandESP32(char received)
   {
     adcChannel = received - '0';
     reset = true;
+  }
+  if (received == '5') {
+    if(USE_DIFF == false){ // read differential input on pin 0 and 1
+      USE_DIFF = true;
+    }
+    else {
+      USE_DIFF = false;
+    }
   }
   if (received == 'n') {
     if (NOISE_REDUCTION == false) {
@@ -601,6 +613,9 @@ void setupWiFi(){
   server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
     request->send_P(200,"text/html", sc_page);
   });
+  server.on("/help",HTTP_GET,[](AsyncWebServerRequest *request){
+    request->send_P(200,"text/html", help_page);
+  });
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", ws_page);
     delay(1000);
@@ -643,10 +658,18 @@ void setupWiFi(){
   server.onNotFound([](AsyncWebServerRequest *request){request->send(404);});
   
   server.on("/discovery", HTTP_GET, [](AsyncWebServerRequest *request) {
-    StaticJsonDocument<100> sjd; 
+    StaticJsonDocument<1000> sjd; 
     sjd["name"] =  String(softAPName) ; 
     sjd["ipAddress"] = WiFi.localIP().toString();   
-    char response[100]; 
+    sjd["deviceType"] = "Headset";
+    sjd["location"] = setSSID;
+    sjd["date"] = "";
+    sjd["time"] = "";
+    sjd["state"] = coreProgramEnabled ? "ON" : "OFF";
+    sjd["image"] = "";
+    sjd["idDevice"] = WiFi.macAddress(); 
+     
+    char response[1000]; 
     serializeJson(sjd, response); 
     request->send(200, "text/javascript", response); 
   });
