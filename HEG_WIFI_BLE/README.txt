@@ -59,7 +59,10 @@ HEG serial commands:
 'u' - toggles USB data stream. 
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
+'5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
 'D' - toggles ADC debugging (serial only)
+'L' - toggle LED ambient cancellation 
+
 
 With extra sensors:
 'l' - toggles sensor 0 and LED set 0.
@@ -111,6 +114,12 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/29/19
+------
+-/discovery page for testing device scanning from mobile
+-Reimplemented No_LED noise cancelling and added a read_differential mode. Works much better like this, closer to the original!
+-/help page (BIG work in progress)
+
 10/21/19
 ------
 -connect page now has a suggest IP option. Return to the /connect page after reconnecting to the access point.
