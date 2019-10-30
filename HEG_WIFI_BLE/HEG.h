@@ -42,14 +42,15 @@ void setupStateChanger()
 }
 
 bool USE_USB = true;          // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
-bool USE_BT = false;           // WRITE 'b' TO TOGGLE.
+bool USE_BT = false;          // WRITE 'b' TO TOGGLE.
 bool pIR_MODE = false;        // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 bool NOISE_REDUCTION = false; // WRITE 'n' TO TOGGLE USING 4 LEDS FOR NOISE CANCELLING *EXPERIMENTAL*
-bool USE_DIFF = false;       // Use differential read mode, can reduce noise.
-bool USE_LED_DIFF = true; // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
+bool USE_DIFF = false;        // Use differential read mode, can reduce noise.
+bool USE_2_3 = false;         // Use channels 2 and 3 for differential read.
+bool USE_LED_DIFF = true;     // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
 
 bool DEBUG_ESP32 = false;
-bool DEBUG_ADC = false; // FOR USE IN ARDUINO IDE
+bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
 bool DEBUG_LEDS = false;
 bool SEND_DUMMY_VALUE = false;
 
@@ -86,7 +87,6 @@ const int PWR = 14;//21; // Powers ADC and OPT101
 //For dual i2c or i2c switching
 //#define SDA1_PIN ?
 //#define SCL1_PIN ?
-
 
 // HEG VARIABLES
 bool coreProgramEnabled = false;
@@ -733,7 +733,12 @@ void core_program(bool doNoiseReduction)
           adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
         }
         else{
-          adc0 = ads.readADC_Differential_0_1();
+          if(USE_3_4 == false){
+            adc0 = ads.readADC_Differential_0_1();
+          }
+          else {
+            adc0 = ads.readADC_Differential_2_3();
+          }
         }
         //Voltage = (adc0 * bits2mv);
 
