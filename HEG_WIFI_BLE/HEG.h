@@ -733,7 +733,7 @@ void core_program(bool doNoiseReduction)
           adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
         }
         else{
-          if(USE_3_4 == false){
+          if(USE_2_3 == false){
             adc0 = ads.readADC_Differential_0_1();
           }
           else {
