@@ -39,5 +39,6 @@ void loop(void){
     eventMillis = currentMillis;
 
     events.send(output.c_str(),"heg",millis());
+    adc0 = ads.readADC_SingleEnded(adcChannel); // hotfix for weird bug
   }
 }

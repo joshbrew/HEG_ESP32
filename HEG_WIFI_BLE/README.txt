@@ -60,6 +60,7 @@ HEG serial commands:
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
+'6' - Same as '5' but uses pins A2 and A3 on the ADS1115
 'D' - toggles ADC debugging (serial only)
 'L' - toggle LED ambient cancellation 
 
