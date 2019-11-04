@@ -33,7 +33,9 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 
 WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend.
 
-Incoming screenshots. You can demo it now via the firmware, it's evolving fast. We will be comparable to professional software, free of charge.
+You can demo it now via the firmware, it's evolving fast. We will be comparable to professional software, free of charge.
+
+![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
 ## Materials
 - Arduino Huzzah32 Feather (~$15) or Lolin32 V1.0.0 (~$5). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
