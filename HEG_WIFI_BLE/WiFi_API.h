@@ -36,6 +36,8 @@ const char* host = "esp32";
 const char* softAPName = "My_HEG";
 
 char received;
+unsigned long eventMillis = 0;
+unsigned long inputMillis = 0;
 
 size_t content_len;
 unsigned long t_start,t_stop;
@@ -526,6 +528,17 @@ void checkInput()
   }
 }
 
+void eventTask(void * param) {
+  while(true) {
+    eventMillis = currentMillis;
+
+    events.send(output.c_str(),"heg",esp_timer_get_time());
+    //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
+    vTaskDelay(50 / portTICK_PERIOD_MS);
+  }
+  vTaskDelete(NULL);
+}
+
 void wsHEGTask(void *p){
   while(globalWSClient != NULL && globalWSClient->status() == WS_CONNECTED){
     globalWSClient->text(output);
@@ -614,6 +627,7 @@ void setupWiFi(){
   //HTTP Basic authentication
   //events.setAuthentication("user", "pass");
   server.addHandler(&events);
+  xTaskCreate(eventTask, "eventTask", 8192, NULL, 2, NULL);
 
   WiFi.scanNetworks(true);
   WiFi.scanDelete();

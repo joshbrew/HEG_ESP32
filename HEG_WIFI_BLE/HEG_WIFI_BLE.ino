@@ -3,8 +3,7 @@
 //Contributors: Diego Schmaedech and many others indirectly. 
 
 #include "WiFi_API.h" // WiFi settings and macros. HEG and BLE libraries linked through here.
-unsigned long eventMillis = 0;
-unsigned long inputMillis = 0;
+
 
 //===============================================================
 // Setup
@@ -41,12 +40,7 @@ void loop(void){
   if(currentMillis - inputMillis >= 300){ // Check input every N milliseconds
     inputMillis = currentMillis;
     checkInput();
-    delayMicroseconds(1000); // Hotfix for checkInput not working without delay.
+    //delayMicroseconds(1000); // Hotfix for checkInput not working without delay.
   }
-  if(currentMillis - eventMillis >= 50){
-    eventMillis = currentMillis;
 
-    events.send(output.c_str(),"heg",esp_timer_get_time());
-    //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
-  }
 }
