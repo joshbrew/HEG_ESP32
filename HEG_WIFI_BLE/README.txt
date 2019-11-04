@@ -60,7 +60,6 @@ HEG serial commands:
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
-'6' - Same as '5' but uses pins A2 and A3 on the ADS1115
 'D' - toggles ADC debugging (serial only)
 'L' - toggle LED ambient cancellation 
 
@@ -115,10 +114,19 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+11/3/19
+------
+-webDemo now filters bad data out for a smoother experience, to compensate for a bug mainly
+-testing threading to try to fix wifi data streaming errors, need to get 1ms tick period for FreeRTOS to work.
+
+Known bugs:
+The wifi connection causes errors in the ADC readings for some reason, need to fix this
+to make the sav lay filters usable over web.
+
 10/29/19
 ------
 -/discovery page for testing device scanning from mobile
--Reimplemented No_LED noise cancelling and added a read_differential mode. Works much better like this, closer to the original!
+-Reimplemented ambient noise cancelling and added a read_differential mode. Works much better like this, closer to the original!
 -/help page (BIG work in progress)
 
 10/21/19

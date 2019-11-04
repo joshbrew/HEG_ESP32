@@ -194,6 +194,7 @@ void commandESP32(char received)
     digitalWrite(LED, HIGH);
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
+    no_led = true;
     reset = true;
   }
   if (received == 'D'){ // for use with a Serial Monitor
@@ -289,6 +290,16 @@ void commandESP32(char received)
     }
     else {
       USE_DIFF = false;
+    }
+  }
+  if (received == '6') {
+    if(USE_2_3 == false){
+      USE_DIFF = true;
+      USE_2_3 = true;
+    }
+    else{
+      USE_DIFF = false;
+      USE_2_3 = true;
     }
   }
   if (received == 'n') {

@@ -4,6 +4,7 @@
 
 #include "WiFi_API.h" // WiFi settings and macros. HEG and BLE libraries linked through here.
 unsigned long eventMillis = 0;
+unsigned long inputMillis = 0;
 
 //===============================================================
 // Setup
@@ -27,18 +28,25 @@ void setup(void){
     EEPROM.end();
     setupBLE();
   }
+  //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);
 }
 
 
 void loop(void){
-  checkInput();
-  HEG_core_loop();
+  currentMillis = esp_timer_get_time() * 0.001;
+  //Serial.print("Time (ms): ");
+  //Serial.println(currentMillis);
   delayMicroseconds(1800);
-
+  HEG_core_loop();
+  if(currentMillis - inputMillis >= 300){ // Check input every N milliseconds
+    inputMillis = currentMillis;
+    checkInput();
+    delayMicroseconds(1000); // Hotfix for checkInput not working without delay.
+  }
   if(currentMillis - eventMillis >= 50){
     eventMillis = currentMillis;
 
-    events.send(output.c_str(),"heg",millis());
-    adc0 = ads.readADC_SingleEnded(adcChannel); // hotfix for weird bug
+    events.send(output.c_str(),"heg",esp_timer_get_time());
+    //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
   }
 }

@@ -15,7 +15,7 @@
 
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
-//#include <esp_timer.h>
+#include <esp_timer.h>
 //#include <esp_bt.h>
 //#include <ArduinoJson.h>
 
@@ -178,7 +178,9 @@ void setupBLE(){
 
 String output;
 
-int16_t adc0; // Resulting 15 bit integer.
+int16_t adc0 = 0; // Resulting 15 bit integer.
+int16_t lastRead = 0;
+int lastLED = 0; // 0 = NO LED, 1 = RED, 2 = IR
 
 //Setup ADS1115
 Adafruit_ADS1115 ads(0x48);
@@ -232,7 +234,7 @@ void startADS()
     //ads.setGain(GAIN_SIXTEEN); // 16x gain  +/- 0.256V  1 bit = 0.125mV
 
     adcEnabled = true;
-    sampleMillis = millis();
+    sampleMillis = currentMillis;
 }
 
 void setupHEG() {
@@ -256,14 +258,8 @@ void setupHEG() {
     //SerialBT.begin();
   }
 
-  BLEMillis = millis();
-  USBMillis = millis();
-}
-
-void readADS() {
-    adc0 = ads.readADC_SingleEnded(adcChannel);
-    Serial.print("ADC Value: ");
-    Serial.println(adc0);
+  BLEMillis = currentMillis;
+  USBMillis = currentMillis;
 }
 
 void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC.
@@ -438,16 +434,14 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
           SerialBT.print("Site: " + String(i) + "\r\n" + "Ambient reading: " + String(rawValue) + " | RED reading: " + String(redValue) + "\r\n");
         }
       }*/
-      if (irValue / rawValue < 1.3) {
+      if (irValue / rawValue < 1.1) {
         if (USE_USB == true) {
           Serial.flush();
           Serial.print("Error: IR LED difference from ambience insufficient at ");
         }
         /*if (USE_BT == true) {
           if (SerialBT.hasClient()) {
-            SerialBT.flush();
-            SerialBT.print("Error: IR LED difference from ambience insufficient at ");
-          }
+            SerialBT.flush();          }
         }*/
         failed = true;
       }
@@ -464,21 +458,6 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
           SerialBT.print("Site: " + String(i) + "\r\n" + "Ambient reading: " + String(rawValue) + " | IR reading: " + String(irValue) + "\r\n");
         }
       }*/
-      if (irValue > redValue) {
-        if (USE_USB == true) {
-          Serial.flush();
-          Serial.print("Error: IR LED brighter than RED LED at Site: ");
-          Serial.print(i);
-          Serial.println(". Adjust headband or check pins.");
-        }
-        /*if (USE_BT == true) {
-          if (SerialBT.hasClient()) {
-            SerialBT.flush();
-            SerialBT.print("Error: IR LED brighter than RED LED at Site:" + String(i) + ". Adjust sensor or check pins. \r\n");
-          }
-        }*/
-        failed = true;
-      }
       delay(500);
     }
   }
@@ -538,9 +517,10 @@ void switch_LEDs(int R, int Ir) {
         red_led = true;
         ir_led = false;
         no_led = false;
+        lastLED = 0;
         if (DEBUG_LEDS == true)
         {
-          Serial.println("RED ON");
+          Serial.println("RED ON, Last: NO LED");
         }
       }
     }
@@ -553,9 +533,10 @@ void switch_LEDs(int R, int Ir) {
         red_led = false;
         ir_led = true;
         no_led = false;
+        lastLED = 1;
         if (DEBUG_LEDS == true)
         {
-          Serial.println("IR ON");
+          Serial.println("IR ON, Last: RED ON");
         }
       }
     }
@@ -566,9 +547,10 @@ void switch_LEDs(int R, int Ir) {
       red_led = false;
       ir_led = false;
       no_led = true;
+      lastLED = 2;
       if (DEBUG_LEDS == true)
       {
-        Serial.println("NO LED");
+        Serial.println("NO LED, Last: IR ON");
       }
     }
     LEDMillis = currentMillis;
@@ -632,12 +614,12 @@ void get_baseline() {
 
 void get_ratio(bool isNoise, bool getPos) {
   ticks0++;
-  if ((red_led == true) && redTicks < samplesPerRatio)
+  if ((red_led == true) && (redTicks < samplesPerRatio))
   { // RED
     redValue += adc0;
     redTicks++;
   }
-  else if ((ir_led == true)&&(irTicks < samplesPerRatio))
+  else if ((ir_led == true) && (irTicks < samplesPerRatio))
   { // IR
     irValue += adc0;
     irTicks++;
@@ -708,6 +690,21 @@ void get_ratio(bool isNoise, bool getPos) {
   }
 }
 
+void readADC(){
+  lastRead = adc0;
+  if(USE_DIFF == false){
+    adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
+  }
+  else{
+    if(USE_2_3 == false){
+      adc0 = ads.readADC_Differential_0_1();
+    }
+    else {
+      adc0 = ads.readADC_Differential_2_3();
+    }
+  }
+}
+
 // Core loop for HEG sampling.
 void core_program(bool doNoiseReduction)
 {
@@ -715,7 +712,7 @@ void core_program(bool doNoiseReduction)
     {
       startADS();
       //Start timers
-      LEDMillis = millis();
+      LEDMillis = currentMillis;
     }
     if (SEND_DUMMY_VALUE != true)
     {
@@ -728,24 +725,16 @@ void core_program(bool doNoiseReduction)
       }
       if (currentMillis - sampleMillis >= sampleRate)
       {
-        // read the analog in value:
-        if(USE_DIFF == false){
-          adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
-        }
-        else{
-          if(USE_2_3 == false){
-            adc0 = ads.readADC_Differential_0_1();
-          }
-          else {
-            adc0 = ads.readADC_Differential_2_3();
-          }
-        }
+        // read the analog in value
+        readADC();
         //Voltage = (adc0 * bits2mv);
 
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
-          Serial.print("ADC Value: ");
+          Serial.print("Last ADC Value: ");
+          Serial.print(lastRead);
+          Serial.print(", Next read: ");
           Serial.println(adc0);
           //Serial.println("\tVoltage: ");
           //Serial.println(Voltage,7);
@@ -880,7 +869,7 @@ StateChanger Header Start//=====================================================
       ratioAvg = 0;
       posAvg = 0;
       adcAvg = 0;
-      adc0 = 0;
+      //adc0 = 0;
       ratioTicks = 0;
       adcTicks = 0;
     }
@@ -888,25 +877,27 @@ StateChanger Header Start//=====================================================
   }
 }
 
-void HEG_core_loop()
+void HEG_core_loop()//void * param)
 {
-  currentMillis = millis();;
-  if(coreProgramEnabled == true){
-    if(ratioTicks == 0) {
-      core_program(false);
-    }
-    else {
-      if(NOISE_REDUCTION == true) {    
-        core_program(true);
+  //while(true){
+    if(coreProgramEnabled == true){
+      if(ratioTicks == 0) {
+        core_program(false);
+      }
+      else {
+        if(NOISE_REDUCTION == true) {    
+          core_program(true);
+        }
       }
     }
-  }
-  if(NOISE_REDUCTION == true) {
-    if(noiseTicks > 0){
-      updateHEG(); 
+    if(NOISE_REDUCTION == true) {
+      if(noiseTicks > 0){
+        updateHEG(); 
+      }
     }
-  }
-  else {
-    updateHEG();
-  }
+    else {
+      updateHEG();
+    }
+  //}
+ //vTaskDelete(NULL);
 }

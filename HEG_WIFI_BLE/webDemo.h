@@ -190,8 +190,8 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.AI.push(parseFloat(this.csvDat[this.csvIndex][8]));
     g.ms = this.ms;
     if(this.ms.length >= 2){
-      if(this.largeSavLay.length > 40){
-        this.smaScore();
+      if(this.ratio.length > 40){
+        s.smaScore(s.ratio);
         var score = this.smaSlope*this.sensitivity.value*0.01;
         if(useCanvas == true){
           c.onData(score);
@@ -205,14 +205,15 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         if(useHills == true) {
           h.onData(score*10);
         }
+        this.scoreArr.push(score);
         g.graphY1.shift();
         g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
       }
       else {
-        this.smaSlope = 0;
-        g.graphY1.shift();
-        g.graphY1.push(0);
-        this.scoreArr.push(0);
+        //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
+        //g.graphY1.shift();
+        //g.graphY1.push(this.smaSlope);
+        //this.scoreArr.push(this.smaSlope);
       }
       this.updateTable();
     }
@@ -236,51 +237,53 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
     document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
     if(e.data.includes("|")) {
       var dataArray = e.data.split("|");
-      s.ms.push(parseInt(dataArray[0]));
-      s.red.push(parseInt(dataArray[1]));
-      s.ir.push(parseInt(dataArray[2]));
-      s.ratio.push(parseFloat(dataArray[3]));
-      s.smallSavLay.push(parseFloat(dataArray[4]));
-      s.largeSavLay.push(parseFloat(dataArray[5]));
-      s.adcAvg.push(parseInt(dataArray[6]));
-      s.ratioSlope.push(parseFloat(dataArray[7]));
-      s.AI.push(parseFloat(dataArray[8]));
-      g.ms = s.ms;
-      //handle new data
-      if(s.largeSavLay.length-1 > 40){
-        s.smaScore();
-        var score = s.smaSlope*s.sensitivity.value*0.01;
-        if(useCanvas == true){
-          c.onData(score);
+      if((dataArray[7] < 0.05) && (dataArray[7] > -0.05)){ // If ratio slope is within a normal range (in case of errors)
+        s.ms.push(parseInt(dataArray[0]));
+        s.red.push(parseInt(dataArray[1]));
+        s.ir.push(parseInt(dataArray[2]));
+        s.ratio.push(parseFloat(dataArray[3]));
+        s.smallSavLay.push(parseFloat(dataArray[4]));
+        s.largeSavLay.push(parseFloat(dataArray[5]));
+        s.adcAvg.push(parseInt(dataArray[6]));
+        s.ratioSlope.push(parseFloat(dataArray[7]));
+        s.AI.push(parseFloat(dataArray[8]));
+        g.ms = s.ms;
+        //handle new data
+        if(s.ratio.length-1 > 40){
+          s.smaScore(s.ratio);
+          var score = s.smaSlope*s.sensitivity.value*0.01;
+          if(useCanvas == true){
+            c.onData(score);
+          }
+          if (useVideo == true) {
+            v.onData(score);
+          }
+          if(useAudio == true) {
+            a.onData(score);
+          }
+          if(useHills == true) {
+            h.onData(score*10);
+          }
+          s.scoreArr.push(score);
+          g.graphY1.shift();
+          g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
         }
-        if (useVideo == true) {
-          v.onData(score);
-        }
-        if(useAudio == true) {
-          a.onData(score);
-        }
-        if(useHills == true) {
-          h.onData(score*10);
-        }
-        s.scoreArr.push(s.smaSlope);
-        g.graphY1.shift();
-        g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
-      }
-      s.updateTable();  
+        s.updateTable(); 
+      } 
     }
   }
   //handle if data not changed
   else if (s.replay == false) {
-    s.smaSlope = 0;
-    g.graphY1.shift();
-    g.graphY1.push(0);
-    s.scoreArr.push(0);
+    //s.smaSlope = s.scoreArr[s.scoreArr.length - 1];
+    //g.graphY1.shift();
+    //g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
+    //s.scoreArr.push(s.smaSlope);
   }
   if(g.xoffsetSlider.max < s.scoreArr.length){
     if(s.scoreArr.length % 20 == 0) { 
       g.xoffsetSlider.max = s.scoreArr.length - 1;
     }
-}
+  }
 }
 
 s.handleData = (e) => { //Set event data handler for this page.

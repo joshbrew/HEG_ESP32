@@ -79,9 +79,9 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         this.replay = false;
     }
 
-    smaScore() {
-      var temp = this.largeSavLay.slice(this.largeSavLay.length - 40,this.largeSavLay.length);
-      var temp2 = this.largeSavLay.slice(this.largeSavLay.length - 20,this.largeSavLay.length);
+    smaScore(input) {
+      var temp = input.slice(input.length - 40,input.length);
+      var temp2 = input.slice(input.length - 20,input.length);
       this.slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
       this.fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
       this.smaSlope = this.fastSMA - this.slowSMA;
@@ -462,7 +462,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
 
     onData(score){
       if(((this.angle > 1.57) || (score > 0)) && ((this.angle < 3.14) || (score < 0))) { //generalize
-          this.angle += score;
+          this.angleChange = score;
       }
     }
 
@@ -477,6 +477,8 @@ const char HEGwebAPI[] PROGMEM = R"=====(
          
         // draw the circle
         this.ctx.beginPath();
+
+        this.angle += this.angleChange;
          
         var radius = cHeight*0.04 + (cHeight*0.46) * Math.abs(Math.cos(this.angle));
         this.ctx.arc(cWidth*0.5, cHeight*0.5, radius, 0, Math.PI * 2, false);
