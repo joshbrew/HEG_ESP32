@@ -60,6 +60,7 @@ HEG serial commands:
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
+'6' - Read differential between A2 and A3 on ADS1115
 'D' - toggles ADC debugging (serial only)
 'L' - toggle LED ambient cancellation 
 
@@ -117,7 +118,7 @@ Changelog:
 11/3/19
 ------
 -webDemo now filters bad data out for a smoother experience, to compensate for a bug mainly
--testing threading to try to fix wifi data streaming errors, need to get 1ms tick period for FreeRTOS to work.
+-testing threading to try to fix wifi data streaming errors. Turn sensor off and on if connecting online while sensor is active. (very particular not often-gonna-happen bug)
 
 Known bugs:
 The wifi connection causes errors in the ADC readings for some reason, need to fix this
