@@ -526,13 +526,9 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String& filename, size
 }
 
 void printProgress(size_t prg, size_t sz) {
-  String progress = "Progress: " + String((prg*100)/content_len);
+  String progress = "Upload Success! Progress: " + String((prg*100)/content_len);
   Serial.println(progress);
-  if(currentMillis - eventMillis > 50){
-    events.send(progress.c_str(),"message",esp_timer_get_time());
-    eventMillis = currentMillis;
-  }
-  
+  events.send(progress.c_str(),"message",esp_timer_get_time());
 }
 
 void checkInput()
