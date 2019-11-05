@@ -558,8 +558,9 @@ void checkInput()
 void eventTask(void * param) {
   while(true) {
     eventMillis = currentMillis;
-
-    events.send(output.c_str(),"heg",esp_timer_get_time());
+    if(output != ""){
+      events.send(output.c_str(),"heg",esp_timer_get_time());
+    }
     //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }

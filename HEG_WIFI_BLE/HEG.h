@@ -96,7 +96,7 @@ bool adcEnabled = false;
 bool reset = false;
 bool deviceConnected= false;
 
-String output;
+String output = "";
 
 int16_t adc0 = 0; // Resulting 15 bit integer.
 int16_t lastRead = 0;
