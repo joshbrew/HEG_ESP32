@@ -46,14 +46,9 @@ body {
             document.getElementById("message").innerHTML = e.data;
             console.log("HEGDUINO", e.data);
         }, false);
-
-        source.addEventListener('heg', (e) => {
-            this.handleData(e);
-        }, false);
       }
 
   </script>
 </body>
 </html>
 )=====";
-

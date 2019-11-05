@@ -188,6 +188,7 @@ void commandESP32(char received)
   if (received == 't')
   { //Enable Sensor
     coreProgramEnabled = true;
+    reset=true;
     digitalWrite(LED, LOW);
   }
   if (received == 'f')
@@ -197,6 +198,8 @@ void commandESP32(char received)
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
     no_led = true;
+    red_led = false;
+    ir_led = false;
     reset = true;
   }
   if (received == 'D'){ // for use with a Serial Monitor
@@ -205,19 +208,21 @@ void commandESP32(char received)
       if(DEBUG_LEDS==false){
         DEBUG_LEDS = true;
         DEBUG_ADC = true;
+        reset = true;
       }
       else{
         DEBUG_LEDS = false;
         DEBUG_ADC = false;
+        reset=true;
       }
     }
   }
   if (received == 'L') {
-    if(USE_LED_DIFF == false){
-      USE_LED_DIFF = true;
+    if(USE_AMBIENT == false){
+      USE_AMBIENT = true;
     }
     else{
-      USE_LED_DIFF = false;
+      USE_AMBIENT = false;
     }
   }
   if (received == 'W') { //Reset wifi mode.
@@ -226,6 +231,15 @@ void commandESP32(char received)
   if (received == 's')
   { //Reset baseline and readings
     reset = true;
+  }
+  if (received == 'A')
+  { // Toggle ADC_ERR_CATCH mode
+    if(ADC_ERR_CATCH == false){
+      ADC_ERR_CATCH = true;
+    }
+    else {
+      ADC_ERR_CATCH = false;
+    }
   }
   if (received == 'R') {
     if (USE_USB == true) {
@@ -325,6 +339,9 @@ void commandESP32(char received)
     pinMode(IR, OUTPUT);
     pinMode(RED, OUTPUT);
     reset = true;
+    if(USE_DIFF == true){
+      USE_2_3 = false;
+    }
   }
   if (received == 'l') {
     digitalWrite(RED, LOW);
@@ -335,6 +352,9 @@ void commandESP32(char received)
     REDn = RED1;
     adcChannel = 0;
     reset = true;
+    if(USE_DIFF == true){
+      USE_2_3 = false;
+    }
   }
   if (received == 'c') { // Toggle center pins
     digitalWrite(RED, LOW);
@@ -343,8 +363,11 @@ void commandESP32(char received)
     IR = IR0;
     REDn = RED2;
     IRn = RED2;
-    adcChannel = 1;
+    adcChannel = 1; //2
     reset = true;
+    if(USE_DIFF == true){
+      USE_2_3 = false; // SET THIS TO TRUE IF A2 IS PHOTODIODE 2 AND A3 IS THE DIFFERENTIAL
+    }
   }
   delay(500);
 }
@@ -489,6 +512,8 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String& filename, size
       Update.printError(Serial);
     } else {
       Serial.println("Update complete");
+      String msg = "Update complete, the device will reboot.";
+      events.send(msg.c_str(), "message", esp_timer_get_time());
       Serial.flush();
       AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the device reboots");
       response->addHeader("Refresh", "20");  
@@ -501,7 +526,13 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String& filename, size
 }
 
 void printProgress(size_t prg, size_t sz) {
-  Serial.printf("Progress: %d%%\n", (prg*100)/content_len);
+  String progress = "Progress: " + String((prg*100)/content_len);
+  Serial.println(progress);
+  if(currentMillis - eventMillis > 50){
+    events.send(progress.c_str(),"message",esp_timer_get_time());
+    eventMillis = currentMillis;
+  }
+  
 }
 
 void checkInput()
@@ -678,7 +709,9 @@ void setupWiFi(){
       request->send(response);
       },
     [](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data,
-      size_t len, bool final) {handleDoUpdate(request, filename, index, data, len, final);}
+      size_t len, bool final) {
+        handleDoUpdate(request, filename, index, data, len, final);
+        }
   );
   server.onNotFound([](AsyncWebServerRequest *request){request->send(404);});
   

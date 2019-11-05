@@ -47,7 +47,9 @@ bool pIR_MODE = false;        // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED
 bool NOISE_REDUCTION = false; // WRITE 'n' TO TOGGLE USING 4 LEDS FOR NOISE CANCELLING *EXPERIMENTAL*
 bool USE_DIFF = false;        // Use differential read mode, can reduce noise.
 bool USE_2_3 = false;         // Use channels 2 and 3 for differential read.
-bool USE_LED_DIFF = true;     // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
+bool USE_AMBIENT = true;     // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
+bool ADC_ERR_CATCH = true;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
+bool ADC_ERR_CAUGHT = false;
 
 bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
@@ -93,6 +95,50 @@ bool coreProgramEnabled = false;
 bool adcEnabled = false;
 bool reset = false;
 bool deviceConnected= false;
+
+String output;
+
+int16_t adc0 = 0; // Resulting 15 bit integer.
+int16_t lastRead = 0;
+int lastLED = 0; // 0 = NO LED, 1 = RED, 2 = IR
+
+//Setup ADS1115
+Adafruit_ADS1115 ads(0x48);
+long adcChannel = 0; //Channel on the ADC to read. Default 0.
+
+float Voltage = 0.0;
+float range = 32767; // 16 bit ADC (15 bits of range)
+float gain = 0.256;  // +/- V
+float bits2mv = gain / range;
+
+//Signal flags
+bool red_led = false; // Bools to alternate LEDS
+bool ir_led = false;
+bool no_led = true;            // Both LEDS begin off so default is true
+bool badSignal = false;        // Bool for too high of an ADC reading
+bool signalDetermined = false; // Bool for whether the ADC reading is within desired range
+
+//Counters
+int ticks0, redTicks, irTicks, ratioTicks, noiseTicks, adcTicks, noLEDTicks = 0;
+
+//Scoring variables
+long redValue, irValue, rawValue = 0;
+float redGet, irGet, redAvg, irAvg, rawAvg, lastRed, lastIR, lastRaw, rednAvg, irnAvg, rawnAvg, ratio, baseline = 0;
+
+float p1, p2, v1, v2, accel = 0;
+float ratioAvg, noiseAvg, adcAvg, posAvg, adcnAvg, denoised = 0; //velAvg, accelAvg;
+
+//TX Variables
+//char adcString[10], ratioString[10], posString[10], txString[40]; // Faster in BLE mode
+//char scoreString[10]
+
+
+//Timing variables
+unsigned long sampleMillis;
+unsigned long currentMillis;
+unsigned long LEDMillis;
+unsigned long BLEMillis;
+unsigned long USBMillis;
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -174,51 +220,6 @@ void setupBLE(){
   }
 }
 
-
-
-String output;
-
-int16_t adc0 = 0; // Resulting 15 bit integer.
-int16_t lastRead = 0;
-int lastLED = 0; // 0 = NO LED, 1 = RED, 2 = IR
-
-//Setup ADS1115
-Adafruit_ADS1115 ads(0x48);
-long adcChannel = 0; //Channel on the ADC to read. Default 0.
-
-float Voltage = 0.0;
-float range = 32767; // 16 bit ADC (15 bits of range)
-float gain = 0.256;  // +/- V
-float bits2mv = gain / range;
-
-//Signal flags
-bool red_led = false; // Bools to alternate LEDS
-bool ir_led = false;
-bool no_led = true;            // Both LEDS begin off so default is true
-bool badSignal = false;        // Bool for too high of an ADC reading
-bool signalDetermined = false; // Bool for whether the ADC reading is within desired range
-
-//Counters
-int ticks0, redTicks, irTicks, ratioTicks, noiseTicks, adcTicks, noLEDTicks = 0;
-
-//Scoring variables
-long redValue, irValue, rawValue = 0;
-float redGet, irGet, redAvg, irAvg, rawAvg, rednAvg, irnAvg, rawnAvg, ratio, baseline = 0;
-
-float p1, p2, v1, v2, accel = 0;
-float ratioAvg, noiseAvg, adcAvg, posAvg, adcnAvg, denoised = 0; //velAvg, accelAvg;
-
-//TX Variables
-//char adcString[10], ratioString[10], posString[10], txString[40]; // Faster in BLE mode
-//char scoreString[10]
-
-
-//Timing variables
-unsigned long sampleMillis;
-unsigned long currentMillis;
-unsigned long LEDMillis;
-unsigned long BLEMillis;
-unsigned long USBMillis;
 //Start ADC and set gain. Starts timers
 void startADS()
 {
@@ -498,6 +499,11 @@ void check_signal() {
     rawAvg = 0;
     ratioAvg = 0;
     posAvg = 0;
+    redGet = 0;
+    irGet = 0;
+    lastRaw = 0;
+    lastRed = 0;
+    lastIR = 0;
   }
   else if (badSignal == true)
   {
@@ -509,7 +515,7 @@ void switch_LEDs(int R, int Ir) {
   // Switch LEDs back and forth.
   if (currentMillis - LEDMillis >= ledRate)
   {
-    if ((red_led == false) && ((USE_LED_DIFF == false) || (no_led == true))) { // Red on
+    if ((red_led == false) && ((USE_AMBIENT == false) || (no_led == true))) { // Red on
       if (pIR_MODE == false)
       { // no LEDs in pIR mode, just raw IR from body heat emission.
         digitalWrite(R, HIGH);
@@ -520,7 +526,7 @@ void switch_LEDs(int R, int Ir) {
         lastLED = 0;
         if (DEBUG_LEDS == true)
         {
-          Serial.println("RED ON, Last: NO LED");
+          Serial.println("Last: NO LED, RED_ON");
         }
       }
     }
@@ -536,7 +542,7 @@ void switch_LEDs(int R, int Ir) {
         lastLED = 1;
         if (DEBUG_LEDS == true)
         {
-          Serial.println("IR ON, Last: RED ON");
+          Serial.println("Last: RED ON, IR ON");
         }
       }
     }
@@ -550,16 +556,37 @@ void switch_LEDs(int R, int Ir) {
       lastLED = 2;
       if (DEBUG_LEDS == true)
       {
-        Serial.println("NO LED, Last: IR ON");
+        Serial.println("Last: IR ON, NO_LED");
       }
     }
     LEDMillis = currentMillis;
+    //delayMicroseconds(100); //Let LEDs warm up
+  }
+}
+
+void adc_err_catch(){ // Reset a signal reading if it falls outside expected changes compared to previous time.
+  ADC_ERR_CAUGHT = false;
+  if((lastRed != 0)&&((redGet < (lastRed + lastRed * -0.3)) || (redGet > (lastRed + lastRed * 0.3)))){
+    redValue = 0;
+    redTicks = 0;
+    ADC_ERR_CAUGHT = true;
+  }
+  if((lastIR != 0)&&((irGet < (lastIR + lastIR * -0.3)) || (irGet > (lastIR + lastIR * 0.3)))){
+    irValue = 0;
+    irTicks = 0;
+    ADC_ERR_CAUGHT = true;
+  }
+  if(USE_AMBIENT == true){
+    if((lastRaw != 0) && ((rawAvg < (lastRaw + lastRaw * -0.3)) || (rawAvg > (lastRaw + lastRaw * 0.3)))){
+      rawValue = 0;
+      noLEDTicks = 0;
+      ADC_ERR_CAUGHT = true;
+    }
   }
 }
 
 void get_baseline() {
   // GET BASELINE
-  ticks0++;
   if (ticks0 > 100) { // Wait n samples of good signal before getting baseline
     // IR IN 12, RED IN 13
     if ((redTicks < 30) && (irTicks < 30))
@@ -583,28 +610,42 @@ void get_baseline() {
     }
     else
     {
-      signalDetermined = true;
-
-      redAvg = (redValue / redTicks); // - rawAvg);
-      irAvg = (irValue / irTicks);    // - rawAvg);
-      if(USE_LED_DIFF == true){
+      redGet = (redValue / redTicks); // Divide value by number of samples accumulated 
+      irGet = (irValue / irTicks); // Can filter with log10() applied to each value before dividing.
+    
+      if(USE_AMBIENT == true){
         rawAvg = rawValue / noLEDTicks;
-        redAvg = redAvg - rawAvg;
-        irAvg = irAvg - rawAvg;
+        redGet = redGet - rawAvg;
+        irGet = irGet - rawAvg;
       }
 
-      baseline = ((redAvg) / (irAvg)) * scaling; // Set baseline ratio, multiply by 100 for scaling.
-      ratioAvg += baseline;                               // First ratio sent via serial will be baseline.
+      if(ADC_ERR_CATCH == true){
+        adc_err_catch();
+        if(ADC_ERR_CAUGHT == true ){
+          return;
+        }
+        lastRed = redGet;
+        lastIR = irGet;
+        lastRaw = rawAvg;
+      }
+
+      baseline = ((redGet) / (irGet)) * scaling; // Get ratio, multiply by 100 for scaling.
+      //Serial.println(ratio);
+      ratioAvg += baseline;
+      redAvg = redGet;
+      irAvg = irGet;
+      ratioTicks++;
 
       redValue = 0; // Reset values
       irValue = 0;
       rawValue = 0;
-      ticks0 = 0; // Reset counters
+      //ticks0 = 0; // Reset counters
       redTicks = 0;
       irTicks = 0;
       noLEDTicks = 0;
       ratioTicks++;
 
+      signalDetermined = true;
       //Uncomment this for baseline printing
       //Serial.println("\tBaseline R: ");
       //Serial.print(baseline,4);
@@ -613,7 +654,6 @@ void get_baseline() {
 }
 
 void get_ratio(bool isNoise, bool getPos) {
-  ticks0++;
   if ((red_led == true) && (redTicks < samplesPerRatio))
   { // RED
     redValue += adc0;
@@ -631,23 +671,26 @@ void get_ratio(bool isNoise, bool getPos) {
       noLEDTicks++;
     }
   }
-  if ((redTicks >= samplesPerRatio) && (irTicks >= samplesPerRatio) && ((USE_LED_DIFF == false) || (noLEDTicks >= samplesPerRatio))) { 
-    //Serial.print("Red: ");
-    //Serial.print(redValue);
-    //Serial.print("|");
-    //Serial.println(redTicks);
-    //Serial.print("IR: ");
-    //Serial.print(irValue);
-    //Serial.print("|");
-    //Serial.println(irTicks);
+  if ((redTicks >= samplesPerRatio) && (irTicks >= samplesPerRatio) && ((USE_AMBIENT == false) || (noLEDTicks >= samplesPerRatio))) { 
     redGet = (redValue / redTicks); // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
     irGet = (irValue / irTicks); // Can filter with log10() applied to each value before dividing.
     
-    if(USE_LED_DIFF == true){
+    if(USE_AMBIENT == true){
       rawAvg = rawValue / noLEDTicks;
       redGet = redGet - rawAvg;
       irGet = irGet - rawAvg;
     }
+
+    if(ADC_ERR_CATCH == true){
+      adc_err_catch();
+      if(ADC_ERR_CAUGHT == true){
+          return;
+      }
+      lastRed = redGet;
+      lastIR = irGet;
+      lastRaw = rawAvg;
+    }
+    
     ratio = ((redGet) / (irGet)) * scaling; // Get ratio, multiply by 100 for scaling.
     //Serial.println(ratio);
     if (isNoise == false) {
@@ -708,6 +751,7 @@ void readADC(){
 // Core loop for HEG sampling.
 void core_program(bool doNoiseReduction)
 {
+    ticks0++;
     if (adcEnabled == false)
     {
       startADS();
@@ -716,13 +760,6 @@ void core_program(bool doNoiseReduction)
     }
     if (SEND_DUMMY_VALUE != true)
     {
-      // Switch LEDs back and forth.
-      if(doNoiseReduction == true){
-        switch_LEDs(REDn, IRn);
-      }
-      else {
-        switch_LEDs(RED, IR);
-      }
       if (currentMillis - sampleMillis >= sampleRate)
       {
         // read the analog in value
@@ -758,6 +795,17 @@ void core_program(bool doNoiseReduction)
         }
         sampleMillis = currentMillis;
       }
+      // Switch LEDs back and forth.
+      if(doNoiseReduction == true){
+        switch_LEDs(REDn, IRn);
+      }
+      else {
+        switch_LEDs(RED, IR);
+      }
+      if(ADC_ERR_CAUGHT == true){
+          return;
+      }
+      
       adcAvg += adc0;
       adcTicks++;
     }
@@ -865,7 +913,7 @@ StateChanger Header Start//=====================================================
         }*/
       }
 
-      rawAvg = 0;
+      //rawAvg = 0;
       ratioAvg = 0;
       posAvg = 0;
       adcAvg = 0;

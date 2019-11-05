@@ -63,7 +63,7 @@ HEG serial commands:
 '6' - Read differential between A2 and A3 on ADS1115
 'D' - toggles ADC debugging (serial only)
 'L' - toggle LED ambient cancellation 
-
+'A' - toggle ADC error catching (if experiencing major fluctuations in data)
 
 With extra sensors:
 'l' - toggles sensor 0 and LED set 0.
@@ -115,6 +115,11 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+11/4/19
+------
+- ADC error check in HEG.h (to deal with a webserver bug), use 'A' to toggle. 
+- Add progress events for /update page.
+
 11/3/19
 ------
 -webDemo now filters bad data out for a smoother experience, to compensate for a bug mainly
