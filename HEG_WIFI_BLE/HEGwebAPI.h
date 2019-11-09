@@ -5,8 +5,6 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.red=[];
       this.ir=[];
       this.ratio=[];
-      this.smallSavLay=[];
-      this.largeSavLay=[];
       this.adcAvg=[];
       this.ratioSlope=[];
       this.AI=[];
@@ -66,8 +64,6 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         this.red = [];
         this.ir = [];
         this.ratio = [];
-        this.smallSavLay = [];
-        this.largeSavLay = [];
         this.adcAvg = [];
         this.ratioSlope = [];
         this.AI = [];
@@ -85,13 +81,13 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       this.slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
       this.fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
       this.smaSlope = this.fastSMA - this.slowSMA;
-      this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
+      //this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
     }
 
     saveCSV(){
-      var csv = "ms,red,ir,ratio,sSavLay,lSavLay,adcAvg,ratioSlope,AI\n"; //csv header
+      var csv = "ms,red,ir,ratio,adcAvg,ratioSlope,AI\n"; //csv header
       for(var i = 0; i<this.ms.length - 1; i++) {
-        var temp = [this.ms[i],this.red[i],this.ir[i],this.ratio[i],this.smallSavLay[i],this.largeSavLay[i],this.adcAvg[i],this.ratioSlope[i],this.AI[i],].join(',') + "\n";
+        var temp = [this.ms[i],this.red[i],this.ir[i],this.ratio[i],this.adcAvg[i],this.ratioSlope[i],this.AI[i]].join(',') + "\n";
         csv += temp;
       }
       var hiddenElement = document.createElement('a');
@@ -166,7 +162,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
     }
    
     updateTable(){
-      document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+this.ms[this.ms.length-1-1]+'</td><td id="red">'+this.red[this.red.length-1-1]+'</td><td id="ir">'+this.ir[this.ir.length-1-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1-1]+'</td><td id="smallSavLay">'+this.smallSavLay[this.smallSavLay.length-1-1]+'</td><td id="largeSavLay">'+this.largeSavLay[this.largeSavLay.length-1-1]+'</td><td id="adcAvg">'+this.adcAvg[this.adcAvg.length-1-1]+'</td><td id="ratioSlope">'+this.ratioSlope[this.ratioSlope.length-1-1]+'</td><td id="AI">'+this.AI[this.AI.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
+      document.getElementById("dataTable").innerHTML = '<tr><td id="ms">'+this.ms[this.ms.length-1-1]+'</td><td id="red">'+this.red[this.red.length-1-1]+'</td><td id="ir">'+this.ir[this.ir.length-1-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1-1]+'</td><td id="adcAvg">'+this.adcAvg[this.adcAvg.length-1-1]+'</td><td id="ratioSlope">'+this.ratioSlope[this.ratioSlope.length-1-1]+'</td><td id="AI">'+this.AI[this.AI.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
     }
 
     createHegUI(parentId) {
@@ -191,7 +187,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
       var containerHTML = '<div id="container"></div>';
       var messageHTML = '<msgDiv id="message">Output:</div>';
       var eventHTML = '<eventDiv id="heg">Not connected...</eventDiv>';
-      var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>sSavLay</th><th>lSavLay</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
+      var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
       var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
       HEGwebAPI.appendFragment(dataDivHTML,"main_body");

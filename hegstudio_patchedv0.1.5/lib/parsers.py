@@ -261,7 +261,7 @@ class ProtocolDetector(threading.Thread):
                 temp = s.readline()
                 if temp.find('|'):
                     temp = temp.split('|')
-                    self.data.append(float(temp[5]))
+                    self.data.append(float(temp[3]))
                     #self.data.append(temp[0])
                     data = self.data
                     if len(self.data) < 1:
@@ -772,7 +772,7 @@ class SerialManager(threading.Thread):
                         if self.baudrate == 115200:
                             temp = newline.split('|')
                             if len(temp) > 1:
-                                newdata = float(temp[5])
+                                newdata = float(temp[3])
                         else:
                             newdata = self.Parse(newline)
                     except:
@@ -1068,8 +1068,8 @@ class AutoHEG(threading.Thread):
         self.filter = lambda x: x[-1]
         self.mgr = None
 
-        self.use_scoring = True
-        self.use_sma = False
+        self.use_scoring = False # exaggerate the SMA to increase responsivity
+        self.use_sma = True # use SMA only, smoothed ratio
 
         if baudrate != 115200:
             self.detector = ProtocolDetector(port, baudrate, timeout)
@@ -1133,40 +1133,42 @@ class AutoHEG(threading.Thread):
     
     def OnHEGduinoData(self, datum):
         print "RAW: ", datum
-        self.heg_raw.append(datum) # currently receiving ratio. See SerialManager.run() and ProtocolDetector.run(). HEGDUINO STRING: ADC,RATIO,POSITION FROM BASELINE. RATIO POSITION TRANSMITS 'WAIT' IF NO RATIO
-        length = len(self.heg_raw)
+        lastdatum = self.heg_raw[len(self.heg_raw) - 1]
+        if datum < (lastdatum + lastdatum * 0.25) and datum > (lastdatum - lastdatum * 0.25): # drop errors outside of margin
+            self.heg_raw.append(datum) # currently receiving ratio. See SerialManager.run() and ProtocolDetector.run(). HEGDUINO STRING: ADC,RATIO,POSITION FROM BASELINE. RATIO POSITION TRANSMITS 'WAIT' IF NO RATIO
+            length = len(self.heg_raw)
 
-        dy = 0 # Change in Amplitude from Baseline
-        sma = 0  # Simple Moving Average
-        score = 0 # Scoring = accumulated change in amplitudes from baseline
-        if(length > 40):
-            for data in itertools.islice(self.heg_raw, length - 41, length - 1): 
-                sma += data
-            sma = sma / 40
-            self.heg_sma.append(sma*100)
-            print "SMA: ", sma
-            if self.use_sma:
-                self.hegdata.append(sma*100)
-            elif self.use_scoring:
-                if not self.hegdata:
-                    score = sma*100 # First score is baseline.
-                else:
-                    dataLength = len(self.hegdata)
-                    if sma < self.heg_sma[dataLength - 1] + 0.0001 and sma > self.heg_sma[dataLength-1] - 0.0001: # if ratio not changing, don't change score. Change tolerance for sensitivity.
-                        score = self.hegdata[dataLength - 1]
+            dy = 0 # Change in Amplitude from Baseline
+            sma = 0  # Simple Moving Average
+            score = 0 # Scoring = accumulated change in amplitudes from baseline
+            if(length > 20):
+                for data in itertools.islice(self.heg_raw, length - 21, length - 1): 
+                    sma += data
+                sma = sma / 20
+                self.heg_sma.append(sma*100)
+                print "SMA: ", sma
+                if self.use_sma:
+                    self.hegdata.append(sma*100)
+                elif self.use_scoring:
+                    if not self.hegdata:
+                        score = sma*100 # First score is baseline.
                     else:
-                        fastSMA = 0
-                        for data in itertools.islice(self.heg_raw, length - 11, length - 1):
-                            fastSMA += data
-                        fastSMA = fastSMA / 10
+                        dataLength = len(self.hegdata)
+                        if sma < self.heg_sma[dataLength - 1] + 0.0001 and sma > self.heg_sma[dataLength-1] - 0.0001: # if ratio not changing, don't change score. Change tolerance for sensitivity.
+                            score = self.hegdata[dataLength - 1]
+                        else:
+                            fastSMA = 0
+                            for data in itertools.islice(self.heg_raw, length - 11, length - 1):
+                                fastSMA += data
+                            fastSMA = fastSMA / 10
 
-                        dy = fastSMA*100 - self.heg_sma[dataLength - 1]
-                        score = self.hegdata[dataLength - 1] + dy * 0.1 # smoke and mirrors
+                            dy = fastSMA*100 - self.heg_sma[dataLength - 1]
+                            score = self.hegdata[dataLength - 1] + dy * 0.1 # smoke and mirrors
 
-                self.hegdata.append(score)
-            else:
-                self.hegdata.append(datum)
-        return
+                    self.hegdata.append(score)
+                else:
+                    self.hegdata.append(datum)
+            return
 
     def AutodetectDevice(self):
         hegdatalen = len(self.hegdata)

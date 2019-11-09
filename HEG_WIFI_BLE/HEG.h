@@ -21,12 +21,12 @@
 
 #include "BLE_API.h"
 
-#include <SavLayFilter.h>
+//#include <SavLayFilter.h>
 
 double filteredRatio;
 
-SavLayFilter smallFilter(&filteredRatio, 0, 5);  //Cubic smoothing with windowsize of 5
-SavLayFilter largeFilter(&filteredRatio, 0, 25); //Cubic smoothing with windowsize of 25
+//SavLayFilter smallFilter(&filteredRatio, 0, 5);  //Cubic smoothing with windowsize of 5
+//SavLayFilter largeFilter(&filteredRatio, 0, 25); //Cubic smoothing with windowsize of 25
 
 //Slope variables
 
@@ -851,7 +851,7 @@ StateChanger Header Start//=====================================================
  */        
         filteredRatio = ratioAvg; //set filter
 
-        slopeArray[slopeCounter] = largeFilter.Compute(); //circular buffer
+        slopeArray[slopeCounter] = ratioAvg; //circular buffer
         slopeCounter++;
         float ratioSlope = 0;
         float xAvg = 0;
@@ -887,13 +887,13 @@ StateChanger Header Start//=====================================================
         //outputValue = ratioAvg;
         //output = "NO DATA";
         if(noiseTicks > 0){ 
-            output = String(currentMillis) + "|" + String(rednAvg) + "|" + String(irnAvg) + "|" + String(ratioAvg, 4) + "|" + String(largeFilter.Compute(), 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "|" + String(denoised, 4) + "\r\n";
+            output = String(currentMillis) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "|" + String(denoised, 4) + "\r\n";
             noiseAvg = 0;
             noiseTicks = 0;
         }
         else
         {
-          output = String(currentMillis) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(smallFilter.Compute(), 4) + "|" + String(largeFilter.Compute(), 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
+          output = String(currentMillis) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
         }
         
         if (USE_USB == true)

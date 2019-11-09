@@ -171,11 +171,9 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
     this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
     this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-    this.smallSavLay.push(parseFloat(this.csvDat[this.csvIndex][4]));
-    this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]));
-    this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][6]));
-    this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][7]));
-    this.AI.push(parseFloat(this.csvDat[this.csvIndex][8]));
+    this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][4]));
+    this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][5]));
+    this.AI.push(parseFloat(this.csvDat[this.csvIndex][6]));
   }
   this.csvIndex++;
   if(this.csvIndex < this.csvDat.length - 1){
@@ -183,11 +181,9 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
     this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
     this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-    this.smallSavLay.push(parseFloat(this.csvDat[this.csvIndex][4]));
-    this.largeSavLay.push(parseFloat(this.csvDat[this.csvIndex][5]));
-    this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][6]));
-    this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][7]));
-    this.AI.push(parseFloat(this.csvDat[this.csvIndex][8]));
+    this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][4]));
+    this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][5]));
+    this.AI.push(parseFloat(this.csvDat[this.csvIndex][6]));
     g.ms = this.ms;
     if(this.ms.length >= 2){
       if(this.ratio.length > 40){
@@ -205,7 +201,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         if(useHills == true) {
           h.onData(score*10);
         }
-        this.scoreArr.push(score);
+        s.scoreArr.push(s.scoreArr[s.scoreArr.length - 1] + score);
         g.graphY1.shift();
         g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
       }
@@ -242,11 +238,9 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
         s.red.push(parseInt(dataArray[1]));
         s.ir.push(parseInt(dataArray[2]));
         s.ratio.push(parseFloat(dataArray[3]));
-        s.smallSavLay.push(parseFloat(dataArray[4]));
-        s.largeSavLay.push(parseFloat(dataArray[5]));
-        s.adcAvg.push(parseInt(dataArray[6]));
-        s.ratioSlope.push(parseFloat(dataArray[7]));
-        s.AI.push(parseFloat(dataArray[8]));
+        s.adcAvg.push(parseInt(dataArray[4]));
+        s.ratioSlope.push(parseFloat(dataArray[5]));
+        s.AI.push(parseFloat(dataArray[6]));
         g.ms = s.ms;
         //handle new data
         if(s.ratio.length-1 > 40){
@@ -264,7 +258,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
           if(useHills == true) {
             h.onData(score*10);
           }
-          s.scoreArr.push(score);
+          s.scoreArr.push(s.scoreArr[s.scoreArr.length - 1] + score);
           g.graphY1.shift();
           g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
         }
