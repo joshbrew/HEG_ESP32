@@ -48,7 +48,7 @@ bool NOISE_REDUCTION = false; // WRITE 'n' TO TOGGLE USING 4 LEDS FOR NOISE CANC
 bool USE_DIFF = false;        // Use differential read mode, can reduce noise.
 bool USE_2_3 = false;         // Use channels 2 and 3 for differential read.
 bool USE_AMBIENT = true;     // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
-bool ADC_ERR_CATCH = true;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
+bool ADC_ERR_CATCH = false;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
 bool ADC_ERR_CAUGHT = false;
 
 bool DEBUG_ESP32 = false;
