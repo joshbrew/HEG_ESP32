@@ -1,4 +1,4 @@
-//Requires these arduino libraries: Arduino ESP32 latest dev or official build via git, AsyncTCP, ESPAsyncWebServer, SavLay Filter, Arduino ADS1X15, ArduinoJson
+//Requires these arduino libraries: Arduino ESP32 latest dev or official build via git, AsyncTCP, ESPAsyncWebServer, Arduino ADS1X15, ArduinoJson
 //By Joshua Brewster
 //Contributors: Diego Schmaedech and many others indirectly. 
 

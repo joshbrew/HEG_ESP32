@@ -10,7 +10,6 @@ Required Libraries:
 Arduino ESP32 latest dev or official build via git
 AsyncTCP 
 ESPAsyncWebServer 
-SavLay Filter
 Arduino ADS1X15 
 ArduinoJson
 
@@ -115,10 +114,17 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+11/9/19
+------
+- removed sav lay filter (do it on front end instead after checking data)
+
 11/4/19
 ------
 - ADC error check in HEG.h (to deal with a webserver bug), use 'A' to toggle. 
 - Add progress events for /update page.
+
+KNOWN BUGS:
+The error checker can cause hangups and overheat the chip, don't use it yet
 
 11/3/19
 ------

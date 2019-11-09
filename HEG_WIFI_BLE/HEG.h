@@ -6,10 +6,7 @@
    TODO
    - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable at bare min) Alternatively, get an ECG chip or use the MAX30102?
    - Accurate SpO2 reading?
-   - Optimize memory usage. Take better advantage of ESP32.
-   - Switch to hardware ISR timer. esp_timer_get_time() in microseconds.
-   - figure out how to get rid of delay in loop() to ensure serial input is read. Likely just need to do it only once per sec.
-   - ADS1115 library hardlocked at 8ms update rate. Note past 8ms the effective resolution at gain 16 starts to drop below 15 bits with the introduction of noise.
+   - Check power draw  
    */
 
 
