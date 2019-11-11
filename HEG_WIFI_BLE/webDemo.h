@@ -233,7 +233,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
     document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
     if(e.data.includes("|")) {
       var dataArray = e.data.split("|");
-      if((dataArray[7] < 0.05) && (dataArray[7] > -0.05)){ // If ratio slope is within a normal range (in case of errors)
+      if((dataArray[5] < 0.05) && (dataArray[5] > -0.05)){ // If ratio slope is within a normal range (in case of errors)
         s.ms.push(parseInt(dataArray[0]));
         s.red.push(parseInt(dataArray[1]));
         s.ir.push(parseInt(dataArray[2]));
