@@ -61,8 +61,8 @@ HEG serial commands:
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
 '6' - Read differential between A2 and A3 on ADS1115
 'D' - toggles ADC debugging (serial only)
-'L' - toggle LED ambient cancellation 
-'A' - toggle ADC error catching (if experiencing major fluctuations in data)
+'L' - toggles LED ambient cancellation 
+//'A' - BUGGED - toggles ADC error catching (if experiencing major fluctuations in data)
 
 With extra sensors:
 'l' - toggles sensor 0 and LED set 0.
@@ -114,6 +114,10 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+11/11/19
+------
+- fix web api and hegstudio to match changes
+
 11/9/19
 ------
 - removed sav lay filter (do it on front end instead after checking data)
