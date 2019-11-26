@@ -457,9 +457,7 @@ const char HEGwebAPI[] PROGMEM = R"=====(
     }
 
     onData(score){
-      if(((this.angle > 1.57) || (score > 0)) && ((this.angle < 3.14) || (score < 0))) { //generalize
-          this.angleChange = score;
-      }
+      this.angleChange = score;
     }
 
     draw = () => {
@@ -474,8 +472,10 @@ const char HEGwebAPI[] PROGMEM = R"=====(
         // draw the circle
         this.ctx.beginPath();
 
-        this.angle += this.angleChange;
-         
+        if(((this.angle > 1.57) || (this.angleChange > 0)) && ((this.angle < 3.14) || (this.angleChange < 0))){ //generalize
+            this.angle += this.angleChange;
+        }
+
         var radius = cHeight*0.04 + (cHeight*0.46) * Math.abs(Math.cos(this.angle));
         this.ctx.arc(cWidth*0.5, cHeight*0.5, radius, 0, Math.PI * 2, false);
         this.ctx.closePath();

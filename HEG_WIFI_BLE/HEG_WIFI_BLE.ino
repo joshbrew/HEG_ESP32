@@ -35,12 +35,11 @@ void loop(void){
   currentMillis = esp_timer_get_time() * 0.001;
   //Serial.print("Time (ms): ");
   //Serial.println(currentMillis);
-  HEG_core_loop();
   delayMicroseconds(1800);
+  HEG_core_loop();
   if(currentMillis - inputMillis >= 300){ // Check input every N milliseconds
     inputMillis = currentMillis;
     checkInput();
     //delayMicroseconds(1000); // Hotfix for checkInput not working without delay.
   }
-
 }

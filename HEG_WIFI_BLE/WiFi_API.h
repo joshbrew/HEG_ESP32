@@ -194,6 +194,7 @@ void commandESP32(char received)
   if (received == 'f')
   { //Disable sensor, reset.
     coreProgramEnabled = false;
+    delay(100);
     digitalWrite(LED, HIGH);
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
@@ -331,11 +332,11 @@ void commandESP32(char received)
   { // Dual Sensor toggle, changes LED pinouts and adcChannel to left or right.
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
-    IR = IR3;
-    RED = RED3;
-    IRn = IR2;
-    REDn = RED2;
-    adcChannel = 1;
+    IR = IR2;
+    RED = RED2;
+    IRn = IR3;
+    REDn = RED3;
+    adcChannel = 0;
     pinMode(IR, OUTPUT);
     pinMode(RED, OUTPUT);
     reset = true;
@@ -350,23 +351,23 @@ void commandESP32(char received)
     RED = RED0;
     IRn = IR1;
     REDn = RED1;
-    adcChannel = 0;
+    adcChannel = 2;
     reset = true;
     if(USE_DIFF == true){
-      USE_2_3 = false;
+     USE_2_3 = true;
     }
   }
   if (received == 'c') { // Toggle center pins
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
-    RED = RED0;
-    IR = IR0;
-    REDn = RED2;
-    IRn = RED2;
-    adcChannel = 1; //2
+    RED = RED2;
+    IR = IR2;
+    REDn = RED1;
+    IRn = IR1;
+    adcChannel = 2; //2
     reset = true;
     if(USE_DIFF == true){
-      USE_2_3 = false; // SET THIS TO TRUE IF A2 IS PHOTODIODE 2 AND A3 IS THE DIFFERENTIAL
+      USE_2_3 = true;
     }
   }
   delay(500);
@@ -603,7 +604,7 @@ void setupWiFi(){
   //  Serial.println("An Error has occurred while mounting SPIFFS");
   //  return;
   //}
-
+  WiFi.setTxPower(WIFI_POWER_13dBm); //19_5Dbm, 19dBm, 18.5dBm, 17dBm, 15 dBm, 13dBm, 11dBm, 8_5dBm, 7dBm, 2dBm, MINUS_1dBm
   EEPROM.begin(512);
   //Serial.println(EEPROM.read(0));
   //Serial.println(EEPROM.readString(2));
