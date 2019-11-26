@@ -38,7 +38,7 @@ You can demo it now via the firmware, it's evolving fast. We will be comparable 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
 ## Materials
-- Arduino Huzzah32 Feather (~$15) or Lolin32 V1.0.0 (~$5). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
+- Arduino Huzzah32 Feather ($18) or Lolin32 V1.0.0 ($4). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
 - ADS 1115 w/ PGA, 16-bit ADC
 - OPT101 Photodiode
 - 1 HAN1102W or DN1102W Infrared LED
