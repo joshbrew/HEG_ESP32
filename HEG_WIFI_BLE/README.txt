@@ -114,6 +114,22 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+11/25/19
+------
+- fix LEDs not shutting off when pausing HEG
+- lowered power consumption
+- fixed circleJS in web API
+
+Known bugs:
+- Serial USB commands don't register very well 
+- ADC anomalies with WiFi (probably power consumption related)
+- xOffset bugged when changing xScale and xOffset together
+
+To Do:
+- Use a better ADS1115 lib to improve speed
+- Web Demo CSS and functionality improvements
+- IE and Edge can't find the HEGwebAPI.js script (this is likely the same issue on mobile)
+
 11/11/19
 ------
 - fix web api and hegstudio to match changes
