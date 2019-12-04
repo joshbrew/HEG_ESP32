@@ -36,8 +36,8 @@ const char* host = "esp32";
 const char* softAPName = "My_HEG";
 
 char received;
-unsigned long eventMillis = 0;
-unsigned long inputMillis = 0;
+unsigned long eventMicros = 0;
+unsigned long inputMicros = 0;
 
 size_t content_len;
 unsigned long t_start,t_stop;
@@ -293,21 +293,25 @@ void commandESP32(char received)
     }
   }
   if (received == 'T') {
-    sensorTest();
-    LEDTest();
+    //sensorTest();
+    //LEDTest();
   }
   if ((received == '0') || (received == '1') || (received == '2') || (received == '3'))
   {
     adcChannel = received - '0';
+    setMux();
     reset = true;
   }
   if (received == '5') {
     if(USE_DIFF == false){ // read differential input on pin 0 and 1
       USE_DIFF = true;
+      USE_2_3 = false;
     }
     else {
       USE_DIFF = false;
     }
+    setMux();
+    reset = true;
   }
   if (received == '6') {
     if(USE_2_3 == false){
@@ -316,8 +320,10 @@ void commandESP32(char received)
     }
     else{
       USE_DIFF = false;
-      USE_2_3 = true;
+      USE_2_3 = false;
     }
+    setMux();
+    reset = true;
   }
   if (received == 'n') {
     if (NOISE_REDUCTION == false) {
@@ -536,7 +542,7 @@ void checkInput()
 {
   /*if (USE_BT == true)
   {
-    if (SerialBT.available())
+    while (SerialBT.available())
     {
       received = SerialBT.read();
       SerialBT.println(received);
@@ -546,7 +552,7 @@ void checkInput()
   }*/
   if (USE_USB == true)
   {
-    if (Serial.available())
+    while (Serial.available())
     {
       received = Serial.read();
       Serial.println(received);
@@ -558,7 +564,7 @@ void checkInput()
 
 void eventTask(void * param) {
   while(true) {
-    eventMillis = currentMillis;
+    eventMicros = currentMicros;
     if(output != ""){
       events.send(output.c_str(),"heg",esp_timer_get_time());
     }

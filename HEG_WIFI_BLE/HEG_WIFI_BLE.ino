@@ -1,4 +1,4 @@
-//Requires these arduino libraries: Arduino ESP32 latest dev or official build via git, AsyncTCP, ESPAsyncWebServer, Arduino ADS1X15, ArduinoJson
+//Requires these arduino libraries: Arduino ESP32 latest dev or official build via git, AsyncTCP, ESPAsyncWebServer, ADS1115 by addicore + i2cdevlib, ArduinoJson
 //By Joshua Brewster
 //Contributors: Diego Schmaedech and many others indirectly. 
 
@@ -32,13 +32,13 @@ void setup(void){
 
 
 void loop(void){
-  currentMillis = esp_timer_get_time() * 0.001;
+  currentMicros = esp_timer_get_time();
   //Serial.print("Time (ms): ");
   //Serial.println(currentMillis);
-  delayMicroseconds(1800);
+  //delayMicroseconds(500);
   HEG_core_loop();
-  if(currentMillis - inputMillis >= 300){ // Check input every N milliseconds
-    inputMillis = currentMillis;
+  if(currentMicros - inputMicros >= 300000){ // Check input every N microseconds
+    inputMicros = currentMicros;
     checkInput();
     //delayMicroseconds(1000); // Hotfix for checkInput not working without delay.
   }

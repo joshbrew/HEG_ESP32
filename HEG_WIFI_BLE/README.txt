@@ -10,9 +10,15 @@ Required Libraries:
 Arduino ESP32 latest dev or official build via git
 AsyncTCP 
 ESPAsyncWebServer 
-Arduino ADS1X15 
+ADS1115 by addicore + i2cdevlib
 ArduinoJson
 
+
+*****
+FOR ADS1115
+To get the ADS1115 library working (use the addicore version on github), you must also have the I2C device library by jrwoberg.
+For Arduino, you must drag the files "I2Cdev.cpp" and "I2Cdev.h" from i2cdevlib-master/Arduino/I2Cdev to the main i2cdevlib-master folder so Arduino can find it.
+*****
 
 *****
 IMPORTANT STEP
@@ -114,6 +120,12 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+12/3/19
+------
+- Changed ADS1115 libraries to the addicore version (via on i2cdevlib)
+- Upped sample rate to 475sps, ratio rate (with ambient cancellation) should now be ~133 at full speed over Serial.
+- Fixed Serial commands not being responsive
+
 11/25/19
 ------
 - fix LEDs not shutting off when pausing HEG
