@@ -162,7 +162,7 @@ class MyCallbacks : public BLECharacteristicCallbacks
     if (rxValue.length() > 0)
     {
 
-      Serial.println("STATE CHANGER RECEIVE: ");
+      Serial.println("HEG RECEIVE: ");
 
       for (int i = 0; i < rxValue.length(); i++)
       {
@@ -176,7 +176,7 @@ class MyCallbacks : public BLECharacteristicCallbacks
         coreProgramEnabled = true;
         Serial.println("Turning ON!");
       }
-      else if (rxValue.find("r") != -1)
+      else if (rxValue.find("f") != -1)
       {
         Serial.println("Turning OFF!");
       }
@@ -185,10 +185,10 @@ class MyCallbacks : public BLECharacteristicCallbacks
 };
 
 void setupBLE(){
-  {
 
     // Create the BLE Device
-    BLEDevice::init("STATECHANGER"); // Give it a name
+    BLEDevice::init("My_HEG"); // Give it a name
+    BLEDevice::setMTU(512);
 
     // Create the BLE Server
     BLEServer *pServer = BLEDevice::createServer();
@@ -200,10 +200,12 @@ void setupBLE(){
     // Create a BLE Characteristic
     pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY);
 
-    pCharacteristic->addDescriptor(new BLE2902());
+    BLE2902 *desc = new BLE2902();
+    desc->setNotifications(true);
+    pCharacteristic->addDescriptor(desc);
 
-    BLECharacteristic *pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, BLECharacteristic::PROPERTY_WRITE);
-
+    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    pCharacteristic->setReadProperty(true);
     pCharacteristic->setCallbacks(new MyCallbacks());
 
     // Start the service
@@ -215,7 +217,6 @@ void setupBLE(){
     BLE_ON = true;
     USE_BT = true;
     Serial.println("BLE service started, scan for STATECHANGER.");
-  }
 }
 
 
@@ -739,7 +740,24 @@ StateChanger Header Start//=====================================================
           //Serial.flush();
           Serial.print(output);
         }
-        
+        if (deviceConnected)
+        {
+          pCharacteristic->setValue(String(currentMicros).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(redAvg).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(irAvg).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(ratioAvg, 4).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(ratioSlope, 4).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(vAI, 4).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String("|").c_str());
+          pCharacteristic->notify();
+          delay(10); // bluetooth stack will go into congestion, if too many packets are sent
+        }
         /*if (USE_BT == true)
         {
           if (SerialBT.hasClient() == true)

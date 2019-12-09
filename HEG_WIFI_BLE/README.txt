@@ -131,12 +131,14 @@ Changelog:
 12/8/19
 ------
 - Fixed sampling issues. Now doing 3 samples per LED (and ambient) for 20sps solid over USB, WiFi, and BLE.
+- Fixed BLE (thanks Diego!)
 
 12/3/19
 ------
 - Changed ADS1115 libraries to the addicore version (via on i2cdevlib)
 - Upped sample rate to 475sps, ratio rate (with ambient cancellation) should now be ~133 at full speed over Serial.
 - Fixed Serial commands not being responsive
+- Removed "T" test command for now.
 
 11/25/19
 ------
