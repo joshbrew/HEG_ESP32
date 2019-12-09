@@ -65,9 +65,9 @@ const int USBRate = 0;         // No need to delay USB unless on old setups.
 const int nSensors = 1; // Number of sensors (for automated testing)
 const int nLEDs = 1; // Number of LED pairs (for automated testing)
 // LED GPIO pin definitions. Default LOLIN32 Pinout, commented values are TTGO T1 pins.
-int RED = 13, IR = 12 , REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
-int IR0 = 12;    // Default left 3cm LEDs
-int RED0 = 13; //33
+int RED = 12, IR = 13 , REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
+int IR0 = 13;    // Default left 3cm LEDs
+int RED0 = 12; //33
 int IR1 = 15;//15              // Left 1cm LEDs
 int RED1 = 18;//2
 int IR2 = 26;             // Right 1cm LEDs
@@ -216,7 +216,7 @@ void setupBLE(){
     BLE_SETUP = true;
     BLE_ON = true;
     USE_BT = true;
-    Serial.println("BLE service started, scan for STATECHANGER.");
+    Serial.println("BLE service started, scan for My_HEG.");
 }
 
 
@@ -361,6 +361,7 @@ void check_signal() {
   }
   else if (badSignal == true)
   {
+    output = "Bad Signal";
     badSignal = false;
   }
 }
@@ -601,8 +602,6 @@ void core_program(bool doNoiseReduction)
     if (SEND_DUMMY_VALUE != true)
     {
         // Switch LEDs back and forth.
-      if (currentMicros - LEDMicros >= ledRate)
-      {
         // Switch LEDs back and forth.
         if(doNoiseReduction == true){
           switch_LEDs(REDn, IRn);
@@ -611,12 +610,11 @@ void core_program(bool doNoiseReduction)
           switch_LEDs(RED, IR);
         }
         //ads.triggerConversion();
-        delayMicroseconds(300);
-        //currentMicros += 300;
+        delayMicroseconds(200);
         // read the analog in value
         readADC();
+        delayMicroseconds(sampleRate);
         //Voltage = (adc0 * bits2mv);
-      }
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
@@ -742,19 +740,7 @@ StateChanger Header Start//=====================================================
         }
         if (deviceConnected)
         {
-          pCharacteristic->setValue(String(currentMicros).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(redAvg).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(irAvg).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(ratioAvg, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(ratioSlope, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(vAI, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String("|").c_str());
+          pCharacteristic->setValue(output.c_str());
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent
         }
