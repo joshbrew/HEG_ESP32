@@ -128,6 +128,10 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+12/8/19
+------
+- Fixed sampling issues. Now doing 3 samples per LED (and ambient) for 20sps solid over USB, WiFi, and BLE.
+
 12/3/19
 ------
 - Changed ADS1115 libraries to the addicore version (via on i2cdevlib)

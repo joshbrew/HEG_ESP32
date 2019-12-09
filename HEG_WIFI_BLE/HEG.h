@@ -56,9 +56,9 @@ bool SEND_DUMMY_VALUE = false;
 
 bool BLE_ON, BLE_SETUP = false;
 
-const int ledRate = 2500;      // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
+const int ledRate = 2106;      // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
 const int sampleRate = 2106;   // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. 
-const int samplesPerRatio = 1; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
+const int samplesPerRatio = 3; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
 const int BTRate = 100000;     // Bluetooth notify rate (us). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 const int USBRate = 0;         // No need to delay USB unless on old setups.
 
@@ -218,6 +218,36 @@ void setupBLE(){
   }
 }
 
+
+void readADC(){
+  //delayMicroseconds(sampleRate); //Delay so you know a sample happened during a given cycle(on continuous mode)
+  lastRead = adc0;
+  if(USE_DIFF == false){
+    if(adcChannel == 0){
+      adc0 = ads.getConversionP0GND();
+    }
+    if(adcChannel == 1){
+      adc0 = ads.getConversionP1GND();
+    }
+    if(adcChannel == 2){
+      adc0 = ads.getConversionP2GND();
+    }
+    if(adcChannel == 3){
+      adc0 = ads.getConversionP3GND();
+    }
+    //adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
+  }
+  else{
+    if(USE_2_3 == false){
+      adc0 = ads.getConversionP0N1();
+    }
+    else {
+      adc0 = ads.getConversionP2N3();
+    }
+  }
+  sampleMicros = esp_timer_get_time();
+}
+
 void setMux() {
   if(USE_DIFF == false){
     if(adcChannel == 0){
@@ -241,6 +271,9 @@ void setMux() {
       ads.setMultiplexer(ADS1115_MUX_P2_N3);
     }
   }
+    //Voltage = (adc0 * bits2mv);
+  
+
 }
 
 //Start ADC and set gain. Starts timers
@@ -259,7 +292,7 @@ void startADS()
     ads.showConfigRegister();
     
     // We're going to do continuous sampling
-    ads.setMode(ADS1115_MODE_CONTINUOUS);
+    ads.setMode(ADS1115_MODE_SINGLESHOT);
     setMux();
     ads.setRate(ADS1115_RATE_475); //Sample Rate (sps)
     ads.setGain(ADS1115_PGA_0P256); //Step voltage (V)
@@ -297,7 +330,7 @@ void setupHEG() {
 
 
 void check_signal() {
-  if ((adc0 >= 6000) || (reset == true))
+  if ((adc0 >= 32000) || (reset == true))
   { // The gain is high but anything over 6000 is most likely not a valid signal, anything more than 2000 is not likely your body's signal.
     //Serial.println("\nBad Read ");
     badSignal = true;
@@ -553,35 +586,6 @@ void get_ratio(bool isNoise, bool getPos) {
   }
 }
 
-void readADC(){
-  delayMicroseconds(sampleRate);
-  lastRead = adc0;
-  if(USE_DIFF == false){
-    if(adcChannel == 0){
-      adc0 = ads.getConversionP0GND();
-    }
-    if(adcChannel == 1){
-      adc0 = ads.getConversionP1GND();
-    }
-    if(adcChannel == 2){
-      adc0 = ads.getConversionP2GND();
-    }
-    if(adcChannel == 3){
-      adc0 = ads.getConversionP3GND();
-    }
-    //adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
-  }
-  else{
-    if(USE_2_3 == false){
-      adc0 = ads.getConversionP0N1();
-    }
-    else {
-      adc0 = ads.getConversionP2N3();
-    }
-  }
-  sampleMicros = esp_timer_get_time();
-}
-
 // Core loop for HEG sampling.
 void core_program(bool doNoiseReduction)
 {
@@ -595,19 +599,23 @@ void core_program(bool doNoiseReduction)
     }
     if (SEND_DUMMY_VALUE != true)
     {
-      // Switch LEDs back and forth.
-      if(doNoiseReduction == true){
-        switch_LEDs(REDn, IRn);
-      }
-      else {
-        switch_LEDs(RED, IR);
-      }
-      if (currentMicros - sampleMicros >= sampleRate)
+        // Switch LEDs back and forth.
+      if (currentMicros - LEDMicros >= ledRate)
       {
+        // Switch LEDs back and forth.
+        if(doNoiseReduction == true){
+          switch_LEDs(REDn, IRn);
+        }
+        else {
+          switch_LEDs(RED, IR);
+        }
+        //ads.triggerConversion();
+        delayMicroseconds(300);
+        //currentMicros += 300;
         // read the analog in value
         readADC();
         //Voltage = (adc0 * bits2mv);
-
+      }
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
@@ -639,7 +647,6 @@ void core_program(bool doNoiseReduction)
       }
       adcAvg += adc0;
       adcTicks++;
-    }
   //DEBUG_ESP32
   if (DEBUG_ESP32 == true)
   {
@@ -730,7 +737,7 @@ StateChanger Header Start//=====================================================
         if (USE_USB == true)
         {
           //Serial.flush();
-          Serial.println(output);
+          Serial.print(output);
         }
         
         /*if (USE_BT == true)

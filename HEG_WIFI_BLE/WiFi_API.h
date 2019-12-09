@@ -328,6 +328,8 @@ void commandESP32(char received)
   if (received == 'n') {
     if (NOISE_REDUCTION == false) {
       NOISE_REDUCTION = true;
+      pinMode(IRn, OUTPUT);
+      pinMode(REDn, OUTPUT);
     }
     if (NOISE_REDUCTION == true) {
       NOISE_REDUCTION = false;
@@ -342,9 +344,11 @@ void commandESP32(char received)
     RED = RED2;
     IRn = IR3;
     REDn = RED3;
-    adcChannel = 0;
+    adcChannel = 2;
     pinMode(IR, OUTPUT);
     pinMode(RED, OUTPUT);
+    pinMode(IRn, OUTPUT);
+    pinMode(REDn, OUTPUT);
     reset = true;
     if(USE_DIFF == true){
       USE_2_3 = false;
@@ -357,7 +361,11 @@ void commandESP32(char received)
     RED = RED0;
     IRn = IR1;
     REDn = RED1;
-    adcChannel = 2;
+    adcChannel = 0;
+    pinMode(IR, OUTPUT);
+    pinMode(RED, OUTPUT);
+    pinMode(IRn, OUTPUT);
+    pinMode(REDn, OUTPUT);
     reset = true;
     if(USE_DIFF == true){
      USE_2_3 = true;
@@ -370,7 +378,11 @@ void commandESP32(char received)
     IR = IR2;
     REDn = RED1;
     IRn = IR1;
-    adcChannel = 2; //2
+    adcChannel = 0; //2
+    pinMode(IR, OUTPUT);
+    pinMode(RED, OUTPUT);
+    pinMode(IRn, OUTPUT);
+    pinMode(REDn, OUTPUT);
     reset = true;
     if(USE_DIFF == true){
       USE_2_3 = true;

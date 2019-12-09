@@ -184,6 +184,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.adcAvg.push(parseInt(this.csvDat[this.csvIndex][4]));
     this.ratioSlope.push(parseFloat(this.csvDat[this.csvIndex][5]));
     this.AI.push(parseFloat(this.csvDat[this.csvIndex][6]));
+    parent.postMessage( s.ratio[s.ratio.length-1], "*");
     g.ms = this.ms;
     if(this.ms.length >= 2){
       if(this.ratio.length > 40){
@@ -241,6 +242,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
         s.adcAvg.push(parseInt(dataArray[4]));
         s.ratioSlope.push(parseFloat(dataArray[5]));
         s.AI.push(parseFloat(dataArray[6]));
+        parent.postMessage( s.ratio[s.ratio.length-1], "*");
         g.ms = s.ms;
         //handle new data
         if(s.ratio.length-1 > 40){
