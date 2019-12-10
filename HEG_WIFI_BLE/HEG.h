@@ -610,10 +610,10 @@ void core_program(bool doNoiseReduction)
           switch_LEDs(RED, IR);
         }
         //ads.triggerConversion();
-        delayMicroseconds(200);
+        //delayMicroseconds(200);
         // read the analog in value
         readADC();
-        delayMicroseconds(sampleRate);
+        delayMicroseconds(sampleRate); // Temp: Signal not stable without fanagling with the delays
         //Voltage = (adc0 * bits2mv);
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
