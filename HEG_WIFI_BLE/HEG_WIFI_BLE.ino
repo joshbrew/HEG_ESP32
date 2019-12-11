@@ -1,4 +1,4 @@
-//Requires these arduino libraries: Arduino ESP32 latest dev or official build via git, AsyncTCP, ESPAsyncWebServer, ADS1115 by addicore + i2cdevlib, ArduinoJson
+//Requires these arduino libraries: Arduino ESP32 latest dev or official build via git, AsyncTCP, ESPAsyncWebServer, Arduino ADS1X15 library, ArduinoJson
 //By Joshua Brewster
 //Contributors: Diego Schmaedech and many others indirectly. 
 
@@ -14,6 +14,7 @@ void setup(void){
   Serial.println();
   Serial.println("Booting...");
 
+  currentMicros = esp_timer_get_time();
   setupHEG();
   delay(100);
   startADS();
@@ -39,6 +40,7 @@ void loop(void){
   HEG_core_loop();
   if(currentMicros - inputMicros >= 300000){ // Check input every N microseconds
     inputMicros = currentMicros;
+    delayMicroseconds(1800);
     checkInput();
     //delayMicroseconds(1000); // Hotfix for checkInput not working without delay.
   }

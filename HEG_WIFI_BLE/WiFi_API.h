@@ -293,13 +293,13 @@ void commandESP32(char received)
     }
   }
   if (received == 'T') {
-    //sensorTest();
-    //LEDTest();
+    sensorTest();
+    LEDTest();
   }
   if ((received == '0') || (received == '1') || (received == '2') || (received == '3'))
   {
     adcChannel = received - '0';
-    setMux();
+    //setMux();
     reset = true;
   }
   if (received == '5') {
@@ -310,7 +310,7 @@ void commandESP32(char received)
     else {
       USE_DIFF = false;
     }
-    setMux();
+    //setMux();
     reset = true;
   }
   if (received == '6') {
@@ -322,7 +322,7 @@ void commandESP32(char received)
       USE_DIFF = false;
       USE_2_3 = false;
     }
-    setMux();
+    //setMux();
     reset = true;
   }
   if (received == 'n') {

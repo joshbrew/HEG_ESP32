@@ -8,7 +8,7 @@
         </div>
         <div id="s0">
         <h3> Section 0: Quick Start Guide </h3>
-        <h4> 0. Find the HEG WiFi! </h4>
+        <h4> 0a. Find the HEG WiFi! </h4>
         <p>
         First thing's first. <br>
         <br>
@@ -28,7 +28,7 @@
         default ESP32 access point from the /connect page. when you reconnect to the access point. There is some jank depending on the type of router you connect to,<br> 
         so try a few times if it does not work at first. You cannot connect to a 5GHz router on the ESP32.<br>
             </p>
-        <h4> 0a. Your first session, tips and important considerations </h4>
+        <h4> 0b. Your first session </h4>
         <p>
         Make sure the HEG sensor is firmly flush against your forehead so you can feel the LEDs and photosensor <br>
         pressing against you but without hurting. You must be in dim indirect lighting for best results.<br>
@@ -42,6 +42,7 @@
         negative values or giant oscillations on the graph. This is where you remember you're using a <br>
         developer product that isn't always consistent if you don't know what you're supposed to do.<br>
         <br>
+        <h4> 0c. Debugging the signal </h4>
         Check these conditions when you are not receiving a stable, positive ratio and cannot control the games:<br>
         - Can you see the Red LED flashing when you hit start?<br>
         - Open up the debug console on your driver and verify if you get "HEGduino Events Connected" on the Web Demo page<br>
@@ -57,7 +58,10 @@
         - If you are receiving -1, this means the ADC is not set up or connected correctly.<br>
         - If you are receiving repeating low values like 64, 84, etc, that means the photodiode output is not being read and may be damaged or not soldered correctly.<br>
         - Check that no solder points or leads are contacting your skin as this will ground out those voltages. Electrical tape is an easy way to cover this up.	<br>	
-        </p>
+        <br>
+        If you cannot get any data through, use a serial monitor (like Arduino or this chrome app: https://chrome.google.com/webstore/detail/ohncdkkhephpakbbecnkclhjkmbjnmlo) <br>
+        Follow the instructions in the readme in our github repository (https://github.com/moothyknight/HEG_ESP32) <br>
+    </p>
             </div>
             <div id="sh">
             <h3> Safety Precautions and Disclaimers </h3>
@@ -161,9 +165,6 @@
         </div>
         <div id="s3"> 
         <h3> Section 3: Technical Manual </h3>
-        <h4> 3a. First time setup. </h4>
-        <h4> 3b. Getting connected. </h4>
-        <h4> 3c. Debugging and testing signal. </h4>
         </div>
     </body>
     </html>
