@@ -58,16 +58,16 @@ bool BLE_ON, BLE_SETUP = false;
 
 const int ledRate = 2106;      // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
 const int sampleRate = 2106;   // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. 
-const int samplesPerRatio = 3; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
+const int samplesPerRatio = 3; // Minimum number of samples per LED to accumulate before makitng a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
 const int BTRate = 100000;     // Bluetooth notify rate (us). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 const int USBRate = 0;         // No need to delay USB unless on old setups.
 
 const int nSensors = 1; // Number of sensors (for automated testing)
 const int nLEDs = 1; // Number of LED pairs (for automated testing)
 // LED GPIO pin definitions. Default LOLIN32 Pinout, commented values are TTGO T1 pins.
-int RED = 12, IR = 13 , REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
-int IR0 = 13;    // Default left 3cm LEDs
-int RED0 = 12; //33
+int RED = 13, IR = 12 , REDn = 15, IRn = 2; //Default LED GPIO. n values are LEDs used for noise cancelling.
+int IR0 = 12;    // Default left 3cm LEDs
+int RED0 = 13; //33
 int IR1 = 15;//15              // Left 1cm LEDs
 int RED1 = 18;//2
 int IR2 = 26;             // Right 1cm LEDs
@@ -294,6 +294,7 @@ void startADS()
     
     // We're going to do continuous sampling
     ads.setMode(ADS1115_MODE_SINGLESHOT);
+    ads.setComparatorMode(ADS1115_COMP_MODE_WINDOW);
     setMux();
     ads.setRate(ADS1115_RATE_475); //Sample Rate (sps)
     ads.setGain(ADS1115_PGA_0P256); //Step voltage (V)
@@ -602,7 +603,7 @@ void core_program(bool doNoiseReduction)
     if (SEND_DUMMY_VALUE != true)
     {
         // Switch LEDs back and forth.
-        // Switch LEDs back and forth.
+        //delayMicroseconds(1750); // Temp: Signal not stable without fanagling with the delays
         if(doNoiseReduction == true){
           switch_LEDs(REDn, IRn);
         }
@@ -610,14 +611,14 @@ void core_program(bool doNoiseReduction)
           switch_LEDs(RED, IR);
         }
         //ads.triggerConversion();
-        delayMicroseconds(200);
+        delayMicroseconds(300);
         // read the analog in value
         readADC();
-        delayMicroseconds(2000); // Temp: Signal not stable without fanagling with the delays
         //Voltage = (adc0 * bits2mv);
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
+        
           Serial.print("ADC: " + String(adc0) + "\n");
           //Serial.print(adc0);
           //Serial.println("\tVoltage: ");
@@ -740,7 +741,19 @@ StateChanger Header Start//=====================================================
         }
         if (deviceConnected)
         {
-          pCharacteristic->setValue(output.c_str());
+          pCharacteristic->setValue(String(currentMicros).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(redAvg).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(irAvg).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(ratioAvg, 4).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(ratioSlope, 4).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String(vAI, 4).c_str());
+          pCharacteristic->notify();
+          pCharacteristic->setValue(String("|").c_str());
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent
         }
