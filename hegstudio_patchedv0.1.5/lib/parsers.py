@@ -641,7 +641,7 @@ class SerialManager(threading.Thread):
             if(self.baudrate == 115200):
                 time.sleep(1)
                 self.ser.write('t')
-                for i in range(1,40):
+                for i in range(1,20):
                     print self.ser.readline()
                 self.start_time = time.time()
                 TIME_FORMAT = "%Y-%m-%d %H-%M-%S"
@@ -1133,18 +1133,18 @@ class AutoHEG(threading.Thread):
     
     def OnHEGduinoData(self, datum):
         print "RAW: ", datum
+        self.heg_raw.append(datum) # currently receiving ratio. See SerialManager.run() and ProtocolDetector.run(). HEGDUINO STRING: TIME,RED,IR,RATIO. RATIO POSITION TRANSMITS 'WAIT' IF NO RATIO
         lastdatum = self.heg_raw[len(self.heg_raw) - 1]
         if datum < (lastdatum + lastdatum * 0.25) and datum > (lastdatum - lastdatum * 0.25): # drop errors outside of margin
-            self.heg_raw.append(datum) # currently receiving ratio. See SerialManager.run() and ProtocolDetector.run(). HEGDUINO STRING: ADC,RATIO,POSITION FROM BASELINE. RATIO POSITION TRANSMITS 'WAIT' IF NO RATIO
             length = len(self.heg_raw)
 
             dy = 0 # Change in Amplitude from Baseline
             sma = 0  # Simple Moving Average
             score = 0 # Scoring = accumulated change in amplitudes from baseline
-            if(length > 20):
-                for data in itertools.islice(self.heg_raw, length - 21, length - 1): 
+            if(length > 40):
+                for data in itertools.islice(self.heg_raw, length - 41, length - 1): 
                     sma += data
-                sma = sma / 20
+                sma = sma / 40
                 self.heg_sma.append(sma*100)
                 print "SMA: ", sma
                 if self.use_sma:
@@ -1158,9 +1158,9 @@ class AutoHEG(threading.Thread):
                             score = self.hegdata[dataLength - 1]
                         else:
                             fastSMA = 0
-                            for data in itertools.islice(self.heg_raw, length - 11, length - 1):
+                            for data in itertools.islice(self.heg_raw, length - 21, length - 1):
                                 fastSMA += data
-                            fastSMA = fastSMA / 10
+                            fastSMA = fastSMA / 20
 
                             dy = fastSMA*100 - self.heg_sma[dataLength - 1]
                             score = self.hegdata[dataLength - 1] + dy * 0.1 # smoke and mirrors

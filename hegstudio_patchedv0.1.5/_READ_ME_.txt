@@ -1,6 +1,9 @@
 Patched HEGstudio for HEGduino on Windows!
 ******************************************
 Changelog:
+12/11/19
+Changed HEGstudio to use raw SMA for HEGduino (it works!), I should use a better smoothing algo.
+
 9/15/19
 Updated to fit new output format on HEGduino. HEGFlight is janky but the graph seems good.
 Recommend sticking to HEGMovie.
