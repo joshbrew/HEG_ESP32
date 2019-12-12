@@ -91,7 +91,7 @@ const int PWR = 14;//21; // Powers ADC and OPT101
 bool coreProgramEnabled = false;
 bool adcEnabled = false;
 bool reset = false;
-bool deviceConnected= false;
+bool deviceConnected = false;
 
 String output = "";
 
@@ -101,7 +101,7 @@ int lastLED = 0; // 0 = NO LED, 1 = RED, 2 = IR
 
 //Setup ADS1115
 Adafruit_ADS1115 ads(0x48);
-long adcChannel = 0; //Channel on the ADC to read. Default 0.
+long adcChannel = 0; //Channel on the ADC to read. Default 2.
 
 float Voltage = 0.0;
 float range = 32767; // 16 bit ADC (15 bits of range)
@@ -887,13 +887,13 @@ StateChanger Header Start//=====================================================
         //output = "NO DATA";
         if (noiseTicks > 0)
         {
-          output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(denoised, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
+          output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(denoised, 4) + "|" + String(adcAvg) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
           noiseAvg = 0;
           noiseTicks = 0;
         }
         else
         {
-          output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
+          output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(adcAvg) + "|" + String(ratioSlope, 4) + "|" + String(vAI, 4) + "\r\n";
         }
 
         if (USE_USB == true)
