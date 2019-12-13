@@ -1,4 +1,3 @@
-const char event_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
 <head>
@@ -229,7 +228,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
 }
 
 var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
-  console.log("myevent", e.data);
+  console.log("event", e.data);
   if(document.getElementById("heg").innerHTML != e.data){  //on new output
     document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
     if(e.data.includes("|")) {
@@ -288,4 +287,3 @@ handleEventData(e);
 </script>
 </body>
 </html>
-)=====";

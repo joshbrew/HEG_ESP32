@@ -15,16 +15,17 @@
 //#include "SPIFFS.h"
 
 #include "settings.h" //ESP32 Settings
-#include "index.h"  //Index/intro page
-#include "update.h" //Update page
-#include "ws.h" // Websocket client page
-#include "connect.h" // Wifi connect page
-#include "sc.h" // State Changer page
-#include "HEGwebAPI.h" //HEG web javascript
-#include "webDemo.h" // Web app page
-#include "webDemoCSS.h" // Web app CSS page
+#include "webDemo/index.h"  //Index/intro page
+#include "webDemo/update.h" //Update page
+#include "webDemo/ws.h" // Websocket client page
+#include "webDemo/connect.h" // Wifi connect page
+#include "webDemo/sc.h" // State Changer page
+#include "webDemo/HEGwebAPI.h" //HEG web javascript
+#include "webDemo/webDemo.h" // Web app page
+#include "webDemo/webDemoCSS.h" // Web app CSS page
+#include "webDemo/help.h" // Help page
+
 #include "HEG.h" // HEG driver for ESP32
-#include "help.h" // Help page
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
