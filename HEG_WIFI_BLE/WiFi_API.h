@@ -15,6 +15,7 @@
 //#include "SPIFFS.h"
 
 #include "settings.h" //ESP32 Settings
+#include "webDemo/api.h" // Uninitialized API page for external apps.
 #include "webDemo/index.h"  //Index/intro page
 #include "webDemo/update.h" //Update page
 #include "webDemo/ws.h" // Websocket client page
@@ -777,6 +778,9 @@ void setupWiFi(){
     commandESP32('n');
   });
 
+  server.on("/api", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", api);
+  });
   server.on("/HEGwebAPI.js", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/javascript", HEGwebAPI);
   });

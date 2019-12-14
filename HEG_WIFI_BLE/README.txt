@@ -114,6 +114,10 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+12/14/19
+------
+- Made standalone /api page with uninitialized JS api and CSS available for external use.
+
 12/10/19
 ------
 - Rolled back ADC library due to too much instability.

@@ -8,6 +8,8 @@ class HEGwebAPI {
       this.ratioSlope=[];
       this.AI=[];
 
+      this.parentId = parentId;
+
       this.slowSMA = 0;
       this.fastSMA = 0;
       this.smaSlope = 0;
@@ -189,8 +191,8 @@ class HEGwebAPI {
       var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
       var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
-      HEGwebAPI.appendFragment(dataDivHTML,"main_body");
-      HEGwebAPI.appendFragment(hegapiHTML,"main_body");
+      HEGwebAPI.appendFragment(dataDivHTML,parentId);
+      HEGwebAPI.appendFragment(hegapiHTML,parentId);
       HEGwebAPI.appendFragment(containerHTML,"dataDiv");
       HEGwebAPI.appendFragment(messageHTML,"container");
       HEGwebAPI.appendFragment(eventHTML,"container");
