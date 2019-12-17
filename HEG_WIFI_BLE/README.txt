@@ -51,17 +51,19 @@ upper .../tools directory so the SPIFFs tool can find them.
 
 HEG serial commands:
 't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light.
-'f' - Sensor off
+'f' - Sensor off.
+'W' - Reset WiFi to default access point mode (wipes saved credentials).
 'b' - Toggle BLE mode, this resets the device to start in BLE mode, so you have to enter 'b' again through the serial or BLE connection to switch back to WiFi.
-'R' - hard resets the ESP32
-'s' - soft resets the sensor data
+'R' - hard resets the ESP32.
+'s' - soft resets the sensor data.
 'u' - toggles USB data stream. 
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
-'6' - Read differential between A2 and A3 on ADS1115
-'D' - toggles ADC debugging (serial only)
-'L' - toggles LED ambient cancellation 
+'6' - Read differential between A2 and A3 on ADS1115.
+'D' - toggles ADC debugging (serial only).
+'L' - toggles LED ambient light cancellation .
+'T' - LED/PD test function. Not finished, easier to just check the 't' output real quick.
 //'A' - BUGGED - toggles ADC error catching (if experiencing major fluctuations in data)
 
 With extra sensors:
@@ -114,6 +116,11 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+12/16/19
+------
+- updated front page, connection page, and help page. Now with version number visible on main page.
+- the web API lets you set an arbitrary host for the event source now for quicker remote play (set host with a new HEGwebAPI(parentId,defaultUI,**hostIP**))
+ 
 12/14/19
 ------
 - Made standalone /api page with uninitialized JS api and CSS available for external use.

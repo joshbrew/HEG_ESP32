@@ -5,38 +5,43 @@ const char MAIN_page[] PROGMEM = R"=====(
 <style>
 body {
   background-color: #707070;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Console, Lucida, monospace;
   color: white;
 }
 h1, h3 {
-  text-align:center;
+  text-align: center;
 }
 hegnav {
-  position:relative;
+  position: relative;
 }
 form {
-  position:absolute;
+  font-size: 20px;
+  font-weight: bold;
 }
 .scform {
   border: 2px solid royalblue;
   border-radius: 8px;
   padding: 8px;
-  top:50%;
-  left:13%;
 }
 .cvform{
   border: 2px solid lime;
   border-radius: 8px;
   padding: 8px;
-  top:50%;
-  left:43%;
 }
 .csform{
   border: 2px solid tomato;
   border-radius: 8px;
   padding: 8px;
-  top:50%;
-  left:70%
+}
+.uform{
+  border: 2px solid tomato;
+  border-radius: 8px;
+  padding: 8px;
+}
+.hform{
+  border: 2px solid turquoise;
+  border-radius: 8px;
+  padding: 8px;
 }
 .button {
   border: none;
@@ -51,7 +56,7 @@ form {
   cursor: pointer;
 }
 .scbutton{
-  background-color: royalblue; 
+  background-color: gray; 
 }
 .cvbutton{
   background-color: lime;
@@ -59,17 +64,24 @@ form {
 .csbutton{
   background-color: tomato;
 }
+.hbutton{
+  background-color: turquoise;
+}
 
 </style>
 </head>
 <body>
 <h3>ESP32 web server demo</h3>
 <h1>HEG Pre-Alpha Web Nav</h1>
-
-<div id="HEG_NAV">
-  <form class="scform" method="get" action="/sc">StateChanger Demo: <button class="button scbutton" type="submit">GO</button></form><br>
-  <form class="cvform" method="get" action="/listen">Canvas Demo: <button class="button cvbutton" type="submit">GO</button></form><br>
-  <form class="csform" method="get" action="/connect">Connection Settings: <button class="button csbutton" type="submit">GO</button></form><br>
+<div id="HEG_NAV" class="hegnav" align="center">
+  <form method="get" class="cvform" action="/listen">HTML5 Web Demo: <button class="button cvbutton" type="submit">GO</button></form><br>
+  <form  method="get" class="csform" action="/connect">Connection Settings: <button class="button csbutton" type="submit">GO</button></form><br>
+  <form method="get" class="uform" action="/update">Update: <button class="button csbutton" type="submit">GO</button></form><br>
+  <form method="get" class="hform" action="/help">Help (WIP): <button class="button hbutton" type="submit">GO</button></form>
+  <!--<form class="scform" method="get" action="/sc">StateChanger Demo (WIP):<button class="button scbutton" type="submit">GO</button></form><br>-->
+</div>
+<div id="version" style="position:absolute; right:5px; bottom:5px">
+  Alpha v0.1. Dec. 16, 2019.
 </div>
 
 </body>

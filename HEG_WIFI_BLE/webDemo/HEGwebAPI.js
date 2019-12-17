@@ -1,5 +1,5 @@
 class HEGwebAPI {
-    constructor(parentId="main_body", defaultUI=true){
+    constructor(parentId="main_body", defaultUI=true, host=''){
       this.ms=[];
       this.red=[];
       this.ir=[];
@@ -19,6 +19,9 @@ class HEGwebAPI {
       this.csvDat = [];
       this.csvIndex = 0;
 
+      this.host = host;
+      this.source="";
+
       this.sensitivity = null;
       
       window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -26,6 +29,7 @@ class HEGwebAPI {
       if(defaultUI==true){
         this.createHegUI(parentId);
       }
+      this.createEventListeners(host);
     }
 
     //appendId is the element Id you want to append this fragment to
@@ -136,29 +140,43 @@ class HEGwebAPI {
       console.log("HEGDUINO", e.data);
     }
 
-    createEventListeners() {
+    openEvent(e){
+      console.log("HEGDUINO", "Events Connected");
+      //document.getElementById("message").innerHTML = "Output:";
+    }
+
+    errorEvent(e){
+      if (e.target.readyState != EventSource.OPEN) {
+        console.log("HEGDUINO", "Events Disconnected");
+      }
+    }
+
+    messageEvent(e){
+      console.log("HEGDUINO", e.data);
+      //document.getElementById("message").innerHTML = e.data;
+    }
+
+    hegEvent = (e) => {
+      this.handleData(e);
+    }
+
+    createEventListeners(host='') { //Set custom hostname (e.g. http://192.168.4.1)
       if (!!window.EventSource) {
-        var source = new EventSource('/events');
+        this.source = new EventSource(host+'/events');
+        this.source.addEventListener('open', this.openEvent, false);
+        this.source.addEventListener('error', this.errorEvent, false);
+        this.source.addEventListener('message', this.messageEvent, false);
+        this.source.addEventListener('heg', this.hegEvent, false);
+      }
+    }
 
-        source.addEventListener('open', function(e) {
-            console.log("HEGDUINO", "Events Connected");
-            //document.getElementById("message").innerHTML = "Output:";
-        }, false);
-
-        source.addEventListener('error', function(e) {
-            if (e.target.readyState != EventSource.OPEN) {
-              console.log("HEGDUINO", "Events Disconnected");
-            }
-        }, false);
-
-        source.addEventListener('message', function(e) {
-            //document.getElementById("message").innerHTML = e.data;
-            console.log("HEGDUINO", e.data);
-        }, false);
-
-        source.addEventListener('heg', (e) => {
-            this.handleData(e);
-        }, false);
+    removeEventListeners() {
+      if(window.EventSource){
+      this.source.close();
+      this.source.removeEventListener('open', this.openEvent, false);
+      this.source.removeEventListener('error', this.errorEvent, false);
+      this.source.removeEventListener('message', this.messageEvent, false);
+      this.source.removeEventListener('heg', this.hegEvent, false);
       }
     }
    
@@ -168,16 +186,16 @@ class HEGwebAPI {
 
     createHegUI(parentId) {
       var hegapiHTML = '<div id="hegapi" class="hegapi"> \
-        <form method="post" action="/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form> \
-        <form method="post" action="/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form> \
-        <form class="sendcommand" method="post" action="/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
+        <form method="post" action="'+this.host+'/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form> \
+        <form method="post" action="'+this.host+'/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form> \
+        <form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
         <div id="saveLoad" class="saveLoadBar"> \
           <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input> \
           <button class="button saveLoadButtons" id="savecsv">Save CSV</button> \
           <button class="button saveLoadButtons" id="replaycsv">Replay CSV</button> \
         </div> \
         <div id="sensitivityBar" class="sensBar"> \
-          Sensitivity:<br><input type="range" id="sensitivity" min="1" max="200" value="100"> \
+          Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" id="sensitivity" min="1" max="200" value="100"> \
           <button class="button" id="reset_s">Default</button> \
         </div> \
         </div> \
@@ -188,7 +206,7 @@ class HEGwebAPI {
       var containerHTML = '<div id="container"></div>';
       var messageHTML = '<msgDiv id="message">Output:</div>';
       var eventHTML = '<eventDiv id="heg">Not connected...</eventDiv>';
-      var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA1s-2s</th></tr></table></div>';
+      var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>ms</th><th>Red</th><th>IR</th><th>Ratio</th><th>adcAvg</th><th>rSlope</th><th>A.I.</th><th class="scoreth">SMA Score</th></tr></table></div>';
       var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
       HEGwebAPI.appendFragment(dataDivHTML,parentId);
@@ -202,12 +220,15 @@ class HEGwebAPI {
       document.getElementById("savecsv").onclick = () => {this.saveCSV();}
       document.getElementById("replaycsv").onclick = () => {this.openCSV();}
       this.sensitivity = document.getElementById("sensitivity");
-      document.getElementById("reset_s").onclick = () => { this.sensitivity.value = 100; }
-      
-      this.createEventListeners();
+      document.getElementById("reset_s").onclick = () => { 
+        this.sensitivity.value = 100; 
+        document.getElementById("sensitivityVal").innerHTML = (this.sensitivity.value * 0.01).toFixed(2);
+      }
+      document.getElementById("sensitivity").oninput = () => {
+        document.getElementById("sensitivityVal").innerHTML = (this.sensitivity.value * 0.01).toFixed(2);
+      }
     }
   }
-
   class graphJS {
     constructor(parentId, canvasId="graph", nPoints=[1000], color=[0,255,0,1], yscale=1, defaultUI=true, res=[1400,400]){
       //WebGL graph based on: https://tinyurl.com/y5roydhe

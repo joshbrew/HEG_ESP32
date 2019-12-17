@@ -41,30 +41,36 @@ input[type=submit]{
 </head>
 <body>
  <div id='formContainer' class='container'>
-  <h2>Connect to WiFi</h4>
+  <h2>Connection Settings</h4>
+    <!-- For remote form POSTing, add host IP to front of action path (e.g. <form method='post' action='http://192.168.4.1/doConnect'...) -->
   <form method ='post' action='/doConnect' enctype='multipart/form-data'>
+    <input type='radio' id='AP_ONLY' name='choices' value='1'>Reset to Default (Can also toggle with "W" via USB Serial or BT)<br>
+    <input type='radio' id='btSwitch' name='choices' value='2'>Bluetooth LE (Can also toggle with "b" via USB Serial or BT)<br>
+    <br>
+    Connect to Network (WiFi scan results at bottom of page): <br>
     SSID:<br>
       <input type='text' id='ssid' name='ssid'><br>
     Password:<br>
-      <input type='password' id='pw' name='pw'><br><br>
+      <input type='password' id='pw' name='pw'><br>
+      <input type='radio' id='defaultC' name='choices' value='9' checked>Auto-Connect (find the IP via your router or via USB Serial output on boot)<br>
+      <input type='radio' id='suggestIP' name='choices' value = '4'>Suggest Static IP (Return to this page after reconnecting to this device)<br>
+      <br>
     Optional Static IP mode: <br>
     Static IP (e.g. 192.168.0.199, first 3 numbers must match gateway):<br>
       <input type='text' id='static' name='static'><br>
-    Gateway IP (e.g. 192.168.0.1, check your router settings):<br>
+    Gateway IP (e.g. 192.168.0.1, check router settings):<br>
       <input type='text' id='gateway' name='gateway'><br>
-    Subnet Mask (e.g. 255.255.255.0):<br>
+    Subnet Mask (e.g. 255.255.255.0, check router settings):<br>
       <input type='text' id='subnet' name='subnet'><br>
+    <input type='radio' id='use_static' name='choices' value='0'>Use Static IP<br>
+    <br>
     For use with Static IP with DNS mode:<br>
     Primary DNS:<br>
       <input type='text' id='primary' name='primary'><br>
     Secondary DNS (optional):<br>
       <input type='text' id='secondary' name='secondary'><br>
-      <input type='radio' id='defaultC' name='choices' value='9' checked>Default Connect<br>
-      <input type='radio' id='use_static' name='choices' value='0'>Use Static IP<br>
       <input type='radio' id='use_dns' name='choices' value = '3'>Use Static IP with DNS<br>
-      <input type='radio' id='suggestIP' name='choices' value = '4'>Suggest Static IP<br>
-      <input type='radio' id='AP_ONLY' name='choices' value='1'>Access Point Only<br>
-      <input type='radio' id='btSwitch' name='choices' value='2'>Use Bluetooth<br>
+    <br>
     <input type='submit' id='Connect' value='Connect'>
    </div>
   </form>

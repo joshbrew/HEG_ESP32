@@ -581,6 +581,7 @@ void eventTask(void * param) {
     eventMicros = currentMicros;
     if(output != ""){
       events.send(output.c_str(),"heg",esp_timer_get_time());
+      output = ""; // Clear output
     }
     //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
     vTaskDelay(50 / portTICK_PERIOD_MS);
