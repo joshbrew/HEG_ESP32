@@ -63,7 +63,7 @@ const char help_page[] PROGMEM= R"=====(
         <ul>
         <li> Can you see the Red LED flashing when you hit start?</li>
         <li> Open up the debug console on your driver and verify if you get "HEGduino Events Connected" on the Web Demo page</li>
-        <li>Check your ambient lighting conditions. You must be in a dim or indirectly lit environment.</li>
+        <li>Check your ambient lighting conditions. It is best but not required to be in a dim or indirectly lit environment.</li>
             <ul><li>If the light sensor is not firmly against your forehead and exposed directly to the LEDs or sunlight, it will be saturated and will not output data.</li>
             <li> Even a cloudy day can create too much ambient light for the LEDs to be picked up, and you will get a negative or zero ratio.</li>
             </ul>
