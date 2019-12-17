@@ -72,7 +72,7 @@ form {
 </head>
 <body>
 <h3>ESP32 web server demo</h3>
-<h1>HEG Pre-Alpha Web Nav</h1>
+<h1>HEG Alpha Web Nav</h1>
 <div id="HEG_NAV" class="hegnav" align="center">
   <form method="get" class="cvform" action="/listen">HTML5 Web Demo: <button class="button cvbutton" type="submit">GO</button></form><br>
   <form  method="get" class="csform" action="/connect">Connection Settings: <button class="button csbutton" type="submit">GO</button></form><br>
