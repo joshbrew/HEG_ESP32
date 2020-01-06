@@ -4,7 +4,7 @@ HEG WiFi WIP implementation.
 
 You need the github version of the Arduino ESP32 libraries, follow steps accordingly for your OS.
 
-You need to change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
+You need to change the partition scheme to "Minimal SPIFFS (Large Apps with OTA)" in the Arduino Tools menu.
 
 Required Libraries: 
 Arduino ESP32 latest dev or official build via git
