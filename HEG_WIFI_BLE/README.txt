@@ -106,11 +106,6 @@ Chrome app serial monitor (alternative to Arduino): https://chrome.google.com/we
 Arduino IDE has a debugger that comes with the ESP32 libs if there are some weird crashes happening.
 -------
 
-HEG Code notes:
-
-The noise_reduce() function in this version is still broken. That needs to be triggered.
-
-On the /listen or /stream page once the event listener/websocket is connected you can control and test the HEG through the Serial monitor. Right now there is a manual 75ms delay on the data stream, I'm going to create buffers as the new sensors will be WAY faster than TCP can handle.
 
 *-*-*-*-*-*-*
 Changelog:
