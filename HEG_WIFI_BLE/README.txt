@@ -72,11 +72,10 @@ With extra sensors:
 'r' - toggles sensor 1 and LED set 3.
 'n' - broken and basic noise reduction implementation, where two LED sites are compared. This is not a good implementation yet, may cause device to hang.
 
-Output data stream:
+Output data stream at 115200 baud on USB, or by BLE or SSE
 
 Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
-Red/IR Ratio Average | small Sav Lay Filter | large Sav Lay Filter |
-adc Avg | position Average | ratio Slope | Attention Index
+Red/IR Ratio Average | adc Avg | ratio Slope | Attention Index
 
 With noise average activated, the denoised ratio (if using an extra pair of LEDs) is inserted between Red/IR Ratio Avg and the small Sav Lay Filter.
 
