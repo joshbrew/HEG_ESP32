@@ -20,7 +20,7 @@ In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and cha
 xTaskCreateUniversal(loopTask, "loopTask", 8196, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
 to
 xTaskCreateUniversal(loopTask, "loopTask", 16384, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-The heap memory needs to be increased as the change in wifi can be too much on for the default arduino config. 
+The heap memory needs to be increased as the change in wifi can be too much on the memory for the default arduino config. 
 *****
 
 After flashing this sketch onto the ESP32, you will find the new wifi
