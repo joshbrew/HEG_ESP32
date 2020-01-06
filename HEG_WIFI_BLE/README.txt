@@ -77,7 +77,7 @@ Output data stream at 115200 baud on USB, or by BLE or SSE
 Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
 Red/IR Ratio Average | adc Avg | ratio Slope | Attention Index
 
-With noise average activated, the denoised ratio (if using an extra pair of LEDs) is inserted between Red/IR Ratio Avg and the small Sav Lay Filter.
+With noise average activated, the denoised ratio replaces the normal Ratio average (not implemented on HEGduino due to single sensor setup)
 
 The following demo pages are available:
 /       - Index page, basic site navigation.
