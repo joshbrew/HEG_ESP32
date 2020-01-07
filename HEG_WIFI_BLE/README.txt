@@ -82,7 +82,7 @@ With noise average activated, the denoised ratio replaces the normal Ratio avera
 The following demo pages are available:
 /       - Index page, basic site navigation.
 /help   - Help page (WIP)
-/webDemo - On-board game/exercise interface woth session data saving/replaying. Should be fully cross-platform.
+/listen - On-board game/exercise interface woth session data saving/replaying. Should be fully cross-platform.
 /connect - connect HEG to router so it may be accessed via a router instead. 
 /update - Upload compiled binaries and flash the ESP32 over the web.
 
