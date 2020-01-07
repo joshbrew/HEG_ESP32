@@ -74,7 +74,7 @@ With extra sensors:
 
 Output data stream at 115200 baud on USB, or by BLE or SSE
 
-Current Milliseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | adc Avg | ratio Slope | Attention Index \r\n
+Current Microseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | adc Avg | ratio Slope | Attention Index \r\n
 
 With noise average activated, the denoised ratio replaces the normal Ratio average (not implemented on HEGduino due to single sensor setup)
 
