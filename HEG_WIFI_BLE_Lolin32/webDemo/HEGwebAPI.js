@@ -191,7 +191,7 @@ class HEGwebAPI {
   }
  
   updateTable(){
-    document.getElementById("dataTable").innerHTML = '<tr><td id="us">'+this.us[this.us.length-1-1]+'</td><td id="red">'+this.red[this.red.length-1-1]+'</td><td id="ir">'+this.ir[this.ir.length-1-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1-1]+'</td><td id="ambient">'+this.ambient[this.ambient.length-1-1]+'</td><td id="Vel">'+this.velAvg[this.velAvg.length-1-1]+'</td><td id="Accel">'+this.accelAvg[this.accelAvg.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
+    document.getElementById("dataTable").innerHTML = '<tr><td id="us">'+this.us[this.us.length-1]+'</td><td id="red">'+this.red[this.red.length-1]+'</td><td id="ir">'+this.ir[this.ir.length-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1]+'</td><td id="ambient">'+this.ambient[this.ambient.length-1]+'</td><td id="Vel">'+this.velAvg[this.velAvg.length-1]+'</td><td id="Accel">'+this.accelAvg[this.accelAvg.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
   }
 
   createHegUI(parentId) {

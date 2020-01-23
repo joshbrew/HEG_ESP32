@@ -705,7 +705,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
     this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
     this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-    this.rawAvg.push(parseInt(this.csvDat[this.csvIndex][4]));
+    this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
     this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
     this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
   }
@@ -715,7 +715,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
     this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
     this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-    this.rawAvg.push(parseInt(this.csvDat[this.csvIndex][4]));
+    this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
     this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
     this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
     parent.postMessage( s.ratio[s.ratio.length-1], "*");
@@ -760,7 +760,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
       g.xoffsetSlider.max = this.scoreArr.length - 1;
     }
   }
-  setTimeout(() => {this.replayCSV();},(this.us[this.csvIndex]-this.us[this.csvIndex-1])); //Call until end of index.
+  setTimeout(() => {this.replayCSV();},(this.us[this.csvIndex]-this.us[this.csvIndex-1])*0.001); //Call until end of index.
 }
 
 var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
@@ -774,7 +774,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
         s.red.push(parseInt(dataArray[1]));
         s.ir.push(parseInt(dataArray[2]));
         s.ratio.push(parseFloat(dataArray[3]));
-        s.rawAvg.push(parseInt(dataArray[4]));
+        s.ambient.push(parseInt(dataArray[4]));
         s.velAvg.push(parseFloat(dataArray[5]));
         s.accelAvg.push(parseFloat(dataArray[6]));
         parent.postMessage( s.ratio[s.ratio.length-1], "*");

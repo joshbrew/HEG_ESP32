@@ -107,6 +107,10 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+1/23/19
+------
+- Fixes to web demo replay streaming
+
 1/22/19
 ------
 - Major mobile-friendly UI updates to web interface page (Alpha 0.0.1 for the interface)

@@ -4,7 +4,7 @@ HEG WiFi WIP implementation.
 
 You need the github version of the Arduino ESP32 libraries, follow steps accordingly for your OS.
 
-You need to change the partition scheme to "Minimal SPIFFS (Large Apps with OTA)" in the Arduino Tools menu.
+You need to change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
 
 Required Libraries: 
 Arduino ESP32 latest dev or official build via git
@@ -20,7 +20,7 @@ In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and cha
 xTaskCreateUniversal(loopTask, "loopTask", 8196, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
 to
 xTaskCreateUniversal(loopTask, "loopTask", 16384, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-The heap memory needs to be increased as the change in wifi can be too much on the memory for the default arduino config. 
+The heap memory needs to be increased as the change in wifi can be too much on for the default arduino config. 
 *****
 
 After flashing this sketch onto the ESP32, you will find the new wifi
@@ -70,7 +70,7 @@ With extra sensors:
 'c' - toggles sensor 0 (channel 0) and LED set 2.
 'r' - toggles sensor 1 (channel 2) and LED set 3.
 
-Output data stream at 115200 baud on USB, or by BLE or SSE
+Output data stream:
 
 Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
 Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2)
@@ -107,6 +107,10 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+1/23/19
+------
+- Fixes to web demo replay streaming
+
 1/22/19
 ------
 - Major mobile-friendly UI updates to web interface page (Alpha 0.0.1 for the interface)
