@@ -1,9 +1,9 @@
 # HEG_ESP32 - Open Source
-Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, app, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
+Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
 
-Use the HEG_WIFI_BLE sketch in the arduino IDE on your ESP32. Pin definitions in HEG.h for the SDA/SCL, and LEDs need to be adjusted according to your setup.
+Use the HEG_WIFI_BLE sketch in the arduino IDE on your ESP32. Pin definitions in HEG.h for the SDA/SCL, and LEDs need to be adjusted according to your setup. These builds are tested on the Lolin32 and Huzzah32 Feather respectively but should work on any board after modifying the pinouts in HEG.h
 
-See the README in the Arduino sketch folder for installation instructions.
+See the README in the Arduino sketch folder for flashing instructions. Requires the Espressif ESP32 IDE installed for Arduino - we recommend the developer build so you can tweak the files.
 
 -------------------------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ v0.1.5 with EXE, Tested for Windows 7, 8, and 10 available in this repo. Bugs ar
 
 Source and exe available in this repo, but requires the media files available from the original sourceforge: https://sourceforge.net/projects/hegstudio/
 
-See also:
+See also (very deprecated):
 [Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
 
 ## What is it?
@@ -31,9 +31,9 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 
 ## Software
 
-WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend.
+WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
-You can demo it now via the firmware, it's evolving fast. We will be comparable to professional software, free of charge.
+You can demo it now via the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge.
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
@@ -46,7 +46,7 @@ You can demo it now via the firmware, it's evolving fast. We will be comparable 
 - 6 pin SOT23 socket (for mounting LEDs)
 - MicroUSB cable. 
 
-You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32 dev board, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. DN1102W is preferred at 850nm for IR as it is has fairly identical reflectivity between Hb or HbO2, providing a better baseline. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
+You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32 dev board, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. DN1102W is preferred at 850nm for IR by Biocomp as it is has fairly identical reflectivity between Hb or HbO2, providing a better baseline. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
 
 Placeholder... UPDATING SOON.
 ## Schematics
@@ -76,7 +76,7 @@ The photodiode is very sensitive. Any moisture or stray light will throw off the
 
 The maximum ADC reading is 32768 (15 bits) and each step is 0.125mV at the maximum 16X gain on the ADS1115. This is plenty sensitive for blood-oxygen detection. The range for real data is in the 200-3000 range. The script will not set the baseline unless it is below a specified light threshold.
 
-An ADC read of -1 means the ADC might be unpowered or fried. If you are just receiving random values with no responsiveness your A0 pin connection to the photodiode needs to be checked. A constant value of 32768 with no responsiveness to light means there is a short or the 1MΩ pin might not be connected to the signal output of the photodiode.
+An ADC read of -1 means the ADC is not selected on the right pins (or those pins aren't soldered), or unpowered, or even fried. If you are however receiving random values with no responsiveness your A0 pin connection to the photodiode needs to be checked. A constant value of 32768 with no responsiveness to light means there is a short or the 1MΩ pin might not be connected to the signal output of the photodiode.
 
 Be sure to cover the photodiode pins and the LED contacts with electrical tape so your forehead doesn't complete the circuit and throw off readings.
 

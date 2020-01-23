@@ -26,7 +26,7 @@ The heap memory needs to be increased as the change in wifi can be too much on f
 After flashing this sketch onto the ESP32, you will find the new wifi
 access point at the SSID: My_HEG with password: 12345678.
 
-After logging into the access point, access the interface at 192.168.4.1
+After logging into the WiFi access point, access the interface at 192.168.4.1
 
 ********************************
 
@@ -42,7 +42,7 @@ In esp32>tools>partitions replace default.csv with the one in this library
 These change the default partitioning to allow sketches up to 2MB in size on the ESP32 to make room for dual WiFi and BLE.
 
 Extra SPIFFS notes:
-You need the SPIFFs tools: https://github.com/me-no-dev/arduino-esp32fs-plugin
+To use SPIFFs files you need the SPIFFs tools: https://github.com/me-no-dev/arduino-esp32fs-plugin
 You also need to copy the esptool and mkspiffs EXE files in Arduino/hardware/espressif/esp32/tools/esptool and .../tools/mkspiffs into the
 upper .../tools directory so the SPIFFs tool can find them.
 **
@@ -64,25 +64,19 @@ HEG serial commands:
 'D' - toggles ADC debugging (serial only).
 'L' - toggles LED ambient light cancellation .
 'T' - LED/PD test function. Not finished, easier to just check the 't' output real quick.
-//'A' - BUGGED - toggles ADC error catching (if experiencing major fluctuations in data)
 
 With extra sensors:
-'l' - toggles sensor 0 and LED set 0.
-'c' - toggles sensor 0 and LED set 2.
-'r' - toggles sensor 1 and LED set 3.
-'n' - broken and basic noise reduction implementation, where two LED sites are compared. This is not a good implementation yet, may cause device to hang.
+'l' - toggles sensor 0 (channel 0) and LED set 0.
+'c' - toggles sensor 0 (channel 0) and LED set 2.
+'r' - toggles sensor 1 (channel 2) and LED set 3.
 
 Output data stream:
 
 Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
-Red/IR Ratio Average | small Sav Lay Filter | large Sav Lay Filter |
-adc Avg | position Average | ratio Slope | Attention Index
-
-With noise average activated, the denoised ratio (if using an extra pair of LEDs) is inserted between Red/IR Ratio Avg and the small Sav Lay Filter.
+Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2)
 
 The following demo pages are available:
 /       - Index page, basic site navigation.
-/sc     - State Changer demo page.
 /listen - HEG Output event listener test. Better than websockets for this use case.
 /connect - connect HEG to router so it may be accessed via a router instead. 
 /update - Upload compiled binaries and flash the ESP32 over the web.
@@ -101,7 +95,6 @@ mDNS should allow the ESP32 to be accessed via http://esp32.local. It requires B
 
 
 -------
-
 Serial Port notes:
 Chrome app serial monitor (alternative to Arduino): https://chrome.google.com/webstore/detail/serial-monitor/ohncdkkhephpakbbecnkclhjkmbjnmlo/related?hl=en
 Arduino IDE has a debugger that comes with the ESP32 libs if there are some weird crashes happening.
@@ -109,13 +102,19 @@ Arduino IDE has a debugger that comes with the ESP32 libs if there are some weir
 
 HEG Code notes:
 
-The noise_reduce() function in this version is still broken. That needs to be triggered.
-
 On the /listen or /stream page once the event listener/websocket is connected you can control and test the HEG through the Serial monitor. Right now there is a manual 75ms delay on the data stream, I'm going to create buffers as the new sensors will be WAY faster than TCP can handle.
 
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+1/22/19
+------
+- Major mobile-friendly UI updates to web interface page (Alpha 0.0.1 for the interface)
+- Changes to data outputs (replaced rSlope and A.I. with velocity and acceleration (voltage units / ms and voltage units / ms ^2). 1 ADC unit = 0.256mV so if Vel = 1 that's +0.256mV gained per millisecond
+- Cleanup of HEG.h code.
+- Testing notes: 
+   -- Some power sources cause unstable readings. Try different power sources.
+   -- Different computers/phones seem to have different compatibility errors for the same software (e.g. one laptop not working with Microsoft Edge and another one working great) - not totally sure why.
 12/16/19
 ------
 - updated front page, connection page, and help page. Now with version number visible on main page.

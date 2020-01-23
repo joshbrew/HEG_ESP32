@@ -1,3 +1,4 @@
+const char webDemoCSS[] PROGMEM = R"=====(
 body { background-color: #707070; font-family: Console, Lucida, monospace; font-weight: bold; }
   msgDiv { display: none; }
   eventDiv { display: none; }
@@ -138,3 +139,4 @@ body { background-color: #707070; font-family: Console, Lucida, monospace; font-
       border:0; 
       border:none;
    }
+)=====";
