@@ -17,20 +17,20 @@ const char help_page[] PROGMEM= R"=====(
         <h3> Contents </h3>
         <a href="#s0"> Section 0: Quick Start Guide</a><br>
         <a href="#s1"> Section 1: Introduction</a><br>
-        <a href="#s2"> Section 2: Features!</a><br>
-        <a href="#s3"> Section 3: Technical Manual</a><br>
+        <a href="#s2"> Section 2: Web Demo guide</a><br>
+        <a href="#s3"> Section 3: Technical Guide</a><br>
         <div id="s0">
         <h2> Section 0: Quick Start Guide </h2>
         <hr>
         <h3> 0a. Find the HEG WiFi! </h3>
         <p>
-        First thing's first. <br>
+        First thing's first: <br>
         <br>
         1. Power up your HEG by plugging it into your computer or plugging a battery in.<br>
         2. Open up your WiFi signal list and look for "My_HEG". Connect with the password "12345678".<br>
-        3. Depending on your OS, open up Chrome or Firefox (recommended) and enter "http://esp32.local" or "http://192.168.4.1" if that doesn't work. This will bring you to a web interface.<br>
-        4. Check out the Canvas demo and see if the HEG LEDs come on when you hit start!<br>
-        <br><br>
+        3. Depending on your OS, open up Chrome or Firefox (recommended) and enter "http://192.168.4.1" or "http://esp32.local" (this works on Apple and Bonjour-enabled devices)<br>
+        4. Check out the HTML5 demo and see if the HEG LEDs come on when you hit start!<br>
+        <h4>WiFi Settings: </h4>
         You may also connect your HEG through your local WiFi and access it from your main network, enabling online features.<br>
         <br>
         From the main page, go to "Connection Settings" or /connect. The easiest way to get online is to enter your local WiFi name and password, which can be seen
@@ -43,7 +43,7 @@ const char help_page[] PROGMEM= R"=====(
         so try a few times if it does not work at first. You cannot connect to a 5GHz router on the ESP32.<br>
         </p>
         <hr>
-        <h4> 0b. Your first session </h4>
+        <h3> 0b. Your first session </h3>
         <p>
         Make sure the HEG sensor is firmly flush against your forehead so you can feel the LEDs and photosensor
         pressing against you but without hurting. You must be in dim indirect lighting for best results.
@@ -58,7 +58,7 @@ const char help_page[] PROGMEM= R"=====(
         developer product that isn't always consistent if you don't know what you're supposed to do.<br>
         <br><br>
         <hr>
-        <h4> 0c. Debugging the signal </h4>
+        <h3> 0c. Debugging the signal </h3>
         Check these conditions when you are not receiving a stable, positive ratio and cannot control the games:<br>
         <ul>
         <li> Can you see the Red LED flashing when you hit start?</li>
@@ -67,14 +67,14 @@ const char help_page[] PROGMEM= R"=====(
             <ul><li>If the light sensor is not firmly against your forehead and exposed directly to the LEDs or sunlight, it will be saturated and will not output data.</li>
             <li> Even a cloudy day can create too much ambient light for the LEDs to be picked up, and you will get a negative or zero ratio.</li>
             </ul>
-        <li> If you use the command 'D' while the sensor is off it will toggle Debug mode and allow you to see the raw values per LED flash.</li>
+        <li> If you use the command 'D' via USB Serial while the sensor is off it will toggle Debug mode and allow you to see the raw values per LED flash.</li>
         <li> If you are receiving 32767 your ADC is being saturated. There are several reasons this may be the case.</li>
             <ul><li> If there is too much ambient light or the LEDs are directly exposed to the photodiode.</li>
             <li> Is your forehead sweaty? This can cause moisture to build up and short the sensor temporarily until it dries again.</li>
                 <ul><li> We recommend taping a screen protector down over the sensor to buffer moisture. </li></ul>
             <li> If there is a short or the photodiode is fried</li></ul>
         <li> If you are receiving -1, this means the ADC is not set up or connected correctly.</li>
-        <li> If you are receiving repeating low values like 64, 84, etc, that means the photodiode output is not being read and may be damaged or not soldered correctly.</li>
+        <li> If you are receiving repeating low values like 64, 84, etc, that don't produce a stable ratio that means the photodiode output is not being read and may be damaged or not soldered correctly.</li>
         <li> Check that no solder points or leads are contacting your skin as this will ground out those voltages. Electrical tape is an easy way to cover this up.	</li>
         </ul>
         If you cannot get any data through, use a serial monitor (like Arduino or this chrome app: https://chrome.google.com/webstore/detail/ohncdkkhephpakbbecnkclhjkmbjnmlo) <br>
@@ -90,7 +90,6 @@ const char help_page[] PROGMEM= R"=====(
         key conditions to follow when you begin your training to ensure safe and effective results.
         Like any form of exercise, you can strain yourself too much, leading to unpleasant effects 
         or fatigue. The HEG can be a powerful learning and interfacing tool when used correctly.
-        <br><br>
         <ul>
         <li> Your first sessions should be no more than 5 to 10 minutes between breaks. </li>
         <li> First just try to get a feel for breathing slow, relaxing, focusing, and noticing how your score increases or decreases based on your moment to moment thoughts and movements.</li>
@@ -140,7 +139,7 @@ const char help_page[] PROGMEM= R"=====(
         <br><br>
         Hemo - Meaning blood.<br>
         Encephalography - Imaging brain structure through a particular medium.<br>
-        <br><br>
+        <br>
         This device you are using now belongs to particular classification called fNIRS
         or "functional Near-Infrared Spectroscopy" as we are using Red and InfraRed LEDs
         reflected into a light sensor to measure an important component of brain activity.
@@ -188,14 +187,53 @@ const char help_page[] PROGMEM= R"=====(
         <div id="s2">
         <h2> Section 2: Web Demo guide </h2>
         <hr>
-        <h3> Features! </h3>
-        <p></p>
+        <p>
+        Note:<br>
+        This web demo is a heavy work in progress. We are working on bringing a much fuller
+        suite of activities for our web demo, while what's currently in place is functional
+        enough for training. 
+        <br><br>
+
+        <h3>How it works: </h3>
+        You will see a graph and a circle when you open the web demo. Turn your sensor on via the visible button. After a couple seconds of good data, the graph charts a score
+        based off the Simple Moving Average of the ratio. The score is the cumulative difference between
+        1 second and 2 seconds of averaged data, representing a simple "effort" score. The score doesn't actually
+        mean anything other than to exaggerate the changes in ratio data being reported by comparing shorter and longer
+        term results. This then decides how much the circle increases or decreases in radius per frame. 
+        The other data you will see are not used in the current rudimentary feedback setup. <br>
+
+        <h3>Feedback Options: </h3>
+        There are 4 feedback methods currently, though each needs a lot of polish. The Circle and Audio
+        exercises are the only recommendable ones for now, as well as HEGstudio. <br><br>
+        Audio accepts MP3s, Video accepts MP4s. <br><br>
+        If you connect the device to your main router there is a default video that plays, as streaming example. 
+    
+        <h3>Graph Options:</h3>
+        XOffset: Lets you roll back data.<br>
+        XScale: Changes the number of visible data points.<br>
+        YScale: Changes the height of the y-axis to make larger or smaller values more visible.<br>
+
+        <h3>Data Options: </h3>
+        The Data menu contains ways to send commands to the device and control the scoring sensitivity.<br>
+        <h4>Saving and Replaying Data:</h4>
+        Click on the Data tab and look for "Save CSV". The window next to it lets you type in a name or will
+        use a default name otherwise. This will create a simple comma-separated-value spreadsheet of your raw session data.
+        Google Sheets is an excellent tool for quickly visualizing your data in more detail. 
+        <br><br>
+        When you click "Replay CSV" a window will open asking for a CSV file in the same format. This will begin streaming the 
+        data as if it was playing a session. We are still working on session exploration features as well as timestamped annotating. 
+        We will soon also have backend support so data will be able to be saved online to a secure server.
+        <br><br>
+        
+        
+        <h4></h4>
+        </p>
         </div>
         <hr>
         <div id="s3"> 
         <h2> Section 3: Technical Guide </h2>
-        <hr>
-        Commands:<br>
+        <hr><br>
+        <h4>Commands:</h4>
         't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light. <br>
         'f' - Sensor off. <br>
         'W' - Reset WiFi to default access point mode (wipes saved credentials). <br>
@@ -209,6 +247,22 @@ const char help_page[] PROGMEM= R"=====(
         '6' - Read differential between A2 and A3 on ADS1115. <br>
         'D' - toggles ADC debugging (USB Serial output only). <br>
         'L' - toggles LED ambient light cancellation. <br>
+        <br><br>
+        <h4>Data Output:</h4>
+        <p>
+        "Current Milliseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2) \r\n" <br><br>
+        WiFi: Subscribe to a Server Sent Event stream (EventSource) at the IP of the device. Its update period is set at 50ms. The data stream comes through on "heg" events.<br>
+        Serial: Set baud rate to 115200 on the correct COM port to read the data, debug, and send commands.<br>
+        Bluetooth: Requires scanning for BLE device and subscribing to the correct UART characteristic, then sending the 't' command activate the sensor stream.<br>
+        </p>
+        <h4>API page</h4>
+        <p>
+        This is an experimental page that lets you call all of the user interface yourself and define what default features you want enabled. The initial command allows you to define arbitrary
+        EventSource location for if your HEG is not in its default setup or if you want to access it remotely. It's possible to subscribe to multiple sessions remotely this way. We hope this 
+        gives developers an easier ability to work with our applications and help unify open source development. We are developing a web-based way to access
+        the device too, to open up the vast software resources online connectivity provides.
+        </p>
+        <h4>Links:</h4>
         <ul>
             <li><a href="https://github.com/moothyknight/HEG_ESP32/blob/master/HEG_WIFI_BLE/README.txt">ReadMe & Changelog (important info for building drivers yourself)</a></li>
             <li><a href="https://github.com/moothyknight/HEG_ESP32/blob/master/HEG%20Whitepaper.pdf">Useful References (at bottom of PDF)</a></li>
