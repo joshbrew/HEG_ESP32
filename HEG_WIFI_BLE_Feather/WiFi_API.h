@@ -1,8 +1,8 @@
 //TODO:
 /*
  * EventSource for device errors and updating
- * Threading for events when involving multiple sensors
- *
+ * Threading for events when involving multiple sensors?
+ * Fix some weird WiFi crashes.
  */
 #include <ArduinoJson.h>
 #include <WiFi.h>
@@ -473,10 +473,12 @@ void handleDoConnect(AsyncWebServerRequest *request) {
         connectAP(); //Now go to /connect again and it will suggest the last IP for this SSID.
       }
     }
-    else { if(save==true){
-      saveWiFiLogin(ap_only,use_static,use_dns,false);
+    else { 
+      if(save==true){
+        saveWiFiLogin(ap_only,use_static,use_dns,false);
       }
       if(setSSID.length() > 0) {
+        delay(300);
         if(use_static == true){
           setupStation(true,false);
         }

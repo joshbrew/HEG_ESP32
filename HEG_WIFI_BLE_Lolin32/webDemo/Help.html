@@ -3,8 +3,25 @@
     <head>
         <link rel="stylesheet" type="text/css" href="webDemoCSS.css">
         <style>
+            hr{
+                border: 2px solid ghostwhite
+            }
             body {
                 color: white;
+            }
+            hr.hrhead{
+                border: 6px solid ghostwhite
+            }
+            hr.hr1 {
+                border: 4px solid peachpuff
+            }
+            hr.hr2 {
+                border: 2px solid lightgoldenrodyellow
+            }
+            hr.hr3 {
+                border: 2px solid lightgreen           }
+            hr.hr4 {
+                border: 2px solid gray
             }
         </style>
     </head>
@@ -12,59 +29,63 @@
         <div id="header">
         <h1> Help page </h1>
         </div>
-        <hr>
+        <hr class="hrhead">
         <h3> Contents </h3>
         <a href="#s0"> Section 0: Quick Start Guide</a><br>
         <a href="#s1"> Section 1: Introduction</a><br>
         <a href="#s2"> Section 2: Web Demo guide</a><br>
         <a href="#s3"> Section 3: Technical Guide</a><br>
+        <br>
         <div id="s0">
+        <hr class="hr1">
         <h2> Section 0: Quick Start Guide </h2>
-        <hr>
+        <hr class="hr1">
         <h3> 0a. Find the HEG WiFi! </h3>
         <p>
         First thing's first: <br>
         <br>
-        1. Power up your HEG by plugging it into your computer or plugging a battery in.<br>
-        2. Open up your WiFi signal list and look for "My_HEG". Connect with the password "12345678".<br>
-        3. Depending on your OS, open up Chrome or Firefox (recommended) and enter "http://192.168.4.1" or "http://esp32.local" (this works on Apple and Bonjour-enabled devices)<br>
-        4. Check out the HTML5 demo and see if the HEG LEDs come on when you hit start!<br>
+        1. Power up your HEG by plugging it into your computer or plugging a battery in.<br><br>
+        2. Open up your WiFi signal list and look for "My_HEG". Connect with the password "12345678".<br><br>
+        3. Depending on your OS, open up Chrome or Firefox (recommended) and enter "http://192.168.4.1" or "http://esp32.local" (this works on Apple and Bonjour-enabled devices)<br><br>
+        4. Check out the HTML5 demo and see if the HEG LEDs come on when you hit start!<br><br>
+        <hr class="hr4">
         <h4>WiFi Settings: </h4>
-        You may also connect your HEG through your local WiFi and access it from your main network, enabling online features.<br>
+        From the main page, go to "Connection Settings" or add /connect to the page address. Here you may also connect your HEG through your local WiFi and access it from your main network, enabling online features.<br><br>
+        The easiest way to get online is to enter your local WiFi name and password, which can be seen
+        via scan results at the bottom of the page. Just type in these to pieces of information and hit connect. <br><br>
+        You can now connect to the ESP32 from your main router either via http://esp32.local or an automatically assigned IP address you can find in your router's interface. 
         <br>
-        From the main page, go to "Connection Settings" or /connect. The easiest way to get online is to enter your local WiFi name and password, which can be seen
-        via scan results at the bottom of the page. Just type in these to pieces of information and hit connect. You can now connect to the ESP32 from your main router
-        either via http://esp32.local or an automatically assigned IP address you can find in your router's interface. 
+        <hr class="hr4">
+        You can also assign a "Static IP" if you know the gateway IP and subnet mask, and know an unused local IP address you can assign to the ESP32. <br><br>
+        We also have a "Suggest IP" mode which, when you type in the SSID and password, will connect then disconnect to that router and then suggest you an IP. This is done from the
+        default ESP32 access point from the /connect page. when you reconnect to the access point. 
         <br><br>
-        You can also assign a "Static IP" if you know the gateway IP and subnet mask, and know an unused local IP address you can assign to the ESP32. We also have a 
-        "Suggest IP" mode which, when you type in the SSID and password, will connect then disconnect to that router and then suggest you an IP. This is done from the
-        default ESP32 access point from the /connect page. when you reconnect to the access point. There is some jank depending on the type of router you connect to,
-        so try a few times if it does not work at first. You cannot connect to a 5GHz router on the ESP32.<br>
-        </p>
+        There is some jank depending on the type of router you connect to,
+        so try a few times if it does not work at first. You cannot connect to a 5GHz router on the ESP32.
+        </p><br>
         <hr>
         <h3> 0b. Your first session </h3>
         <p>
         Make sure the HEG sensor is firmly flush against your forehead so you can feel the LEDs and photosensor
-        pressing against you but without hurting. You must be in dim indirect lighting for best results.
+        pressing against you but without hurting.
         <br><br>
-        The easiest way to test your HEG is through our web API. Just go to the<br>
-        Web demo from the main page or /webDemo and hit the "Start HEG" button!<br>
+        The easiest way to test your HEG is through our web API. Just go to the HTML5 Web demo from the main page or /listen and hit the "Start HEG" button!
         <ul><li>Chrome or Firefox work the most consistently. </li>
         <li> We are working on full cross-browser compatibility.</li>
         </ul>
-        However, you may soon find that after a few seconds, no data comes through, or you get weird <br>
-        negative values or giant oscillations on the graph. This is where you remember you're using a <br>
-        developer product that isn't always consistent if you don't know what you're supposed to do.<br>
+        However, you may soon find that after a few seconds, no data comes through, or you get weird 
+        negative values or giant oscillations on the graph. This is where you remember you're using a 
+        developer product that isn't always consistent if you don't know what you're supposed to do.
         <br><br>
         <hr>
         <h3> 0c. Debugging the signal </h3>
         Check these conditions when you are not receiving a stable, positive ratio and cannot control the games:<br>
         <ul>
         <li> Can you see the Red LED flashing when you hit start?</li>
-        <li> Open up the debug console on your driver and verify if you get "HEGduino Events Connected" on the Web Demo page</li>
+        <li> Open up the debug console on your driver and verify if you get "HEGduino Events Connected" on the HTML5 Web Demo page</li>
         <li>Check your ambient lighting conditions. It is best but not required to be in a dim or indirectly lit environment.</li>
-            <ul><li>If the light sensor is not firmly against your forehead and exposed directly to the LEDs or sunlight, it will be saturated and will not output data.</li>
-            <li> Even a cloudy day can create too much ambient light for the LEDs to be picked up, and you will get a negative or zero ratio.</li>
+            <ul><li>If the light sensor is not firmly against your forehead and exposed directly to the LEDs or sunlight, it will be saturated and output 0's in the Red and IR output.</li>
+            <li> Even a cloudy day can create too much ambient light for the LEDs to be picked up, and you will get a negative or zero ratio, or wild oscillations.</li>
             </ul>
         <li> If you use the command 'D' via USB Serial while the sensor is off it will toggle Debug mode and allow you to see the raw values per LED flash.</li>
         <li> If you are receiving 32767 your ADC is being saturated. There are several reasons this may be the case.</li>
@@ -77,13 +98,15 @@
         <li> Check that no solder points or leads are contacting your skin as this will ground out those voltages. Electrical tape is an easy way to cover this up.	</li>
         </ul>
         If you cannot get any data through, use a serial monitor (like Arduino or this chrome app: https://chrome.google.com/webstore/detail/ohncdkkhephpakbbecnkclhjkmbjnmlo) <br>
-        Follow the instructions in the readme in our github repository (https://github.com/moothyknight/HEG_ESP32) <br>
+        Follow the instructions in the readme in our github repository (https://github.com/moothyknight/HEG_ESP32) <br><br>
     </p>
         </div>
         <hr>
         <div id="sh">
-        <h2> Safety Precautions and Disclaimers </h2>
+        <h3> 0d. Safety Precautions and Disclaimers </h3>
+        <hr class="hr3">
         <h3>Safety Guide - Know Your Limits! </h3>
+        <hr class="hr3">
         <p>
         We've been recommended by clinicians and long-time biofeedback practitioners several
         key conditions to follow when you begin your training to ensure safe and effective results.
@@ -99,15 +122,16 @@
         </li>
         </ul>
         </p>
-        <hr>
+        <hr class="hr3">
         <h3>Disclaimers</h3>
-        FDA Disclaimer:<br>
+        <hr class="hr3"> <br>
+        FDA Disclaimer:<br><br>
         These statements have not been evaluated by the Food and Drug Administration. These statements are for informational purposes only and are not 
         intended as a substitute for medical counseling. This information is not intended to diagnose, treat, cure, or prevent any disease. The author 
         and publisher shall have neither liability nor responsibility to any person or entity with respect to any loss, damage, or injury caused 
-        directly or indirectly by the information contained herein.
-        <br><br>
-        Our Disclaimers:<br>
+        directly or indirectly by the information contained herein.<br><br>
+        <hr class="hr4"><br>
+        Our Disclaimers:<br><br>
         This is an experimental product by enthusiasts for enthusiasts, we are not health professionals and assume no risks in how you use this, 
         We assert that we have worked to the best of our ability to ensure the safety and enjoyment of our users, whether they are tech savvy or not. 
         <br><br>
@@ -115,30 +139,34 @@
         but be cautious when training your brain blood flow as it is a very sensitive and intricate organ. We do not know all of the potential risks 
         associated when using a device like the HEG if you have serious health conditions.
         <br><br>
-        If you are experiencing an episode of a mental or brain disorder, HEG or aerobic exercise in general may help as a form of intervention, 
-        but there are complex risk factors associated and we again cannot make any calls as to the best procedure. Please follow your doctor's 
+        If you are experiencing an episode of a mental or brain disorder, HEG or aerobic exercise in general may help as a form of intervention.
+        However, there are complex risk factors associated and we again cannot make any calls as to the best procedure. Please follow your doctor's 
         recommendations and don't put yourself at unnecessary risk.
         <br><br>
+        <hr class="hr4"><br>
+        Support:<br><br>
         Please inform us of any positive or adverse reactions you have when using the HEG so we can document it. <br>
         For technical support please create an issue at https://github.com/moothyknight/HEG_ESP32 so we can publicly resolve it to guide future users.<br>
         You may also contact us for questions or technical support at: brewster.joshua1@gmail.com<br>
         <br><br>
         </div>
-        <hr>
+        <hr class="hr1">
         <div id="s1">
         <h2> Section 1: Introduction </h2>
-        <hr>
+        <hr class="hr1"> <br>
         <h3> Welcome to HEG Biofeedback with the Internet of Things! </h3>
+        <hr>
         <p>
         This hardware and software package is designed to have a minimum barrier 
         for entry for users wanting to use or develop this unique form of brain training. 
         Hemoencephalography (HEG) simply means using blood flow signals for feedback
         data from the body while doing certain actions or experiencing different mental
         states.
-        <br><br>
+        <br>
+        <hr class="hr4">
         Hemo - Meaning blood.<br>
         Encephalography - Imaging brain structure through a particular medium.<br>
-        <br>
+        <hr class="hr4">
         This device you are using now belongs to particular classification called fNIRS
         or "functional Near-Infrared Spectroscopy" as we are using Red and InfraRed LEDs
         reflected into a light sensor to measure an important component of brain activity.
@@ -158,8 +186,8 @@
         and loosens your limbs up - but your brain too! This causes energy to be more
         available to your system in general and for it to get more used to stress and strain.
         <br><br>
-        Our brain cells require energy to be immediately available to fire. Neurons receive
-        their energy on-demand through astrocytes connected to innumerable tiny capillary tubes
+        Our brain cells require a lot of energy to be immediately available to fire. Neurons receive
+        their energy on-demand, chiefly through astrocytes connected to innumerable tiny capillary tubes
         that wrap around your cells in order to sustain them. Stress, poor diet, dehydration,
         or any number of things that can reduce your well-being have some of their strongest
         impacts on brain health due to the incredibly sensitive and intricate ecosystem they form
@@ -171,54 +199,55 @@
         are not really separate. The main benefits are you will feel more aware, quicker on your 
         feet, and able to make better choices when your brain is in shape. The directness of this 
         procedure seems to extend the benefits of normal exercise to your brain in very profound 
-        ways, and may shed light some important ideas about the nature of living consciousness and 
+        ways, and may shed some light on important ideas about the nature of living consciousness and 
         memory.
         <br><br>
         Before you embark, however, it is important to understand the risks and the experimental 
         nature of this work. While general exposure to the HEG is safe, you can over-train and give 
         yourself headaches or fatigue - kind of like normal exhaustion after a hard exercise. So 
-        please learn our recommendations and some of the known side-effects when you are first 
-        starting with HEG brain exercises.
+        please read our safety guide and disclaimers in the previous section.
         <br><br>
         </p>
         </div>
-        <hr>
+        <hr class="hr1">
         <div id="s2">
         <h2> Section 2: Web Demo guide </h2>
-        <hr>
+        <hr class="hr1"> <br>
         <p>
         Note:<br>
         This web demo is a heavy work in progress. We are working on bringing a much fuller
         suite of activities for our web demo, while what's currently in place is functional
         enough for training. 
-        <br><br>
-
+        <br>
+        <hr class="hr4">
         <h3>How it works: </h3>
         You will see a graph and a circle when you open the web demo. Turn your sensor on via the visible button. After a couple seconds of good data, the graph charts a score
-        based off the Simple Moving Average of the ratio. The score is the cumulative difference between
+        based off the Simple Moving Average of the ratio. 
+        <br><br>
+        The score is the cumulative difference between
         1 second and 2 seconds of averaged data, representing a simple "effort" score. The score doesn't actually
         mean anything other than to exaggerate the changes in ratio data being reported by comparing shorter and longer
         term results. This then decides how much the circle increases or decreases in radius per frame. 
-        The other data you will see are not used in the current rudimentary feedback setup. <br>
-
+        The other data you will see are not used in the current rudimentary feedback setup. <br><br>
+        <hr class="hr4">
         <h3>Feedback Options: </h3>
         There are 4 feedback methods currently, though each needs a lot of polish. The Circle and Audio
-        exercises are the only recommendable ones for now, as well as HEGstudio. <br><br>
+        exercises are the only recommendable ones for now, as well as HEGstudio which is Windows-only. <br><br>
         Audio accepts MP3s, Video accepts MP4s. <br><br>
-        If you connect the device to your main router there is a default video that plays, as streaming example. 
-    
+        If you connect the device online there is a default video that plays, as a basic web streaming example. <br><br>
+        <hr class="hr4">
         <h3>Graph Options:</h3>
-        XOffset: Lets you roll back data.<br>
-        XScale: Changes the number of visible data points.<br>
-        YScale: Changes the height of the y-axis to make larger or smaller values more visible.<br>
-
+        XOffset: Lets you roll back data.<br><br>
+        XScale: Changes the number of visible data points.<br><br>
+        YScale: Changes the height of the y-axis to make larger or smaller values more visible.<br><br>
+        <hr class="hr4">
         <h3>Data Options: </h3>
         The Data menu contains ways to send commands to the device and control the scoring sensitivity.<br>
         <h4>Saving and Replaying Data:</h4>
         Click on the Data tab and look for "Save CSV". The window next to it lets you type in a name or will
         use a default name otherwise. This will create a simple comma-separated-value spreadsheet of your raw session data.
-        Google Sheets is an excellent tool for quickly visualizing your data in more detail. 
-        <br><br>
+        Google Sheets is an excellent tool for quickly visualizing your data in more detail.
+        <br>
         When you click "Replay CSV" a window will open asking for a CSV file in the same format. This will begin streaming the 
         data as if it was playing a session. We are still working on session exploration features as well as timestamped annotating. 
         We will soon also have backend support so data will be able to be saved online to a secure server.
@@ -228,11 +257,11 @@
         <h4></h4>
         </p>
         </div>
-        <hr>
+        <hr class="hr1">
         <div id="s3"> 
         <h2> Section 3: Technical Guide </h2>
-        <hr><br>
-        <h4>Commands:</h4>
+        <hr class="hr1"><br>
+        <h3>Commands</h3>
         't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light. <br>
         'f' - Sensor off. <br>
         'W' - Reset WiFi to default access point mode (wipes saved credentials). <br>
@@ -246,22 +275,28 @@
         '6' - Read differential between A2 and A3 on ADS1115. <br>
         'D' - toggles ADC debugging (USB Serial output only). <br>
         'L' - toggles LED ambient light cancellation. <br>
-        <br><br>
-        <h4>Data Output:</h4>
+        <br>
+        <hr class="hr4">
+        <h3>Data Output Information</h3>
         <p>
+        Output String:<br><br>
         "Current Milliseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2) \r\n" <br><br>
-        WiFi: Subscribe to a Server Sent Event stream (EventSource) at the IP of the device. Its update period is set at 50ms. The data stream comes through on "heg" events.<br>
-        Serial: Set baud rate to 115200 on the correct COM port to read the data, debug, and send commands.<br>
-        Bluetooth: Requires scanning for BLE device and subscribing to the correct UART characteristic, then sending the 't' command activate the sensor stream.<br>
+        WiFi: Subscribe to a Server Sent Event stream (EventSource) at the IP of the device. Its update period is set at 50ms. The data stream comes through on "heg" events.<br><br>
+        USB Serial: Via a serial monitor, set baud rate to 115200 on the correct COM port to read the data, debug, and send commands.<br><br>
+        Bluetooth: Requires scanning for BLE device and subscribing to the correct UART characteristic, then sending the 't' command to activate the sensor stream.<br><br>
         </p>
-        <h4>API page</h4>
+        <hr class="hr4">
+        <h3>API page</h3>
         <p>
         This is an experimental page that lets you call all of the user interface yourself and define what default features you want enabled. The initial command allows you to define arbitrary
-        EventSource location for if your HEG is not in its default setup or if you want to access it remotely. It's possible to subscribe to multiple sessions remotely this way. We hope this 
+        EventSource location for if your HEG is not in its default setup or if you want to access it remotely. 
+        <br><br>
+        It's possible to subscribe to multiple sessions remotely this way. We hope this 
         gives developers an easier ability to work with our applications and help unify open source development. We are developing a web-based way to access
         the device too, to open up the vast software resources online connectivity provides.
         </p>
-        <h4>Links:</h4>
+        <hr class="hr4">
+        <h3>External Links:</h3>
         <ul>
             <li><a href="https://github.com/moothyknight/HEG_ESP32/blob/master/HEG_WIFI_BLE/README.txt">ReadMe & Changelog (important info for building drivers yourself)</a></li>
             <li><a href="https://github.com/moothyknight/HEG_ESP32/blob/master/HEG%20Whitepaper.pdf">Useful References (at bottom of PDF)</a></li>
@@ -270,5 +305,6 @@
             <li><a href="https://www.arduino.cc/en/Guide/HomePage">Arduino Guide</a></li>
         </ul>
         </div>
+        <hr class="hrhead">
     </body>
     </html>

@@ -7,35 +7,64 @@ const char event_page[] PROGMEM = R"=====(
   #gtext {
     z-index: 999;
   }
-  canvas {
-    display:inline;
+  h1 {
+    font-family: Arial, Helvetica, sans-serif;
   }
+  .dummy {
+      width:0;
+      height:0;
+      border:0; 
+      border:none;
+   }
+
+   .dattable {
+      position: relative;
+      table-layout: fixed;
+      font-family: Console, Lucida, monospace;
+   }
+   th {
+      background-color: rgb(54, 54, 54);
+      color: chartreuse;
+      padding: 5px;
+      border: 1px solid white;
+      width: 10%;
+   }
+   td {
+      background-color: rgb(54, 54, 54);
+      color: chartreuse;
+      padding: 5px;
+      border: 1px solid white;
+      width: 10%;
+   }
+  .scoreth { color: honeydew; }
+    canvas {
+      display:inline;
+    }
   .canvasContainer {
       width: 100%;
       margin-left: auto;
       margin-right: auto;
       text-align: center;
    }
+
   .webglcss {
-  position: absolute;
-  top: 520px;
-  left: 0px;
- 
-  width: 100%;
-  height: 28.57%;
-  
+    position: absolute;
+    top: 520px;
+    left: 0px;
+    width: 100%;
+    height: 28.57%;
    }
 
-  /**modal styling**/
-  .modal {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 990;
+      /**modal styling**/
+      .modal {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 990;
 
-    }
+        }
 
       .modal .overlay {
           position: absolute;
@@ -168,14 +197,14 @@ const char event_page[] PROGMEM = R"=====(
           }
 
           .modal3 {
-position: fixed;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-z-index: 990;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 990;
 
-}
+            }
 
       .modal3 .overlay3 {
           position: absolute;
@@ -239,12 +268,10 @@ z-index: 990;
 
 
   /**Toggle Switch**/
-
- 
   .switch {
       position: absolute;
       right: 16px;
-      bottom: 250px;
+      top: 95px;
       display: inline-block;
       width: 90px;
       height: 34px;
@@ -325,19 +352,18 @@ z-index: 990;
       background-color: black;
   }
 
-
-
   /* Style tab links */
   
   .tablink {
       font-family: 'Arial', serif;
+      font-weight: bold;
       color: white;
       float: left;
-      border: 2px solid rgb(255, 255, 255);
+      border: 1px solid rgb(85, 85, 85);
       outline: none;
       cursor: pointer;
-      padding: 14px;
-      font-size: 1em;
+      padding: 10px;
+      font-size: 1.3em;
       width: 33.33%;
       background-color: black;
   }
@@ -347,15 +373,15 @@ z-index: 990;
       }
 
 
-  .tabcontent {
-      color: white;
-      display: none;
-      height: 100%;
-      font-family: 'Ibarra Real Nova', serif;
-  }
+    .tabcontent {
+        color: white;
+        display: none;
+        height: 100%;
+        font-family: 'Ibarra Real Nova', serif;
+    }
 
   .button {
-      font-family: 'Ibarra Real Nova', serif;
+      font-family: Console, Lucida, monospace;
       color: black;
       float: left;
       border: 1px solid gray;
@@ -396,7 +422,7 @@ z-index: 990;
 <body>
   <title>HEG Interface</title>
   <div class="header">
-      <h1>HEG ALPHA Ver 0.0.1</h1>
+      <h1>HEG ALPHA Ver 0.0.2</h1>
   </div>
   <label class="switch"><input onchange="toggleHEG(this)" type="checkbox" id="togBtn"><div class="slider round"></div></label>
 

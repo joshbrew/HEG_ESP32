@@ -107,9 +107,9 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
-1/23/19
+1/31/19
 ------
-- Fixes to web demo replay streaming
+- Minor changes and fixes to UI and javascript
 
 1/22/19
 ------
@@ -215,6 +215,7 @@ Known bugs:
 -not every browser works on canvas demo
 -poor audio quality on visualizer mode - try manual buffering. Bug not present in standalone visualizer.
 -offset button bugged when offsetting more than the number of graph vertices (look at xoffsetSlider.onclick setting)
+
 10/17/19
 ------
 smooth mode switching on demo page. Audio and hill climbing (LIFE game re-creation) games incoming.

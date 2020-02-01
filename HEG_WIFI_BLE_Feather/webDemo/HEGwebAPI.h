@@ -206,8 +206,8 @@ class HEGwebAPI {
         <button class="button saveLoadButtons" id="replaycsv">Replay CSV</button> \
       </div> \
       <div id="sensitivityBar" class="sensBar"> \
-        Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" id="sensitivity" min="1" max="200" value="100"> \
         <button class="button" id="reset_s">Default</button> \
+        Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" id="sensitivity" min="1" max="200" value="100"> \
       </div> \
       </div> \
       <iframe name="dummyframe" id="dummyframe" class="dummy"></iframe> \
@@ -324,7 +324,7 @@ class graphJS {
     
     var graphOptions = '<div class="scale"> \
       <button id="xoffsetbutton" class="button">Reset</button>X Offset:<br><input type="range" id="xoffset" min=0 max=1000 value=0><br> \
-      X Scale:<br><input type="range" id="xscale" min=10 max=3000 value=1000><button id="xscalebutton" class="button">Reset</button><br> \
+      X Scale:<br><input type="range" id="xscale" min=10 max=3000 value=1000><button id="xscalebutton" class="button">Reset</button><br><br> \
       Y Scale:<br><input type="range" id="yscale" min=1 max=400 value=200><button id="yscalebutton" class="button">Reset</button> \
     </div> \
     </div> \

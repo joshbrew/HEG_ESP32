@@ -1,6 +1,12 @@
-body { background-color: #707070; font-family: Console, Lucida, monospace; font-weight: bold; }
+body { background-color: #383838; font-family: Console, Lucida, monospace; font-weight: bold; }
   msgDiv { display: none; }
   eventDiv { display: none; }
+  a:link{
+     color:lightblue
+  }
+  a:visited{
+     color:lightblue
+  }
   input[type=text]{
     border: 2px solid red;
     border-radius: 4px;
@@ -137,9 +143,6 @@ body { background-color: #707070; font-family: Console, Lucida, monospace; font-
     text-align: center;
    }
    .dummy {
-      position: absolute;
-      top: 130px;
-      left:325px;
       width:0;
       height:0;
       border:0; 

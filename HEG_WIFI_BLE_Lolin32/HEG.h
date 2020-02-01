@@ -62,7 +62,7 @@ int RED3 = 12;
 float scaling = 1;
 
 const int LED = 5;  // Lolin32 V1.0.0 LED on Pin 5
-//const int PWR = 14;//21; // GPIO power to ADC and OPT101 - NOT RECOMMENDED
+const int PWR = 14;//21; // GPIO power to ADC and OPT101 - NOT RECOMMENDED
 
 //SET NON-DEFAULT SDA AND SCL PINS
 #define SDA0_PIN 25//23 //5
@@ -224,8 +224,8 @@ void setupHEG() {
   pinMode(IR, OUTPUT);
   pinMode(RED, OUTPUT);
 
-  //pinMode(PWR, OUTPUT);
-  //digitalWrite(PWR, HIGH);
+  pinMode(PWR, OUTPUT);
+  digitalWrite(PWR, HIGH);
 
   //LOLIN32 ONLY
   pinMode(LED, OUTPUT);
