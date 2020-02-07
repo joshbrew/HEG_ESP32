@@ -5,9 +5,35 @@
     min-width: 700px;
   }
   h1 {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Console, Lucida, monospace;
     height:20px;
   }
+  
+  .button {
+    font-family: Console, Lucida, monospace;
+    color: black;
+    float: left;
+    border: 1px solid gray;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 12px;
+    border-radius: 4px;
+    font-size: 1.6em;
+    width: 50%;
+    background-color: white;
+  } 
+
+  .button:hover {
+      background-color: rgba(0, 189, 157, 0.644);
+  }
+
+.header {
+  width: 50%;
+  color: white;
+  font-size: .5em;
+  text-align: left;
+  font-family: 'Ibarra Real Nova', serif;
+}
   .dummy {
       width:0;
       height:0;
@@ -77,7 +103,7 @@
     opacity:0.35;
     left:25%;
     width:50%;
-    top: 470px;
+    top: 460px;
   }
   .timeSlider{
     width: 60%;
@@ -111,6 +137,7 @@
   }
   .vidbuttons {
     position: absolute;
+    font-family: 'Courier New', Courier, monospace;
     color: white;
     height:   20px;
     top:      140px;
@@ -497,41 +524,27 @@
         font-family: 'Ibarra Real Nova', serif;
     }
 
-  .button {
-      font-family: Console, Lucida, monospace;
-      color: black;
-      float: left;
-      border: 1px solid gray;
-      outline: none;
-      cursor: pointer;
-      padding: 14px 16px;
-      font-size: 1.6em;
-      width: 50%;
-      background-color: white;
-  }
-
-  .button:hover {
-      background-color: rgba(0, 189, 157, 0.644);
-  }
-
-  .header {
-    width: 50%;
-    color: white;
-    font-size: .5em;
-    text-align: left;
-    font-family: 'Ibarra Real Nova', serif;
-  }
-
 
   input[type=text] {
       width: 100%;
       font-size: 1.5em;
       padding: 14px 16px;
       border: none;
-      background-color: rgb(221, 210, 210);
+      background-color: lightgray;
       color: black;
       font-family: 'Ibarra Real Nova', serif;
+      opacity: 0.8;
   }
+  input[type=text]:focus {
+    width: 100%;
+    font-size: 1.5em;
+    padding: 14px 16px;
+    border: none;
+    background-color: #fcfcf6;
+    color: black;
+    font-family: 'Ibarra Real Nova', serif;
+    opacity: 1.0;
+}
 
 input[type=range].slider {
   -webkit-appearance: none;

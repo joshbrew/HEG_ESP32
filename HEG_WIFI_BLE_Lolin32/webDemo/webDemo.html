@@ -315,6 +315,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     if(useCanvas == true){
       c.angle = 1.57;
     }
+    if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
     this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
     this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
     this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
@@ -325,6 +326,7 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
   }
   this.csvIndex++;
   if(this.csvIndex < this.csvDat.length - 1){
+    if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
     this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
     this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
     this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
@@ -332,12 +334,12 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
     this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
     this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
-    parent.postMessage( s.ratio[s.ratio.length-1], "*");
-    g.us = this.us[this.us.length - 1];
+    parent.postMessage( this.ratio[this.ratio.length-1], "*");
+    g.us = this.us[this.us.length - 1] - this.startTime;
     if(this.us.length >= 2){
       if(this.ratio.length > 40){
-        s.smaScore(s.ratio);
-        g.ratio = s.slowSMA;
+        this.smaScore(this.ratio);
+        g.ratio = this.slowSMA;
         var score = this.smaSlope*this.sensitivity.value*0.01;
         if(useCanvas == true){
           c.onData(score);
@@ -349,11 +351,11 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
           a.onData(score);
         }
         if(useHills == true) {
-          h.onData(score*10);
+          h.onData(score);
         }
-        s.scoreArr.push(s.scoreArr[s.scoreArr.length - 1] + score);
+        this.scoreArr.push(this.scoreArr[this.scoreArr.length - 1] + score);
         g.graphY1.shift();
-        g.graphY1.push(s.scoreArr[this.scoreArr.length - 1 - g.offset]);
+        g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.offset]);
       }
       else {
         //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
@@ -383,7 +385,8 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
     document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
     if(e.data.includes("|")) {
       var dataArray = e.data.split("|");
-      if(parseFloat(dataArray[3]) > 0){ // If ratio slope is within a normal range (in case of errors)
+      if(parseFloat((dataArray[3]) > 0)){ // Skip values not within a certain error.
+        if(s.startTime == 0) { s.startTime = parseInt(dataArray[0])}
         s.us.push(parseInt(dataArray[0]));
         s.red.push(parseInt(dataArray[1]));
         s.ir.push(parseInt(dataArray[2]));
@@ -392,7 +395,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
         s.velAvg.push(parseFloat(dataArray[5]));
         s.accelAvg.push(parseFloat(dataArray[6]));
         parent.postMessage( s.ratio[s.ratio.length-1], "*");
-        g.us = s.us[s.us.length - 1];
+        g.us = s.us[s.us.length - 1] - s.startTime;
         //handle new data
         if(s.ratio.length-1 > 40){
           s.smaScore(s.ratio);
@@ -408,7 +411,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
             a.onData(score);
           }
           if(useHills == true) {
-            h.onData(score*10);
+            h.onData(score);
           }
           s.scoreArr.push(s.scoreArr[s.scoreArr.length - 1] + score);
           g.graphY1.shift();
@@ -433,7 +436,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
 }
 
 s.handleData = (e) => { //Set event data handler for this page.
-handleEventData(e);
+  handleEventData(e);
 }
 </script>
 </body>

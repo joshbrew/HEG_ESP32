@@ -1,6 +1,8 @@
 const char HEGwebAPI[] PROGMEM = R"=====(
 class HEGwebAPI {
   constructor(host='', defaultUI=true, parentId="main_body"){
+    
+    this.startTime=0;
     this.us=[];
     this.red=[];
     this.ir=[];
@@ -932,7 +934,7 @@ class circleJS {
           };
           that.updateInfo('Decoding the audio', true);
           audioContext.decodeAudioData(fileResult, function(buffer) {
-              that.updateInfo('Decode succussful, starting the visualizer', true);
+              that.updateInfo('Decode successful, starting the visualizer', true);
               that.createVisualizer(audioContext, buffer);
           }, function(e) {
               that.updateInfo('!Fail to decode the file', false);
@@ -1106,11 +1108,9 @@ class circleJS {
  }
 
  class hillJS {
-  constructor(res=["800","350"], updateInterval=3000, defaultUI=true, parentId="main_body", hillsId="hillscanvas", hillsmenuId="hillsmenu") {
+  constructor(res=["700","350"], updateInterval=2000, defaultUI=true, parentId="main_body", hillsId="hillscanvas", hillsmenuId="hillsmenu") {
    this.hillsId = hillsId;
    this.hillsmenuId = hillsmenuId;
-
-   this.initialized = false;
 
    this.defaultUI = defaultUI;
    if(defaultUI == true){
@@ -1123,9 +1123,10 @@ class circleJS {
     
    this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
    this.gradient.addColorStop(1, 'springgreen');
-   this.gradient.addColorStop(0.75, 'yellow');
-   this.gradient.addColorStop(0, 'red');
+   this.gradient.addColorStop(0.75, 'sandybrown');
+   this.gradient.addColorStop(0, '#CDE4FB');
    
+   this.updateInterval = updateInterval;
    this.allCapsReachBottom = false;
    this.meterWidth = 12;
    this.gap = 2;
@@ -1135,8 +1136,6 @@ class circleJS {
    this.updateInterval = updateInterval; //ms between update
    this.hillScore = [...Array(this.hillNum).fill(50)]; //
    this.animationId = null;
-
-   this.start = Date.now();
    this.draw();
   }
 
@@ -1153,11 +1152,6 @@ class circleJS {
 
     document.getElementById("hillsRbutton").onclick = () => {
       this.hillScore = [...Array(this.hillNum).fill(50)];
-      if(this.animationId != null){
-        cancelAnimationFrame(this.animationId);
-        this.animationId = null;
-      }
-      this.draw();
     }
     document.getElementById("startbutton").onclick = () => { this.draw(); }
     document.getElementById("stopbutton").onclick = () => {
@@ -1174,11 +1168,20 @@ class circleJS {
   }
 
   onData(score){
-    if(((score < 1) && (score > -1)) && (score != 0)){
-      this.hillScore[this.hillScore.length - 1] += score + (score/(score+1)); //Testing a simple multiplier, I will develop this more 
+    if(score < this.c.height){
+      this.hillScore[this.hillScore.length - 1] += score*20;
+      if(this.hillScore[this.hillScore.length - 1] < 10) { // minimum score (prevents rendering outside viewport)
+        this.hillScore[this.hillScore.length - 1] = 10;
+      }
+      if(score > 0) {
+        this.hillScore[this.hillScore.length - 1] += 0.5;
+      }
+      if(score < 0) {
+        this.hillScore[this.hillScore.length - 1] -= 0.5;
+      }
     }
     else {
-      this.hillScore[this.hillScore.length - 1] += score + (score*score); 
+      this.hillScore[this.hillScore.length - 1] = this.c.height;
     }
   }
 
@@ -1187,36 +1190,31 @@ class circleJS {
     // Create background and bars
     // Change height of bars based on avg or rms. (all at 0 on fresh session)
     // Update last bar for every t time interval based on change
-    var now = Date.now();
-    if((now - this.start > this.updateInterval) || (this.initialized == false)) {
-      this.start = now;
-      var cwidth = this.c.width;
-      var cheight = this.c.height - 2;
-      var capYPositionArray = [];
-      this.ctx.clearRect(0, 0, cwidth, cheight);
-      for (var i = 0; i < this.hillNum; i++) {
-          var value = this.hillScore[i];
-          if(value < 0){ value = 0;}
-          if (capYPositionArray.length < Math.round(this.hillNum)) {
-              capYPositionArray.push(value);
-          };
-          this.ctx.fillStyle = this.capStyle;
-          //draw the cap, with transition effect
-          var xoffset = this.meterWidth + this.gap;
-          if (value < capYPositionArray[i]) {
-              this.ctx.fillRect(i * xoffset, cheight - (--capYPositionArray[i]), this.meterWidth, this.capHeight);
-          } else {
-              this.ctx.fillRect(i * xoffset, cheight - value, this.meterWidth, this.capHeight);
-              capYPositionArray[i] = value;
-          };
-          this.ctx.fillStyle = this.gradient; 
-          this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + this.capHeight, this.meterWidth, cheight);
-      }
-      this.hillScore.shift();
-      this.hillScore.push(this.hillScore[this.hillScore.length - 1]);
-      if(this.initialized == false){this.initialized = true;} // Prevents initial draw delay
-      this.animationId = requestAnimationFrame(this.draw);
+    var cwidth = this.c.width;
+    var cheight = this.c.height - 2;
+    var capYPositionArray = [];
+    this.ctx.clearRect(0, 0, cwidth, cheight);
+    for (var i = 0; i < this.hillNum; i++) {
+        var value = this.hillScore[i];
+        if(value < 0){ value = 0;}
+        if (capYPositionArray.length < Math.round(this.hillNum)) {
+            capYPositionArray.push(value);
+        };
+        this.ctx.fillStyle = this.capStyle;
+        //draw the cap, with transition effect
+        var xoffset = this.meterWidth + this.gap;
+        if (value < capYPositionArray[i]) {
+            this.ctx.fillRect(i * xoffset, cheight - (--capYPositionArray[i]), this.meterWidth, this.capHeight);
+        } else {
+            this.ctx.fillRect(i * xoffset, cheight - value, this.meterWidth, this.capHeight);
+            capYPositionArray[i] = value;
+        };
+        this.ctx.fillStyle = this.gradient; 
+        this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + this.capHeight, this.meterWidth, cheight);
     }
+    this.hillScore.shift();
+    this.hillScore.push(this.hillScore[this.hillScore.length - 1]);
+    setTimeout(() => {this.animationId = requestAnimationFrame(this.draw)}, this.updateInterval);
   }
  }
 )=====";
