@@ -107,6 +107,13 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/7/20
+------
+- Fixed HillJS. It's not that great but it's a bit more responsive than before. I need to add more compelling visual feedback.
+- Index page update
+- Timer actually shows the session time and not the microcontroller clock
+- More UI cleanup
+
 2/6/20
 ------
 - Major improvements to UI layout
