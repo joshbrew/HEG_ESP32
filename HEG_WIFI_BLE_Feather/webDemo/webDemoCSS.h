@@ -92,7 +92,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
     top:      0px;
   }
   .vidtable {
-    width:    20%;
+    width:    100px;
   }
   .vidtable button {
     width:    100%;
@@ -104,6 +104,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
     opacity:0.35;
     left:25%;
     width:50%;
+    min-width: 200px;
     top: 460px;
   }
   .timeSlider{
@@ -117,6 +118,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
   }
   .timeDiv button {
     width: 8%;
+    min-width: 30px;
   }
   .vidbox {
     position: absolute;
@@ -190,6 +192,33 @@ const char webDemoCSS[] PROGMEM = R"=====(
      min-width: 550px; 
      max-height: 420px;
    }
+   .volSlider {
+      position: absolute;
+      max-width: 10%;
+      transform: rotateZ(270deg);
+      top: 350px;
+      left: -60px;
+      opacity: 0.2;
+    }
+    .volSlider:hover {
+      opacity: 1.0;
+    }
+    .audbuttons {
+      position: absolute;
+      left: 0;
+      top: 140px;
+    }
+    .audtable {
+      position: absolute;
+      top: 140px;
+      width: 100px;
+      font-family: 'Courier New', Courier, monospace;
+      color: white;
+    }
+    .audtable button {
+      width:    100%;
+    }
+ 
    .hillapi {
      position:absolute;
      top: 100px;
@@ -523,9 +552,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
         display: none;
         height: 100%;
         font-family: 'Ibarra Real Nova', serif;
-    }
-
-
+    } 
   input[type=text] {
       width: 100%;
       font-size: 1.5em;

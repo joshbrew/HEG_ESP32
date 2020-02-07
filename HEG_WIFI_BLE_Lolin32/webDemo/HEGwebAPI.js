@@ -827,6 +827,7 @@ class circleJS {
     this.audmenuId = audmenuId;
     
     this.defaultUI = defaultUI;
+    this.hidden = false;
     if(defaultUI==true) {
       this.initUI(parentId, res);
       this.c = document.getElementById(this.audioId+"canvas");
@@ -905,10 +906,17 @@ class circleJS {
 
   initUI(parentId, res=["800","400"]){
       var audiomenuHTML = '<div id="'+this.audmenuId+'"> \
+        <table id="audtable" class="audtable">\
+          <tr><td>Feedback: </td></tr> \
+          <tr><td><button id="useVol" name="useVol" class="button">Volume</button></td></tr> \
+        </table>\
+        <input type="range" class="slider volSlider" id="volSlider" name="volSlider" min="0" max="100" value="100"> \
         <div id="fileWrapper" class="file_wrapper"> \
           <div id="fileinfo"></div> \
           <input type="file" id="uploadedFile"></input> \
-        </div></div> \
+        </div> \
+        </div> \
+        <button id="showhide" name="showhide" class="showhide">Hide UI</button> \
       ';
       
       var visualizerHTML = '<div id="'+this.audioId+'" class="visualizerDiv" class-"canvasContainer"> \
@@ -918,6 +926,41 @@ class circleJS {
 
       HEGwebAPI.appendFragment(visualizerHTML, parentId);
       HEGwebAPI.appendFragment(audiomenuHTML, parentId);
+
+      document.getElementById("useVol").onclick = () => {
+        if(this.useVol == false) {
+          this.useVol = true;
+          document.getElementById("useVol").style.opacity = "1.0";
+        }
+        else{
+          this.useVol = false;
+          this.maxVol = document.getElementById("volSlider").value * 0.01;
+          if(this.gainNode != null) {
+            this.gainNode.gain.setValueAtTime(this.maxVol, this.audioContext.currentTime);
+          }
+          document.getElementById("useVol").style.opacity = "0.3";
+        }
+      }
+
+      document.getElementById("volSlider").oninput = () => {
+        this.maxVol = document.getElementById("volSlider").value * 0.01;
+        if(this.gainNode != null) {
+          this.gainNode.gain.setValueAtTime(this.maxVol, this.audioContext.currentTime);
+        }
+      }
+
+      document.getElementById("showhide").onclick = () => {
+        if(this.hidden == false) {
+          this.hidden = true;
+          document.getElementById("showhide").innerHTML = "Show UI";
+          document.getElementById(this.audmenuId).style.display = "none";
+        }
+        else{
+          this.hidden = false;
+          document.getElementById("showhide").innerHTML = "Hide UI";
+          document.getElementById(this.audmenuId).style.display = "";
+        }
+      }
   }
 
   decodeAudio(){
@@ -950,14 +993,19 @@ class circleJS {
   }
 
   onData(score){
-    var newVol = this.gainNode.gain.value + score;
-    if(newVol > this.maxVol){
-      newVol = this.maxVol;
+    if(this.useVol == true) {
+      var newVol = this.gainNode.gain.value + score;
+      if(newVol > this.maxVol){
+        newVol = this.maxVol;
+      }
+      if(newVol < 0){
+        newVol = 0;
+      }
+      if(this.defaultUI == true) {
+        document.getElementById("volSlider").value = newVol * 100;
+      }
+      this.gainNode.gain.setValueAtTime(newVol, this.audioContext.currentTime);
     }
-    if(newVol < 0){
-      newVol = 0;
-    }
-    this.gainNode.gain.setValueAtTime(newVol, this.audioContext.currentTime);
   }
 
   endAudio(instance){

@@ -109,6 +109,7 @@ Changelog:
 *-*-*-*-*-*-*
 2/7/20
 ------
+- AudioJS options - volume slider and an option for decoupling the volume feedback.
 - Fixed HillJS. It's not that great but it's a bit more responsive than before. I need to add more compelling visual feedback.
 - Index page update
 - Timer actually shows the session time and not the microcontroller clock
