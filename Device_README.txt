@@ -102,16 +102,25 @@ Arduino IDE has a debugger that comes with the ESP32 libs if there are some weir
 
 HEG Code notes:
 
-On the /listen or /stream page once the event listener/websocket is connected you can control and test the HEG through the Serial monitor. Right now there is a manual 75ms delay on the data stream, I'm going to create buffers as the new sensors will be WAY faster than TCP can handle.
+On the /listen or /stream page once the event listener/websocket is connected you can control and test the HEG through the Serial monitor. Right now there is a manual 50ms delay on the data stream, I'm going to create buffers as the new sensors will be WAY faster than TCP can handle.
 
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
-1/31/19
+2/6/20
+------
+- Major improvements to UI layout
+- API improvements for better generalization (still WIP)
+- Custom video controls, show/hide controls
+- CircleJS, AudioJS, and HillJS touched up. HillJS is basically unresponsive but I'm working on it next.
+- Some cleanup
+- IE/Edge will not be supported by the on-board training demos until it is updated to ES8 standards (due to lack of arrow functions, mainly) or until I or others make compatible scripts, still need to test more mobile compatibility as well as understand why some laptops are not compatible.
+
+1/31/20
 ------
 - Minor changes and fixes to UI and javascript
 
-1/22/19
+1/22/20
 ------
 - Major mobile-friendly UI updates to web interface page (Alpha 0.0.1 for the interface)
 - Changes to data outputs (replaced rSlope and A.I. with velocity and acceleration (voltage units / ms and voltage units / ms ^2). 1 ADC unit = 0.256mV so if Vel = 1 that's +0.256mV gained per millisecond

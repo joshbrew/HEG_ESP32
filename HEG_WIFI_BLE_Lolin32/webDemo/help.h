@@ -4,6 +4,13 @@ const char help_page[] PROGMEM= R"=====(
     <head>
         <link rel="stylesheet" type="text/css" href="webDemoCSS.css">
         <style>
+            body { background-color: #383838; font-family: Console, Lucida, monospace; font-weight: bold; }
+            a:link{
+                color:lightblue
+            }
+            a:visited{
+                color:lightblue
+            }
             hr{
                 border: 2px solid ghostwhite
             }

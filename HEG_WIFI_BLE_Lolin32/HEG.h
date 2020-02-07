@@ -9,7 +9,6 @@
    - Check power draw  
    */
 
-
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
 #include <esp_timer.h>

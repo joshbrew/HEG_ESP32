@@ -1,5 +1,5 @@
 class HEGwebAPI {
-  constructor(parentId="main_body", defaultUI=true, host=''){
+  constructor(host='', defaultUI=true, parentId="main_body"){
     this.us=[];
     this.red=[];
     this.ir=[];
@@ -196,19 +196,20 @@ class HEGwebAPI {
 
   createHegUI(parentId) {
     var hegapiHTML = '<div id="hegapi" class="hegapi"> \
-      <form method="post" action="'+this.host+'/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form> \
-      <form method="post" action="'+this.host+'/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form> \
-      <form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><label class="label" for="command">Command:</label><br><input type="text" id="command" name="command"><button class="button sendbutton" type="submit">Send</button></form> \
-      <div id="saveLoad" class="saveLoadBar"> \
-        <label class="label" for="csvname">Save Session:</label><br><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input> \
-        <button class="button saveLoadButtons" id="savecsv">Save CSV</button> \
-        <button class="button saveLoadButtons" id="replaycsv">Replay CSV</button> \
-      </div> \
-      <div id="sensitivityBar" class="sensBar"> \
-        <button class="button" id="reset_s">Default</button> \
-        Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" id="sensitivity" min="1" max="200" value="100"> \
-      </div> \
-      </div> \
+      <table> \
+      <tr><td><form method="post" action="'+this.host+'/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form></td> \
+        <td><form method="post" action="'+this.host+'/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
+      <tr><td><form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><input type="text" id="command" name="command" placeholder="Command"></td><td><button class="button sendbutton" type="submit">Send</button></form></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
+      <tr><td><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input></td> \
+        <td><button class="button saveLoadButtons" id="savecsv">Save CSV</button></td></tr> \
+      <tr><td colspan="2"><button class="button saveLoadButtons" id="replaycsv">Replay CSV</button></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
+      <tr><td><button class="button" id="reset_s">Default</button></td> \
+        <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="200" value="100"></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
+      </table></div> \
       <iframe name="dummyframe" id="dummyframe" class="dummy"></iframe> \
       ';
 
@@ -240,7 +241,7 @@ class HEGwebAPI {
   }
 }
 class graphJS {
-  constructor(parentId, canvasId="graph", nPoints=[1000], color=[0,255,0,1], yscale=1, defaultUI=true, res=[1400,400]){
+  constructor(nPoints=[1000], color=[0,255,0,1], yscale=1, res=[1400,600], defaultUI=true, parentId="main_body", canvasId="g"){
     //WebGL graph based on: https://tinyurl.com/y5roydhe
     //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
     this.gl,
@@ -304,6 +305,7 @@ class graphJS {
       }
     `;
 
+    this.defaultUI = defaultUI;
     if(defaultUI == true){
       this.createUI(parentId);
     }
@@ -319,29 +321,28 @@ class graphJS {
 
   createUI(parentId){
     var shaderHTML = '<div id="shaderContainer"> \
-    <canvas class="webglcss" id="'+this.canvasId+'"></canvas><canvas class="webglcss" id="'+this.canvasId+'text"></canvas>' 
+    <canvas class="webglcss" id="'+this.canvasId+'"></canvas><canvas class="webglcss" id="'+this.canvasId+'text"></canvas></div>' 
     
     var graphOptions = '<div class="scale"> \
-      <button id="xoffsetbutton" class="button">Reset</button>X Offset:<br><input type="range" id="xoffset" min=0 max=1000 value=0><br> \
-      X Scale:<br><input type="range" id="xscale" min=10 max=3000 value=1000><button id="xscalebutton" class="button">Reset</button><br><br> \
-      Y Scale:<br><input type="range" id="yscale" min=1 max=400 value=200><button id="yscalebutton" class="button">Reset</button> \
-    </div> \
-    </div> \
+      <table> \
+      <tr><td>X Offset:<br><input type="range" class="slider" id="xoffset" min=0 max=1000 value=0></td><td><button id="xoffsetbutton" class="button">Reset</button></td></tr> \
+      <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max=3000 value='+toString(this.VERTEX_LENGTH)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
+      <tr><td>Y Scale:<br><input type="range" class="slider" id="yscale" min=1 max=400 value=200></td><td><button id="yscalebutton" class="button">Reset</button></td></tr> \
+      </table> \
+      </div> \
     ';
 
     HEGwebAPI.appendFragment(shaderHTML,parentId);
     HEGwebAPI.appendFragment(graphOptions, "graphBox");
     this.xoffsetSlider = document.getElementById("xoffset");
-
     this.xscaleSlider = document.getElementById("xscale");
-    
     this.yscaleSlider = document.getElementById("yscale");
     this.yscaleSlider.oninput = () => {
       this.yscale = this.yscaleSlider.value * .005;
       this.invScale = 1/this.yscale;
     }
     document.getElementById("yscalebutton").onclick = () => {
-      this.yscaleSlider.value = 100;
+      this.yscaleSlider.value = 200;
       this.yscale = 1;
       this.invScale = 1;
     }
@@ -418,7 +419,6 @@ class graphJS {
 
   draw = () => {
     //Create main graph
- 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
     //xAxis
@@ -430,7 +430,7 @@ class graphJS {
     this.gl.drawArrays(this.gl.LINES, 0, 2);
 
     //gradient
-    this.createVertices(this.gradient, [70,70,70,0.5]);
+    this.createVertices(this.gradient, [70,70,70,0.8]);
     this.gl.drawArrays(this.gl.LINES, 0, 12);
     
     //Data line
@@ -440,14 +440,22 @@ class graphJS {
     this.gl.drawArrays(this.gl.LINE_STRIP, 0, this.VERTEX_LENGTH);
     //Create text overlay
     this.graphtext.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.graphtext.canvas.height = this.canvas.height*0.65;
-    this.graphtext.canvas.width = window.innerWidth;
-    this.graphtext.font = "1.2em Arial";
+
+    if(this.defaultUI == true){
+      if(window.innerWidth > 700){
+        this.graphtext.canvas.height = this.canvas.height*(window.innerHeight/window.innerWidth)*1.3;
+      }
+      else{
+        this.graphtext.canvas.height = this.canvas.height;
+      }
+    } 
+    this.graphtext.canvas.width = this.canvas.width*1.3;
+    this.graphtext.font = "2em Arial";
     this.graphtext.fillStyle = "#00ff00";
-    this.graphtext.fillText("|  Time (s): " + (this.us*0.000001).toFixed(2),window.innerWidth - 200,25);
-    this.graphtext.fillText("     Ratio: " + this.ratio.toFixed(2) + "  |", window.innerWidth - 460,25);
+    this.graphtext.fillText("|  Time (s): " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+    this.graphtext.fillText("|  Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
     this.graphtext.fillStyle = "#99ffbb";
-    this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2),window.innerWidth - 335,25);
+    this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2),this.graphtext.canvas.width - 720,50);
     this.graphtext.fillStyle = "#707070";
     var xoffset = this.graphtext.canvas.width * 0.133;
     this.graphtext.fillText((this.invScale * 0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
@@ -462,7 +470,9 @@ class graphJS {
 }
     
 class circleJS {
-  constructor(parentId, canvasId="circlecanvas", bgColor="#34baeb", cColor="#ff3a17", res=[550,400], defaultUI=true){
+  constructor(bgColor="#34baeb", cColor="#ff3a17", res=[window.innerWidth,"440"], defaultUI=true, parentId="main_body", canvasId="canvas1"){
+    
+    this.defaultUI = defaultUI
     if(defaultUI == true){
       this.createCanvas(parentId, canvasId, res);
     }
@@ -482,8 +492,8 @@ class circleJS {
     this.draw();
   }
 
-  createCanvas(parentId,canvasId,res=[400,400]){
-    var canvasHTML = '<div id="canvasContainer" class="canvasContainer"><canvas class="canvascss" id="'+canvasId+'" height="'+res[1]+'px" width="'+res[0]+'px"></canvas></div>';
+  createCanvas(parentId,canvasId,res=["600","600"]){
+    var canvasHTML = '<div id="canvasContainer" class="canvasContainer"><canvas class="circlecss" id="'+canvasId+'" height="'+res[1]+'" width="'+res[0]+'"></canvas></div>';
 
     //Setup page as fragments so updates to elements are asynchronous.
     HEGwebAPI.appendFragment(canvasHTML,parentId);
@@ -498,6 +508,14 @@ class circleJS {
   }
 
   draw = () => {
+    if(this.defaultUI){
+      if(window.innerWidth >= 700) {
+        this.c.width = window.innerWidth - 30;
+      }
+      else {
+        this.c.width = 700;
+      }
+    }
       var cWidth = this.c.width;
       var cHeight = this.c.height;
       this.ctx.clearRect(0, 0, cWidth, cHeight);
@@ -526,7 +544,7 @@ class circleJS {
 }
 
   class videoJS {
-      constructor(parentId, vidapiId="vidapi", vidContainerId="vidbox", res=["640","480"], defaultUI=true){
+      constructor(res=["700","440"], vidapiId="vidapi", vidContainerId="vidbox", defaultUI=true, parentId="main_body"){
         this.playRate = 1;
         this.alpha = 0;
         this.volume = 0.5;
@@ -541,13 +559,18 @@ class circleJS {
         this.vidQuery;
         this.c;
         this.gl;
-        if(defaultUI=true){
+
+        this.defaultUI = defaultUI;
+        this.sliderfocus = false;
+        this.hidden = false;
+        if(defaultUI == true){
           this.addUI(parentId, res);
         }
-        this.init();
+        this.init(defaultUI);
       }
 
       setupButtons() {
+
         document.getElementById("startbutton").onclick = () => {
           if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
           else{ this.vidQuery.playbackRate = this.playRate; }
@@ -555,21 +578,39 @@ class circleJS {
         
         document.getElementById("stopbutton").onclick = () => {this.vidQuery.playbackRate = 0;}
         
+        document.getElementById("play").onclick = () => {
+          if(this.vidQuery.playbackRate == 0){
+            if(this.useRate == true){
+              this.vidQuery.playbackRate = this.playRate;
+            }
+            else {
+              this.vidQuery.playRate = 1;
+            }
+            document.getElementById("play").innerHTML = "||";
+          }
+          else{
+            this.vidQuery.playbackRate = 0;
+            document.getElementById("play").innerHTML = ">";
+          }
+        }
+        
         document.getElementById("useAlpha").onclick = () => {
-         if(useAlpha == true){
+         if(this.useAlpha == true){
            this.useAlpha = false;
            this.alpha = 0;
+           document.getElementById("useAlpha").style.opacity = "0.3";
          }
-         else{ this.useAlpha = true; }
+         else{ this.useAlpha = true; document.getElementById("useAlpha").style.opacity = "1.0";}
         }
 
         document.getElementById("useRate").onclick = () => {
-         if(useRate == true){
+         if(this.useRate == true){
            this.useRate = false;
            this.playRate = 1;
            this.vidQuery.playbackRate = 1;
+           document.getElementById("useRate").style.opacity = "0.3";
          }
-         else{ this.useRate = true; }
+         else{ this.useRate = true; document.getElementById("useRate").style.opacity = "1.0";}
         }
 
         document.getElementById("useVol").onclick = () => {
@@ -578,12 +619,65 @@ class circleJS {
            this.useVolume = false;
            this.volume = 0;
            this.vidQuery.volume = 0;
+           document.getElementById("useVol").style.opacity = "0.3";
          }
          else{ 
           this.useVolume = true; 
           this.vidQuery.muted = false; 
           this.volume = 0.5; 
-          this.vidQuery.volume = 0.5; }
+          this.vidQuery.volume = 0.5;
+          document.getElementById("useVol").style.opacity = "1.0";
+          }
+        }
+
+        this.timeSlider.addEventListener("change", () => {
+          // Calculate the new time
+          var time = this.vidQuery.duration * (this.timeSlider.value / 1000);
+        
+          // Update the video time
+          this.vidQuery.currentTime = time;
+        });
+
+        this.timeSlider.onmousedown = () => {
+          this.sliderfocus = true;
+        }
+
+        this.timeSlider.ontouchstart = () => {
+          this.sliderfocus = true;
+        }
+
+        this.timeSlider.onchange = () => {
+          this.sliderfocus = false;
+        }
+
+        document.getElementById("minus1min").onclick = () => {
+          this.vidQuery.currentTime -= 60;
+        }
+        document.getElementById("plus1min").onclick = () => {
+          this.vidQuery.currentTime += 60;
+        }
+        document.getElementById("minus10sec").onclick = () => {
+          this.vidQuery.currentTime -= 10;
+        }
+        document.getElementById("plus10sec").onclick = () => {
+          this.vidQuery.currentTime += 10;
+        }
+
+        document.getElementById("showhide").onclick = () => {
+          if(this.hidden == false) {
+            this.hidden = true;
+            document.getElementById("showhide").innerHTML = "Show UI";
+            document.getElementById("vidbuttons").style.display = "none";
+            document.getElementById("timeDiv").style.display = "none";
+            document.getElementById("fs").style.display = "none";
+          }
+          else{
+            this.hidden = false;
+            document.getElementById("showhide").innerHTML = "Hide UI";
+            document.getElementById("vidbuttons").style.display = "";
+            document.getElementById("timeDiv").style.display = "";
+            document.getElementById("fs").style.display = "";
+          }
         }
       }
 
@@ -593,16 +687,25 @@ class circleJS {
         cancelAnimationFrame(this.animationId);
       }
 
-      addUI(parentId, res=["640","480"]){
-       var videoapiHTML = '<div id="'+this.vidapiId+'" class="vidapi"> \
-        <input id="fs" name="fs" type="file" accept="video/*"/><br> \
-        <button class="button vdfade" id="useAlpha" name="useAlpha">Fade</button> \
-        <button class="button vdspeed" id="useRate" name="useRate">Speed</button> \
-        <button class="button vdvol" id="useVol" name="useVol">Volume</button> \
+      addUI(parentId, res=["700","470"]){
+       var videoapiHTML = '<div id="'+this.vidapiId+'"> \
+       <input class="file_wrapper" id="fs" name="fs" type="file" accept="video/*"/> \
+       <button class="showhide" id="showhide" name="showhide">Hide UI</button> \
+       <div id="vidbuttons" class="vidbuttons"><table class="vidtable"> \
+          <tr><td>Feedback:</td></tr> \
+          <tr><td><button class="button vdfade" id="useAlpha" name="useAlpha">Fade</button></td></tr> \
+          <tr><td><button class="button vdspeed" id="useRate" name="useRate">Speed</button></td></tr> \
+          <tr><td><button class="button vdvol" id="useVol" name="useVol">Volume</button></td></tr></div> \
+          </table> \
         </div>';
-       var videoHTML = '<div id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="canvascss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="canvascss" id="'+this.vidContainerId+'canvas"></canvas></div>';
-       HEGwebAPI.appendFragment(videoapiHTML,parentId);
+       var videoHTML = '<div class="vidbox" id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="vidcss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="vidglcss" id="'+this.vidContainerId+'canvas"></canvas></div> \
+       <div id="timeDiv" class="timeDiv"><input id="timeSlider" class="slider timeSlider" type="range" min="0" max="1000" value="0"><br><br> \
+       <div id="vidbar" class="vidbar"><button id="minus1min" name="minus1min">--</button><button id="minus10sec" name="minus10sec">-</button><button id="play" name="play">||</button><button id="plus10sec" name="plus10sec">+</button><button id="plus1min" name="plus1min">++</button></div></div>';
        HEGwebAPI.appendFragment(videoHTML,parentId);
+       HEGwebAPI.appendFragment(videoapiHTML, parentId);
+
+       this.timeSlider = document.getElementById("timeSlider");
+
        this.localFileVideoPlayer();
       }
 
@@ -683,12 +786,15 @@ class circleJS {
     }
     
     animateRect = () => {
+      if((this.defaultUI == true) && (this.sliderfocus == false)) {
+        this.timeSlider.value = Math.floor(1000 * this.vidQuery.currentTime / this.vidQuery.duration);
+      }
         this.gl.clearColor(0,0,0.1,this.alpha);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.animationId = requestAnimationFrame(this.animateRect);
     }
 
-    init() {
+    init(defaultUI) {
        this.vidQuery = document.getElementById(this.vidContainerId+'vid');
        if(this.useVolume == true){
         this.vidQuery.muted = false;
@@ -698,24 +804,30 @@ class circleJS {
        this.c = document.getElementById(this.vidContainerId+'canvas');
        this.c.width = this.vidQuery.width;
        this.c.height = this.vidQuery.height;
+       var rect = this.vidQuery.getBoundingClientRect();
+       this.c.style.top = rect.top + 'px';
+       this.c.style.height = (rect.bottom - rect.top) + 'px';
        this.gl = this.c.getContext("webgl");
        this.gl.clearColor(0,0,0.1,0);
        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
+      if(defaultUI==true){
        this.setupButtons();
+      }
 
-       this.animateRect();
+      this.animateRect();
      }
  }
  
  class audioJS { //Modified from: https://codepen.io/jackfuchs/pen/yOqzEW
-  constructor(parentId, audioId="audio", audmenuId="audmenu", res=["800","400"],defaultUI=true) {
+  constructor(res=["800","400"], audioId="audio", audmenuId="audmenu", defaultUI=true,parentId="main_body") {
     this.audioId = audioId;
     this.audmenuId = audmenuId;
     
+    this.defaultUI = defaultUI;
     if(defaultUI==true) {
       this.initUI(parentId, res);
-      this.c = document.getElementById(this.audId+"canvas");
+      this.c = document.getElementById(this.audioId+"canvas");
     }
 
     this.maxVol = 1;
@@ -798,7 +910,7 @@ class circleJS {
       ';
       
       var visualizerHTML = '<div id="'+this.audioId+'" class="visualizerDiv" class-"canvasContainer"> \
-        <canvas id="'+this.audId+'canvas" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
+        <canvas class="audiocanvas" id="'+this.audioId+'canvas" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
       </div> \
       ';
 
@@ -819,7 +931,7 @@ class circleJS {
           };
           that.updateInfo('Decoding the audio', true);
           audioContext.decodeAudioData(fileResult, function(buffer) {
-              that.updateInfo('Decode succussful, starting the visualizer', true);
+              that.updateInfo('Decode successful, starting the visualizer', true);
               that.createVisualizer(audioContext, buffer);
           }, function(e) {
               that.updateInfo('!Fail to decode the file', false);
@@ -892,7 +1004,7 @@ class circleJS {
       } 
       var that = this;
       var audioInput = document.getElementById('uploadedFile');
-      var dropContainer = document.getElementById(this.audId+"canvas");
+      var dropContainer = document.getElementById(this.audioId+"canvas");
       //listen the file upload
       audioInput.onchange = function() {
         if (that.audioContext===null) {return;};
@@ -993,10 +1105,13 @@ class circleJS {
  }
 
  class hillJS {
-  constructor(parentId, hillsId="hillscanvas", hillsmenuId="hillsmenu", res=["800","350"], updateInterval=3000, defaultUI=true) {
+  constructor(res=["800","350"], updateInterval=3000, defaultUI=true, parentId="main_body", hillsId="hillscanvas", hillsmenuId="hillsmenu") {
    this.hillsId = hillsId;
    this.hillsmenuId = hillsmenuId;
 
+   this.initialized = false;
+
+   this.defaultUI = defaultUI;
    if(defaultUI == true){
     this.initUI(parentId, res);
    }
@@ -1026,9 +1141,9 @@ class circleJS {
 
   initUI(parentId, res=["800","350"]){
     var canvasHTML = '<div id="canvasContainer" class="canvasContainer"> \
-      <canvas class="canvascss" id="'+this.hillsId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
+      <canvas class="hillcss" id="'+this.hillsId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
       ';
-    var menuHTML = '<div id="'+this.hillsmenuId+'" class="vidapi"> \
+    var menuHTML = '<div id="'+this.hillsmenuId+'" class="hillapi"> \
     <button class="button" id="hillsRbutton">Reset</button> \
     </div>';
       
@@ -1058,7 +1173,12 @@ class circleJS {
   }
 
   onData(score){
-    this.hillScore[this.hillScore.length - 1] += score + (score*score)*0.1; //Testing a simple multiplier, I will develop this more 
+    if(((score < 1) && (score > -1)) && (score != 0)){
+      this.hillScore[this.hillScore.length - 1] += score + (score/(score+1)); //Testing a simple multiplier, I will develop this more 
+    }
+    else {
+      this.hillScore[this.hillScore.length - 1] += score + (score*score); 
+    }
   }
 
   draw = () => {
@@ -1067,7 +1187,7 @@ class circleJS {
     // Change height of bars based on avg or rms. (all at 0 on fresh session)
     // Update last bar for every t time interval based on change
     var now = Date.now();
-    if(now - this.start > this.updateInterval){
+    if((now - this.start > this.updateInterval) || (this.initialized == false)) {
       this.start = now;
       var cwidth = this.c.width;
       var cheight = this.c.height - 2;
@@ -1093,7 +1213,8 @@ class circleJS {
       }
       this.hillScore.shift();
       this.hillScore.push(this.hillScore[this.hillScore.length - 1]);
+      if(this.initialized == false){this.initialized = true;} // Prevents initial draw delay
+      this.animationId = requestAnimationFrame(this.draw);
     }
-    this.animationId = requestAnimationFrame(this.draw);
   }
  }
