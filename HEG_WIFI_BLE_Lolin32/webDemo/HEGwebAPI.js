@@ -893,6 +893,7 @@ class circleJS {
       };
       this.stopAudio();
       audioBufferSourceNode.start(0);
+      this.gainNode.gain.setValueAtTime(this.maxVol, this.audioContext.currentTime);
       this.status = 1;
       this.source = audioBufferSourceNode;
       audioBufferSourceNode.onended = function() {
