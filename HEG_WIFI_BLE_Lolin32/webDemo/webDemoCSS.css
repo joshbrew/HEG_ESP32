@@ -77,7 +77,7 @@
     opacity:0.35;
     left:25%;
     width:50%;
-    top: 470px;
+    top: 460px;
   }
   .timeSlider{
     width: 60%;
@@ -111,6 +111,7 @@
   }
   .vidbuttons {
     position: absolute;
+    font-family: Arial, Helvetica, sans-serif;
     color: white;
     height:   20px;
     top:      140px;
