@@ -15,7 +15,7 @@ Youtube announcement link: https://www.youtube.com/watch?v=uuF9yuV2Kxk
 
 We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! [Get it here](https://github.com/moothyknight/HEGstudio-Fork-HEGduino)
 
-Find our modified HEGstudio v0.1.5 source with EXE for Windows. Tested for Windows 7, 8, and 10 available in this repo. Bugs are definitely present from old source code. Try the different modes. Source and exe [available on our other repo](https://github.com/moothyknight/HEGstudio-Fork-HEGduino), the originals are available from the original sourceforge: [Link](https://sourceforge.net/projects/hegstudio/)
+Find our modified HEGstudio v0.1.5 source with EXE for Windows. Tested for Windows 7, 8, and 10 available in this repo. Bugs are definitely present from old source code. Try the different modes. Source and exe [available on our other repo](https://github.com/moothyknight/HEGstudio-Fork-HEGduino), the original videos are available from the Jonathan's sourceforge: [Link](https://sourceforge.net/projects/hegstudio/)
 
 See also (very deprecated):
 [Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
