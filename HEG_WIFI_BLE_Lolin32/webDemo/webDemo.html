@@ -147,7 +147,7 @@ function toggleHEG(switchElement) {
     document.getElementById('stopbutton').click();
   }
 }
-document.getElementById("togBtn").onchange = () => {toggleHEG(this)};
+document.getElementById("togBtn").onchange = function(){toggleHEG(document.getElementById("togBtn"))};
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -385,7 +385,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
     document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
     if(e.data.includes("|")) {
       var dataArray = e.data.split("|");
-      if(parseFloat((dataArray[3]) > 0)){ // Skip values not within a certain error.
+      if(parseFloat(dataArray[3]) > 0) { // Skip values not within a certain error.
         if(s.startTime == 0) { s.startTime = parseInt(dataArray[0])}
         s.us.push(parseInt(dataArray[0]));
         s.red.push(parseInt(dataArray[1]));
