@@ -86,7 +86,7 @@ The following demo pages are available:
 Wifi code notes:
 
 Use the /connect page to save Wifi credentials to EEPROM. The ESP32 will reset and attempt connection. 
-If connection fails, the access point opens (StateChanger in your WiFi scanner).
+If connection fails, the access point opens (My_HEG in your WiFi scanner).
 
 BLE and WiFi do not work concurrently at the moment, logging into WiFi with BLE enabled may cause the ESP32 to crash.
 Use the serial 'b' command for now to test switching modes or use the /connect page options.
