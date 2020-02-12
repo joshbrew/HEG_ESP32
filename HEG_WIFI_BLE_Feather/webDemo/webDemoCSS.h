@@ -27,6 +27,10 @@ const char webDemoCSS[] PROGMEM = R"=====(
   .button:hover {
       background-color: rgba(0, 189, 157, 0.644);
   }
+  
+  .button:active {
+      background-color: rgba(0, 107, 89, 0.644)
+  }
 
 .header {
   width: 50%;
@@ -170,8 +174,12 @@ const char webDemoCSS[] PROGMEM = R"=====(
   }
   .scale {
     display: inline-block;
+    z-index: 1000;
   }
   .scale button {
+    width: 100%;
+  }
+  #graphViewTable {
     width: 100%;
   }
   .webglcss {
@@ -181,6 +189,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
     height:    260px;
     top:       530px;
     min-width: 700px;
+    z-index: 0;
    }
    .audiocanvas {
      position:absolute;
@@ -231,7 +240,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
    }
       /**modal styling**/
       .modal {
-        position: fixed;
+        position: absolute;
         left: 0;
         top: 0;
         width: 100%;
@@ -255,10 +264,10 @@ const char webDemoCSS[] PROGMEM = R"=====(
          
           font-family:Arial, Helvetica, sans-serif;
 
-          top: 50%;
+          top: 100px;
           left: 50%;
-          transform: translate(-50%, -50%);
-          max-height: 90%;
+          transform: translateX(-50%);
+          max-height: 420px;
           overflow: auto;
           background: rgba(0, 78, 131, 0.637);
           color: white;
@@ -285,31 +294,31 @@ const char webDemoCSS[] PROGMEM = R"=====(
               padding: 20px;
           }
 
-      .modal .close_modal {
-          position: absolute;
-          right: 10px;
-          top: 10px;
-          cursor: pointer;
-          font-size: 18px;
-          opacity: 0.5;
-          background: none;
-          border: none;
-          transition: opacity 0.2s ease;
-      }
+        .modal .close_modal {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            opacity: 0.5;
+            background: none;
+            border: none;
+            transition: opacity 0.2s ease;
+        }
 
           .modal .close_modal:hover {
               opacity: 0.9;
           }
 
-          .modal2 {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 990;
+    .modal2 {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 990;
 
-            }
+      }
 
       .modal2 .overlay2 {
           position: absolute;
@@ -328,9 +337,9 @@ const char webDemoCSS[] PROGMEM = R"=====(
 
           font-family:Arial, Helvetica, sans-serif;
 
-          top: 50%;
+          top: 150px;
           left: 50%;
-          transform: translate(-50%, -50%);
+          transform: translateX(-50%);
           max-height: 90%;
           overflow: auto;
           background: rgba(0, 78, 131, 0.637);
@@ -373,14 +382,14 @@ const char webDemoCSS[] PROGMEM = R"=====(
               opacity: 0.9;
           }
 
-          .modal3 {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 990;
-            }
+    .modal3 {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 990;
+      }
 
       .modal3 .overlay3 {
           position: absolute;
@@ -390,7 +399,6 @@ const char webDemoCSS[] PROGMEM = R"=====(
           height: 100%;
           z-index: 995;
           background: rgba(0, 0, 0, 0);
-          
       }
 
       .modal3 .modal_content3 {
@@ -547,6 +555,10 @@ const char webDemoCSS[] PROGMEM = R"=====(
         background-color: rgba(0, 189, 157, 0.644);
     }
 
+    .tablink:active {
+      background-color: rgba(0, 121, 101, 0.644);
+    }
+
     .tabcontent {
         color: white;
         display: none;
@@ -560,18 +572,26 @@ const char webDemoCSS[] PROGMEM = R"=====(
       border: none;
       background-color: lightgray;
       color: black;
-      font-family: 'Ibarra Real Nova', serif;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
       opacity: 0.8;
   }
   input[type=text]:focus {
-    width: 100%;
-    font-size: 1.5em;
-    padding: 14px 16px;
     border: none;
     background-color: #fcfcf6;
-    color: black;
-    font-family: 'Ibarra Real Nova', serif;
     opacity: 1.0;
+}
+
+textarea{
+  width: 100%;
+  height: 55px;
+  background-color: lightgray;
+  opacity: 0.8;
+}
+
+textarea:focus{
+  background-color: #fcfcf6;
+  opacity: 1.0;
 }
 
 input[type=range].slider {

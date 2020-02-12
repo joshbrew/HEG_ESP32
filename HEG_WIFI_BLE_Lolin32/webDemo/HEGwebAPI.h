@@ -11,19 +11,20 @@ class HEGwebAPI {
     this.velAvg=[];
     this.accelAvg=[];
 
-    this.parentId = parentId;
-    this.dataBox = "dataBox";
-    this.graphBox = "graphBox";
-    this.visualBox = "VisualBox";
     this.slowSMA = 0;
     this.slowSMAarr = [0];
     this.fastSMA = 0;
+    this.fastSMAarr = [0];
     this.smaSlope = 0;
     this.scoreArr = [0];
     this.replay = false;
 
     this.csvDat = [];
     this.csvIndex = 0;
+
+    this.curIndex = 0;
+    this.noteIndex = [];
+    this.noteText = [];
 
     this.host = host;
     this.source="";
@@ -33,7 +34,8 @@ class HEGwebAPI {
     window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
     window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.msCancelAnimationFrame;
     if(defaultUI==true){
-      this.createHegUI(parentId);
+      this.parentId = parentId;
+      this.createUI(parentId);
     }
     this.createEventListeners(host);
   }
@@ -82,6 +84,7 @@ class HEGwebAPI {
       this.slowSMA = 0;
       this.slowSMAarr = [0];
       this.fastSMA = 0;
+      this.fastSMAarr[0];
       this.smaSlope = 0;
       this.scoreArr = [0];
       this.replay = false;
@@ -93,14 +96,20 @@ class HEGwebAPI {
     this.slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
     this.fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
     this.slowSMAarr.push(this.slowSMA);
+    this.fastSMAarr.push(this.fastSMA);
     this.smaSlope = this.fastSMA - this.slowSMA;
     //this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
   }
 
   saveCSV(){
-    var csv = "us,Red,IR,Ratio,ambient,Vel,Accel\n"; //csv header
+    var csv = "us,Red,IR,Ratio,ambient,Vel,Accel,Notes\n"; //csv header
     for(var i = 0; i<this.us.length - 1; i++) {
-      var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i]].join(',') + "\n";
+      if(this.noteIndex.findIndex(i) != -1) {
+        var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i],this.noteText[this.noteIndex.findIndex(i)]].join(',') + "\n";
+      }
+      else{
+        var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i]].join(',') + "\n";
+      }
       csv += temp;
     }
     var hiddenElement = document.createElement('a');
@@ -197,7 +206,7 @@ class HEGwebAPI {
     document.getElementById("dataTable").innerHTML = '<tr><td id="us">'+this.us[this.us.length-1]+'</td><td id="red">'+this.red[this.red.length-1]+'</td><td id="ir">'+this.ir[this.ir.length-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1]+'</td><td id="ambient">'+this.ambient[this.ambient.length-1]+'</td><td id="Vel">'+this.velAvg[this.velAvg.length-1]+'</td><td id="Accel">'+this.accelAvg[this.accelAvg.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
   }
 
-  createHegUI(parentId) {
+  createUI(parentId) {
     var hegapiHTML = '<div id="hegapi" class="hegapi"> \
       <table> \
       <tr><td><form method="post" action="'+this.host+'/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form></td> \
@@ -205,7 +214,11 @@ class HEGwebAPI {
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td><form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><input type="text" id="command" name="command" placeholder="Command"></td><td><button class="button sendbutton" type="submit">Send</button></form></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
-      <tr><td><input type="text" id="csvname" name="csvname" placeholder="session_data" required></input></td> \
+      <tr><td><div id="timestamp">Get Current Time</div></td><td><button id="getTime" class="button">Get Time</button></td></tr> \
+      <tr><td colspan="2"><textarea id="noteText" placeholder="Point of Interest"></textarea></td></tr>\
+      <tr><td colspan="2"><button id="saveNote" class="button">Annotate</button></td></tr> \
+      <tr><td colspan="2"><hr></td></tr>\
+      <tr><td><input type="text" id="csvname" name="csvname" placeholder="session_data"></input></td> \
         <td><button class="button saveLoadButtons" id="savecsv">Save CSV</button></td></tr> \
       <tr><td colspan="2"><button class="button saveLoadButtons" id="replaycsv">Replay CSV</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
@@ -223,13 +236,26 @@ class HEGwebAPI {
     var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>us</th><th>Red</th><th>IR</th><th>Ratio</th><th>ambient</th><th>Vel</th><th>Accel</th><th class="scoreth">SMA Score</th></tr></table></div>';
     var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
-    HEGwebAPI.appendFragment(dataDivHTML,"dataBox");
-    HEGwebAPI.appendFragment(hegapiHTML,"dataBox");
-    HEGwebAPI.appendFragment(containerHTML,"dataBox");
+    HEGwebAPI.appendFragment(dataDivHTML,parentId);
+    HEGwebAPI.appendFragment(hegapiHTML,parentId);
+    HEGwebAPI.appendFragment(containerHTML,parentId);
     HEGwebAPI.appendFragment(messageHTML,"container");
     HEGwebAPI.appendFragment(eventHTML,"container");
     HEGwebAPI.appendFragment(tableHeadHTML,"container");
     HEGwebAPI.appendFragment(tableDatHTML,"container");
+
+    document.getElementById("getTime").onclick = () => {
+      this.curIndex = this.us.length - 1;
+      document.getElementById("timestamp").innerHTML = (this.us[this.us.length - 1] * 0.000001).toFixed(2) + "s";
+    }
+
+    document.getElementById("saveNote").onclick = () => {
+      this.noteIndex.push(this.curIndex);
+      this.noteText.push(document.getElementById("noteText").value);
+      document.getElementById("noteText").value = "";
+      this.curIndex = -1;
+      document.getElementById("timestamp").innerHTML = "Get Current Time";
+    }
 
     document.getElementById("savecsv").onclick = () => {this.saveCSV();}
     document.getElementById("replaycsv").onclick = () => {this.openCSV();}
@@ -244,7 +270,7 @@ class HEGwebAPI {
   }
 }
 class graphJS {
-  constructor(nPoints=[1000], color=[0,255,0,1], yscale=1, res=[1400,600], defaultUI=true, parentId="main_body", canvasId="g"){
+  constructor(nPoints=[1000], color=[0,255,0,1], yscale=1, res=[1400,600], parentId="main_body", canvasId="g", defaultUI=true){
     //WebGL graph based on: https://tinyurl.com/y5roydhe
     //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
     this.gl,
@@ -260,10 +286,13 @@ class graphJS {
           
     this.us = 0;
     this.ratio = 0;
+    this.score = 0;
+    this.viewing = 0;
+
     this.VERTEX_LENGTH = nPoints;
     this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
+    this.graphY2 = [...Array(this.VERTEX_LENGTH).fill(0)];
     
-
     this.yscale = yscale;
     this.invScale = 1/this.yscale;
     this.offset = 0; //Index offset
@@ -308,6 +337,10 @@ class graphJS {
       }
     `;
 
+    var shaderHTML = '<div id="shaderContainer"> \
+    <canvas class="webglcss" id="'+this.canvasId+'"></canvas><canvas class="webglcss" id="'+this.canvasId+'text"></canvas></div>' 
+    HEGwebAPI.appendFragment(shaderHTML,parentId);
+
     this.defaultUI = defaultUI;
     if(defaultUI == true){
       this.createUI(parentId);
@@ -322,32 +355,51 @@ class graphJS {
 
   }
 
+  resetVars() {
+    this.us = 0;
+    this.ratio = 0;
+    this.score = 0;
+    this.viewing = 0;
+
+    this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
+    this.graphY2 = [...Array(this.VERTEX_LENGTH).fill(0)];
+
+    this.offset = 0; //Index offset
+  }
+
   createUI(parentId){
-    var shaderHTML = '<div id="shaderContainer"> \
-    <canvas class="webglcss" id="'+this.canvasId+'"></canvas><canvas class="webglcss" id="'+this.canvasId+'text"></canvas></div>' 
-    
     var graphOptions = '<div class="scale"> \
-      <table> \
+      <table id="graphSliderTable"> \
       <tr><td>X Offset:<br><input type="range" class="slider" id="xoffset" min=0 max=1000 value=0></td><td><button id="xoffsetbutton" class="button">Reset</button></td></tr> \
-      <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max=3000 value='+toString(this.VERTEX_LENGTH)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
+      <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max='+(this.VERTEX_LENGTH * 3).toFixed(0)+' value='+this.VERTEX_LENGTH.toFixed(0)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
       <tr><td>Y Scale:<br><input type="range" class="slider" id="yscale" min=1 max=400 value=200></td><td><button id="yscalebutton" class="button">Reset</button></td></tr> \
-      </table> \
+      </table><br> \
+      <table id="graphViewTable"><tr><td>View:</td><td><form name="graphform">Score<input type="radio" name="graphview" value="0" checked>Ratio<input type="radio" name="graphview" value="1"></form></td></tr></table> \
       </div> \
     ';
 
-    HEGwebAPI.appendFragment(shaderHTML,parentId);
-    HEGwebAPI.appendFragment(graphOptions, "graphBox");
+    HEGwebAPI.appendFragment(graphOptions, parentId);
+
     this.xoffsetSlider = document.getElementById("xoffset");
     this.xscaleSlider = document.getElementById("xscale");
     this.yscaleSlider = document.getElementById("yscale");
+
     this.yscaleSlider.oninput = () => {
       this.yscale = this.yscaleSlider.value * .005;
       this.invScale = 1/this.yscale;
     }
+
     document.getElementById("yscalebutton").onclick = () => {
       this.yscaleSlider.value = 200;
       this.yscale = 1;
       this.invScale = 1;
+    }
+
+    var radios = document.graphform.graphview;
+    for (var i = 0; i < radios.length; i++) {
+      radios[i].addEventListener('change', () => {
+          this.viewing = radios.value;
+      });
     }
   }
 
@@ -420,6 +472,27 @@ class graphJS {
     cancelAnimationFrame(this.animationId);
   }
 
+  changeArr = (newArr) => {
+    if(newArr.length < 10) {
+      console.log("new array too small, needs 10 points minimum");
+    }
+    else {
+      if(this.VERTEX_LENGTH > newArr.length){
+        this.VERTEX_LENGTH = newArr.length;
+      }
+      if(this.viewing == 0){
+        for(var i = 1; i <= this.VERTEX_LENGTH; i++) {
+          this.graphY1[i] = newArr[newArr.length - 1 - (this.VERTEX_LENGTH - i)];
+        }
+      }
+      if(this.viewing == 1){
+        for(var i = 1; i <= this.VERTEX_LENGTH; i++) {
+          this.graphY2[i] = newArr[newArr.length - 1 - (this.VERTEX_LENGTH - i)];
+        }
+      }
+    }
+  }
+
   draw = () => {
     //Create main graph
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -437,28 +510,40 @@ class graphJS {
     this.gl.drawArrays(this.gl.LINES, 0, 12);
     
     //Data line
-    this.vertices = this.makePoints(this.VERTEX_LENGTH, this.graphY1);
+    if(this.viewing == 0){
+      this.vertices = this.makePoints(this.VERTEX_LENGTH, this.graphY1);
+    }
+    if(this.viewing == 1){
+      this.vertices = this.makePoints(this.VERTEX_LENGTH, this.graphY2);
+    }
     this.createVertices(this.vertices);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array(this.vertices));
     this.gl.drawArrays(this.gl.LINE_STRIP, 0, this.VERTEX_LENGTH);
     //Create text overlay
     this.graphtext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    if(this.defaultUI == true){
-      if(window.innerWidth > 700){
-        this.graphtext.canvas.height = this.canvas.height*(window.innerHeight/window.innerWidth)*1.3;
-      }
-      else{
-        this.graphtext.canvas.height = this.canvas.height;
-      }
-    } 
+    if(window.innerWidth > 700){
+      this.graphtext.canvas.height = this.canvas.height*(window.innerHeight/window.innerWidth)*1.3;
+    }
+    else{
+      this.graphtext.canvas.height = this.canvas.height;
+    }
     this.graphtext.canvas.width = this.canvas.width*1.3;
     this.graphtext.font = "2em Arial";
-    this.graphtext.fillStyle = "#00ff00";
-    this.graphtext.fillText("|  Time (s): " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
-    this.graphtext.fillText("|  Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
-    this.graphtext.fillStyle = "#99ffbb";
-    this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2),this.graphtext.canvas.width - 720,50);
+    if(this.viewing == 0) {
+      this.graphtext.fillStyle = "#00ff00";
+      this.graphtext.fillText("|  Time (s): " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("|  Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
+      this.graphtext.fillStyle = "#99ffbb";
+      this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2),this.graphtext.canvas.width - 720,50);
+    }
+    if(this.viewing == 1) {
+      this.graphtext.fillStyle = "#00ff00";
+      this.graphtext.fillText("|  Time (s): " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2) + "  |",this.graphtext.canvas.width - 720,50);
+      this.graphtext.fillStyle = "#99ffbb";
+      this.graphtext.fillText("   Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
+    }
     this.graphtext.fillStyle = "#707070";
     var xoffset = this.graphtext.canvas.width * 0.133;
     this.graphtext.fillText((this.invScale * 0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
@@ -473,7 +558,7 @@ class graphJS {
 }
     
 class circleJS {
-  constructor(bgColor="#34baeb", cColor="#ff3a17", res=[window.innerWidth,"440"], defaultUI=true, parentId="main_body", canvasId="canvas1"){
+  constructor(bgColor="#34baeb", cColor="#ff3a17", res=[window.innerWidth,"440"], parentId="main_body", canvasId="circlecanvas", defaultUI=true){
     
     this.defaultUI = defaultUI
     if(defaultUI == true){
@@ -823,7 +908,7 @@ class circleJS {
  }
  
  class audioJS { //Modified from: https://codepen.io/jackfuchs/pen/yOqzEW
-  constructor(res=["800","400"], audioId="audio", audmenuId="audmenu", defaultUI=true,parentId="main_body") {
+  constructor(res=["800","400"], audioId="audio", audmenuId="audmenu", defaultUI=true, parentId="main_body") {
     this.audioId = audioId;
     this.audmenuId = audmenuId;
     
@@ -1157,7 +1242,7 @@ class circleJS {
  }
 
  class hillJS {
-  constructor(res=["700","350"], updateInterval=2000, defaultUI=true, parentId="main_body", hillsId="hillscanvas", hillsmenuId="hillsmenu") {
+  constructor(res=["700","350"], updateInterval=2000, hillsId="hillscanvas", hillsmenuId="hillsmenu", defaultUI=true, parentId="main_body") {
    this.hillsId = hillsId;
    this.hillsmenuId = hillsmenuId;
 

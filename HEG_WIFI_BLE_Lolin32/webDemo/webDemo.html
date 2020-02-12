@@ -17,6 +17,19 @@
 <script>
 //Rough Draft scripts. Generalize the onData, replayCSV, and handleEventData calls
 
+var s = new HEGwebAPI('',false);
+var g = new graphJS(1000,[255,100,80,1],1,[1400,600], "main_body", "g", false);
+var c = new circleJS(); //Default animation initialized first
+var v = null;
+var a = null;
+var h = null;
+
+var useGraph = true;
+var useCanvas = true;
+var useVideo = false;
+var useAudio = false;
+var useHills = false;
+
 // Modal Code
 var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
 
@@ -53,7 +66,8 @@ var tabHTML = '<div id="tabContainer"> \
       </button> \
     </div> \
   </div>';
-  
+
+
 HEGwebAPI.appendFragment(switchHTML, "main_body");
 HEGwebAPI.appendFragment(tabHTML, "main_body");
 
@@ -151,18 +165,9 @@ document.getElementById("togBtn").onchange = function(){toggleHEG(document.getEl
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-var s = new HEGwebAPI();
-var g = new graphJS(1000,[255,100,80,1]);
-var c = new circleJS(); //Default animation initialized first
-var v = null;
-var a = null;
-var h = null;
 
-var useGraph = true;
-var useCanvas = true;
-var useVideo = false;
-var useAudio = false;
-var useHills = false;
+s.createUI("dataBox");
+g.createUI("graphBox")
 
 var modeHTML = '<div class="menudiv" id="menudiv"> \
   Modes:<br> \
@@ -248,14 +253,18 @@ g.xoffsetSlider.onchange = () => {
    if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
     var endIndex = s.scoreArr.length - g.offset - 1;
     g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex); // FIX 
+    g.graphY2 = s.ratio.slice(endIndex -g.graphY2.length, endIndex);
    }
    else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
     var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - 1 - g.offset);
+    var ratioslice = s.ratio.slice(0,s.ratio.length - 1 - g.offset);
     if(g.graphY1.length == scoreslice){
       g.graphY1 = scoreslice;
+      g.graphY2 = ratioslice;
     }
     else{
       g.graphY1 = [...Array(g.VERTEX_LENGTH - scoreslice.length).fill(0), ...scoreslice];
+      g.graphY2 = [...Array(g.VERTEX_LENGTH - ratioslice.length).fill(0), ...ratioslice];
     }
    }
 }
@@ -265,15 +274,18 @@ g.xscaleSlider.onchange = () => {
   if(g.xscaleSlider.value < len) { // Remove from front.
     for(var i = 0; i < len - g.xscaleSlider.value; i++){
       g.graphY1.shift();
+      g.graphY2.shift();
     }
   }
   if(g.xscaleSlider.value > len) { // Add to front
     for(var i = 0; i < g.xscaleSlider.value - len; i++){
-      if(i+len <= s.scoreArr.length){
-        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - (len+i) + g.offset]);
+      if(i+len+g.offset <= s.scoreArr.length){
+        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - ((len+i) + g.offset)]);
+        g.graphY2.unshift(s.ratio[s.ratio.length - ((len+i) + g.offset)]);
       } 
       else{
         g.graphY1.unshift(0);
+        g.graphY2.unshift(0);
       }
     }
   }
@@ -286,15 +298,18 @@ document.getElementById("xscalebutton").onclick = () => {
   if(g.xscaleSlider.value < len) { // Remove from front.
     for(var i = 0; i < len - g.xscaleSlider.value; i++){
       g.graphY1.shift();
+      g.graphY2.shift();
     }
   }
   if(g.xscaleSlider.value > len) { // Add to front
     for(var i = 0; i < g.xscaleSlider.value - len; i++){
       if(g.xscaleSlider.value < s.scoreArr.length){
-        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - g.graphY1.length + g.offset]);
+        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - ((g.graphY1.length+i) + g.offset)]);
+        g.graphY2.unshift(s.ratio[s.ratio.length - 1 - ((g.graphY2.length+i) + g.offset)]);
       } 
       else{
         g.graphY1.unshift(0);
+        g.graphY2.unshift(0);
       }
     }
   }
@@ -339,7 +354,6 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
     if(this.us.length >= 2){
       if(this.ratio.length > 40){
         this.smaScore(this.ratio);
-        g.ratio = this.slowSMA;
         var score = this.smaSlope*this.sensitivity.value*0.01;
         if(useCanvas == true){
           c.onData(score);
@@ -354,8 +368,12 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
           h.onData(score);
         }
         this.scoreArr.push(this.scoreArr[this.scoreArr.length - 1] + score);
+        g.ratio = this.slowSMA;
+        g.score = this.scoreArr[this.scoreArr.length - 1];
         g.graphY1.shift();
         g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.offset]);
+        g.graphY2.shift();
+        g.graphY2.push(this.slowSMAarr[this.slowSMAarr.length - 1 - g.offset]);
       }
       else {
         //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
@@ -399,7 +417,6 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
         //handle new data
         if(s.ratio.length-1 > 40){
           s.smaScore(s.ratio);
-          g.ratio = s.slowSMA;
           var score = s.smaSlope*s.sensitivity.value*0.01;
           if(useCanvas == true){
             c.onData(score);
@@ -414,8 +431,12 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
             h.onData(score);
           }
           s.scoreArr.push(s.scoreArr[s.scoreArr.length - 1] + score);
+          g.ratio = s.slowSMA;
+          g.score = s.scoreArr[s.scoreArr.length - 1];
           g.graphY1.shift();
           g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
+          g.graphY2.shift();
+          g.graphY2.push(s.slowSMAarr[s.slowSMAarr.length - 1 - g.offset]);
         }
         s.updateTable(); 
       } 

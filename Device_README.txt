@@ -107,6 +107,13 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/11/20
+------
+- Graph can now be switched between the score and ratio
+- Added Timestamped annotating that will show up in the session CSVs
+- Fixed one thing with the x scale slider, the graph crash bug is still there
+- Some other API rearrangements
+
 2/7/20
 ------
 - AudioJS options - volume slider and an option for decoupling the volume feedback.
