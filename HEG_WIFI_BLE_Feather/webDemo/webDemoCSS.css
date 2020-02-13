@@ -564,21 +564,21 @@
         height: 100%;
         font-family: 'Ibarra Real Nova', serif;
     } 
-  input[type=text] {
-      width: 100%;
-      font-size: 1.5em;
-      padding: 14px 16px;
-      border: none;
-      background-color: lightgray;
-      color: black;
-      font-family: 'Courier New', Courier, monospace;
-      font-weight: bold;
-      opacity: 0.8;
-  }
-  input[type=text]:focus {
+input[type=text] {
+    width: 100%;
+    font-size: 1em;
+    padding: 18px 10px;
     border: none;
-    background-color: #fcfcf6;
-    opacity: 1.0;
+    background-color: lightgray;
+    color: black;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    opacity: 0.8;
+}
+input[type=text]:focus {
+  border: none;
+  background-color: #fcfcf6;
+  opacity: 1.0;
 }
 
 textarea{
@@ -591,6 +591,10 @@ textarea{
 textarea:focus{
   background-color: #fcfcf6;
   opacity: 1.0;
+}
+
+#hostlabel {
+  text-align: left;
 }
 
 input[type=range].slider {

@@ -181,7 +181,7 @@ class HEGwebAPI {
     this.handleData(e);
   }
 
-  createEventListeners(host='') { //Set custom hostname (e.g. http://192.168.4.1)
+  createEventListeners(host='') { //Set custom hostname (e.g. http://192.168.4.1). Leave blank for local hosted sessions (i.e. served from the board)
     if (!!window.EventSource) {
       this.source = new EventSource(host+'/events');
       this.source.addEventListener('open', this.openEvent, false);
@@ -222,7 +222,10 @@ class HEGwebAPI {
       <tr><td colspan="2"><button class="button saveLoadButtons" id="replaycsv">Replay CSV</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td><button class="button" id="reset_s">Default</button></td> \
-        <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="200" value="100"></td></tr> \
+        <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="1000" value="100"></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
+      <tr><td colspan="2" id="hostlabel">Host</td></tr> \
+      <tr><td><input type="text" id="hostname" name="hostname" placeholder="http://192.168.4.1"></input></td><td><button id="submithost" class="button">Connect</button></td></tr>  \
       <tr><td colspan="2"><hr></td></tr> \
       </table></div> \
       <iframe name="dummyframe" id="dummyframe" class="dummy"></iframe> \
@@ -265,6 +268,13 @@ class HEGwebAPI {
     }
     document.getElementById("sensitivity").oninput = () => {
       document.getElementById("sensitivityVal").innerHTML = (this.sensitivity.value * 0.01).toFixed(2);
+    }
+
+    document.getElementById("submithost").onclick = () => {
+      this.removeEventListeners();
+      this.host = document.getElementById("hostname").value;
+      this.createEventListeners(this.host);
+      console.log("Attempting connection at " + this.host);
     }
   }
 }

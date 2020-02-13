@@ -107,6 +107,11 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/13/20
+------
+- Exposed method to change event source hosts, for clients not hosted on-board but still on the same network. This opens up more web development capabilities.
+- Scoring sensitivity slider can now got to X10, though this is pretty unnecessary.
+
 2/11/20
 ------
 - Graph can now be switched between the score and ratio
