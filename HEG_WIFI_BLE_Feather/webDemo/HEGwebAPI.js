@@ -304,8 +304,9 @@ class graphJS {
     
     this.yscale = yscale;
     this.invScale = 1/this.yscale;
-    this.offset = 0; //Index offset
-    
+    this.xoffset = 0; //Index offset
+    this.yoffset = 0;
+
     this.xAxis = new Float32Array([
     -1.0,0.0,
     1.0,0.0
@@ -373,7 +374,8 @@ class graphJS {
     this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
     this.graphY2 = [...Array(this.VERTEX_LENGTH).fill(0)];
 
-    this.offset = 0; //Index offset
+    this.xoffset = 0; //Index offset
+    this.yoffset = 0;
   }
 
   createUI(parentId){
@@ -381,6 +383,7 @@ class graphJS {
       <table id="graphSliderTable"> \
       <tr><td>X Offset:<br><input type="range" class="slider" id="xoffset" min=0 max=1000 value=0></td><td><button id="xoffsetbutton" class="button">Reset</button></td></tr> \
       <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max='+(this.VERTEX_LENGTH * 3).toFixed(0)+' value='+this.VERTEX_LENGTH.toFixed(0)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
+      <tr><td>Y Offset:<br><input type="range" class="slider" id="yoffset" min=0 max=10000 value=5000></td><td><button id="yoffsetbutton" class="button">Reset</button></td></tr> \
       <tr><td>Y Scale:<br><input type="range" class="slider" id="yscale" min=1 max=400 value=200></td><td><button id="yscalebutton" class="button">Reset</button></td></tr> \
       </table><br> \
       <table id="graphViewTable"><tr><td>View:</td><td><form name="graphform">Score<input type="radio" name="graphview" value="0" checked>Ratio<input type="radio" name="graphview" value="1"></form></td></tr></table> \
@@ -391,11 +394,20 @@ class graphJS {
 
     this.xoffsetSlider = document.getElementById("xoffset");
     this.xscaleSlider = document.getElementById("xscale");
+    this.yoffsetSlider = document.getElementById("yoffset");
     this.yscaleSlider = document.getElementById("yscale");
+
+    this.yoffsetSlider.oninput = () => {
+      this.yoffset = (this.yoffsetSlider.value - 5000) * 0.002;
+    }
 
     this.yscaleSlider.oninput = () => {
       this.yscale = this.yscaleSlider.value * .005;
       this.invScale = 1/this.yscale;
+    }
+
+    document.getElementById("yoffsetbutton").onclick = () => {
+      this.yoffset = 0;
     }
 
     document.getElementById("yscalebutton").onclick = () => {
@@ -403,6 +415,8 @@ class graphJS {
       this.yscale = 1;
       this.invScale = 1;
     }
+
+    
 
     var radios = document.graphform.graphview;
     for (var i = 0; i < radios.length; i++) {
@@ -437,7 +451,7 @@ class graphJS {
       const lerp0To1 = pointId / highestPointNdx;
       const isY = i % 2;
       return isY
-        ? yArr[i]*this.yscale // Y
+        ? (yArr[i]*this.yscale + this.yoffset) // Y
         : (lerp0To1 * 4 - 1); // X
     });
   }
@@ -555,12 +569,12 @@ class graphJS {
     }
     this.graphtext.fillStyle = "#707070";
     var xoffset = this.graphtext.canvas.width * 0.133;
-    this.graphtext.fillText((this.invScale * 0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
-    this.graphtext.fillText((this.invScale * 0.5).toFixed(3), xoffset, this.graphtext.canvas.height * 0.25); 
-    this.graphtext.fillText((this.invScale * 0.25).toFixed(3), xoffset, this.graphtext.canvas.height * 0.375); 
-    this.graphtext.fillText((this.invScale * -0.25).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
-    this.graphtext.fillText((this.invScale * -0.5).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
-    this.graphtext.fillText((this.invScale * -0.75).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
+    this.graphtext.fillText((this.invScale * 0.75 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
+    this.graphtext.fillText((this.invScale * 0.5 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.25); 
+    this.graphtext.fillText((this.invScale * 0.25 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.375); 
+    this.graphtext.fillText((this.invScale * -0.25 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
+    this.graphtext.fillText((this.invScale * -0.5 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
+    this.graphtext.fillText((this.invScale * -0.75 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
     this.animationId = requestAnimationFrame(this.draw);
   }
   normalize(val, max=255, min=0) { return (val - min) / (max - min); }
@@ -785,9 +799,12 @@ class circleJS {
       }
 
       addUI(parentId, res=["700","470"]){
+       var videoHTML = '<div class="vidbox" id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="vidcss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="vidglcss" id="'+this.vidContainerId+'canvas"></canvas></div>';
        var videoapiHTML = '<div id="'+this.vidapiId+'"> \
        <input class="file_wrapper" id="fs" name="fs" type="file" accept="video/*"/> \
        <button class="showhide" id="showhide" name="showhide">Hide UI</button> \
+       <div id="timeDiv" class="timeDiv"><input id="timeSlider" class="slider timeSlider" type="range" min="0" max="1000" value="0"><br><br> \
+       <div id="vidbar" class="vidbar"><button id="minus1min" name="minus1min">--</button><button id="minus10sec" name="minus10sec">-</button><button id="play" name="play">||</button><button id="plus10sec" name="plus10sec">+</button><button id="plus1min" name="plus1min">++</button></div></div> \
        <div id="vidbuttons" class="vidbuttons"><table class="vidtable"> \
           <tr><td>Feedback:</td></tr> \
           <tr><td><button class="button vdfade" id="useAlpha" name="useAlpha">Fade</button></td></tr> \
@@ -795,9 +812,6 @@ class circleJS {
           <tr><td><button class="button vdvol" id="useVol" name="useVol">Volume</button></td></tr></div> \
           </table> \
         </div>';
-       var videoHTML = '<div class="vidbox" id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="vidcss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="vidglcss" id="'+this.vidContainerId+'canvas"></canvas></div> \
-       <div id="timeDiv" class="timeDiv"><input id="timeSlider" class="slider timeSlider" type="range" min="0" max="1000" value="0"><br><br> \
-       <div id="vidbar" class="vidbar"><button id="minus1min" name="minus1min">--</button><button id="minus10sec" name="minus10sec">-</button><button id="play" name="play">||</button><button id="plus10sec" name="plus10sec">+</button><button id="plus1min" name="plus1min">++</button></div></div>';
        HEGwebAPI.appendFragment(videoHTML,parentId);
        HEGwebAPI.appendFragment(videoapiHTML, parentId);
 

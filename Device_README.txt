@@ -107,6 +107,11 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/14/20
+------
+- Y offset slider
+- Fixed fade mode (the CSS needed tweaking)
+
 2/13/20
 ------
 - Exposed method to change event source hosts, for clients not hosted on-board but still on the same network. This opens up more web development capabilities.

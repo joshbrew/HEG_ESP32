@@ -140,7 +140,10 @@ const char webDemoCSS[] PROGMEM = R"=====(
     display: block;
   }
   .vidglcss{
+    position: relative;
     width: 100%;
+    transform: translateY(-100px);
+    z-index: 0;
   }
   .vidbuttons {
     position: absolute;
@@ -337,7 +340,7 @@ const char webDemoCSS[] PROGMEM = R"=====(
 
           font-family:Arial, Helvetica, sans-serif;
 
-          top: 150px;
+          top: 110px;
           left: 50%;
           transform: translateX(-50%);
           max-height: 90%;
@@ -538,6 +541,8 @@ const char webDemoCSS[] PROGMEM = R"=====(
 
   /* Style tab links */
   .tablink {
+      position: relative;
+      z-index: 100;
       font-family: 'Arial', serif;
       font-weight: bold;
       color: white;

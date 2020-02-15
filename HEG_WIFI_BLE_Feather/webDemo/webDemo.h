@@ -249,16 +249,16 @@ g.xoffsetSlider.onchange = () => {
    if(g.xoffsetSlider.value > s.scoreArr.length) {
      g.xoffsetSlider.value = s.scoreArr.length - 1;
    }
-   g.offset = g.xoffsetSlider.value;
+   g.xoffset = g.xoffsetSlider.value;
    
    if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
-    var endIndex = s.scoreArr.length - g.offset - 1;
+    var endIndex = s.scoreArr.length - g.xoffset - 1;
     g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex); // FIX 
     g.graphY2 = s.ratio.slice(endIndex -g.graphY2.length, endIndex);
    }
    else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
-    var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - 1 - g.offset);
-    var ratioslice = s.ratio.slice(0,s.ratio.length - 1 - g.offset);
+    var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - 1 - g.xoffset);
+    var ratioslice = s.ratio.slice(0,s.ratio.length - 1 - g.xoffset);
     if(g.graphY1.length == scoreslice){
       g.graphY1 = scoreslice;
       g.graphY2 = ratioslice;
@@ -280,9 +280,9 @@ g.xscaleSlider.onchange = () => {
   }
   if(g.xscaleSlider.value > len) { // Add to front
     for(var i = 0; i < g.xscaleSlider.value - len; i++){
-      if(i+len+g.offset <= s.scoreArr.length){
-        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - ((len+i) + g.offset)]);
-        g.graphY2.unshift(s.ratio[s.ratio.length - ((len+i) + g.offset)]);
+      if(i+len+g.xoffset <= s.scoreArr.length){
+        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - ((len+i) + g.xoffset)]);
+        g.graphY2.unshift(s.ratio[s.ratio.length - ((len+i) + g.xoffset)]);
       } 
       else{
         g.graphY1.unshift(0);
@@ -305,8 +305,8 @@ document.getElementById("xscalebutton").onclick = () => {
   if(g.xscaleSlider.value > len) { // Add to front
     for(var i = 0; i < g.xscaleSlider.value - len; i++){
       if(g.xscaleSlider.value < s.scoreArr.length){
-        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - ((g.graphY1.length+i) + g.offset)]);
-        g.graphY2.unshift(s.ratio[s.ratio.length - 1 - ((g.graphY2.length+i) + g.offset)]);
+        g.graphY1.unshift(s.scoreArr[s.scoreArr.length - 1 - ((g.graphY1.length+i) + g.xoffset)]);
+        g.graphY2.unshift(s.ratio[s.ratio.length - 1 - ((g.graphY2.length+i) + g.xoffset)]);
       } 
       else{
         g.graphY1.unshift(0);
@@ -372,9 +372,9 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         g.ratio = this.slowSMA;
         g.score = this.scoreArr[this.scoreArr.length - 1];
         g.graphY1.shift();
-        g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.offset]);
+        g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.xoffset]);
         g.graphY2.shift();
-        g.graphY2.push(this.slowSMAarr[this.slowSMAarr.length - 1 - g.offset]);
+        g.graphY2.push(this.slowSMAarr[this.slowSMAarr.length - 1 - g.xoffset]);
       }
       else {
         //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
@@ -435,9 +435,9 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
           g.ratio = s.slowSMA;
           g.score = s.scoreArr[s.scoreArr.length - 1];
           g.graphY1.shift();
-          g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
+          g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.xoffset]);
           g.graphY2.shift();
-          g.graphY2.push(s.slowSMAarr[s.slowSMAarr.length - 1 - g.offset]);
+          g.graphY2.push(s.slowSMAarr[s.slowSMAarr.length - 1 - g.xoffset]);
         }
         s.updateTable(); 
       } 
@@ -447,7 +447,7 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
   else if (s.replay == false) {
     //s.smaSlope = s.scoreArr[s.scoreArr.length - 1];
     //g.graphY1.shift();
-    //g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.offset]);
+    //g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.xoffset]);
     //s.scoreArr.push(s.smaSlope);
   }
   if(g.xoffsetSlider.max < s.scoreArr.length){
