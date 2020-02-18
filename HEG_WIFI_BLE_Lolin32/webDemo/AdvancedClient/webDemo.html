@@ -20,14 +20,16 @@
 
 //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
 if(window.location.hostname != "http://192.168.4.1" || "http://esp32.local") {
-  window.useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
+  var useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
 }
 
-//Setup advanced scripts
-if(window.useAdvanced) {
+
+if(useAdvanced) { //Setup advanced scripts
   var link = document.createElement("script");
   link.src = "js/three.min.js"; //Can set this to be a nonlocal link like from cloudflare.
   document.head.appendChild(link); //Append script
+
+  //Initialize whatever.
 }
 
 var s = new HEGwebAPI('',false);
