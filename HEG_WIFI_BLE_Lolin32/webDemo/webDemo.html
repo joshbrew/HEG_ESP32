@@ -29,6 +29,10 @@
     var useAudio = false;
     var useHills = false;
     
+    //------------------------------------------------------------------------
+    //------------------------------------------------------------------------
+    //------------------------------------------------------------------------
+    
     // Modal Code
     var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
     
@@ -108,10 +112,12 @@
       }
     }
     document.getElementById("togBtn").onchange = function(){toggleHEG(document.getElementById("togBtn"))};
+    
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
     
+
     s.createUI("dataBox");
     g.createUI("graphBox")
     

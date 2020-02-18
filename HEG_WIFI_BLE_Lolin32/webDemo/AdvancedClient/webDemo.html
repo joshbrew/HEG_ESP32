@@ -133,9 +133,16 @@ g.createUI("graphBox")
 
 var modeHTML = '<div class="menudiv" id="menudiv"> \
   Modes:<br> \
-  <button class="button cvbutton" id="canvasmode">Circle</button><button class="button vdbutton" id="videomode">Video</button><button class="button aubutton" id="audiomode">Audio</button><br> \
-  <button class="button lfbutton" id="hillmode">Hill Climb</button> \
-</div>';
+  <button class="button" id="canvasmode">Circle</button> \
+  <button class="button" id="videomode">Video</button> \
+  <button class="button" id="audiomode">Audio</button><br> \
+  <button class="button" id="hillmode">Hill Climb</button>';
+
+if(useAdvanced) {
+  modeHTML += '<button class="button" id="threemode">ThreeJS</button>';
+}
+
+modeHTML += '</div>';
 
 HEGwebAPI.appendFragment(modeHTML,"visualBox");
 
