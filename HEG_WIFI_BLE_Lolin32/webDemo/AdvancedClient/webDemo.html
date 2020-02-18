@@ -14,8 +14,21 @@
 
 
 
-<script>
-//Rough Draft scripts. Generalize the overlays, onData, replayCSV, and handleEventData calls
+<script> //Rough Draft scripts. Generalize the overlays, onData, replayCSV, and handleEventData calls
+  
+//Advanced Client Scripts
+
+//Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
+if(window.location.hostname != "http://192.168.4.1" || "http://esp32.local") {
+  window.useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
+}
+
+//Setup advanced scripts
+if(window.useAdvanced) {
+  var link = document.createElement("script");
+  link.src = "js/three.min.js"; //Can set this to be a nonlocal link like from cloudflare.
+  document.head.appendChild(link); //Append script
+}
 
 var s = new HEGwebAPI('',false);
 var g = new graphJS(1000,[255,100,80,1],1,[1400,600], "main_body", "g", false);
