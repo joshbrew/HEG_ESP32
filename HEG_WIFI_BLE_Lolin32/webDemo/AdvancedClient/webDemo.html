@@ -16,17 +16,15 @@
 
 <script> //Rough Draft scripts. Generalize the overlays, onData, replayCSV, and handleEventData calls
   
-//Advanced Client Scripts
-
+//Advanced Client
 //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
-if(window.location.hostname != "http://192.168.4.1" || "http://esp32.local") {
+if(window.location.hostname != "192.168.4.1" || "esp32.local") {
   var useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
 }
 
-
 if(useAdvanced) { //Setup advanced scripts
   var link = document.createElement("script");
-  link.src = "js/three.min.js"; //Can set this to be a nonlocal link like from cloudflare.
+  link.src = "js/three.min.js"; //Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
   document.head.appendChild(link); //Append script
 
   //Initialize whatever.
@@ -39,11 +37,13 @@ var v = null;
 var a = null;
 var h = null;
 
-var useGraph = true;
-var useCanvas = true;
-var useVideo = false;
-var useAudio = false;
-var useHills = false;
+if(useAdvanced) {
+  var useThree = false;
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
 // Modal Code
 var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
@@ -124,9 +124,12 @@ function toggleHEG(switchElement) {
   }
 }
 document.getElementById("togBtn").onchange = function(){toggleHEG(document.getElementById("togBtn"))};
+
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+
+
 
 s.createUI("dataBox");
 g.createUI("graphBox")
@@ -147,69 +150,75 @@ modeHTML += '</div>';
 HEGwebAPI.appendFragment(modeHTML,"visualBox");
 
 function deInitMode(){
-  if(useVideo == true){
+  if(v != null){
     var thisNode = document.getElementById(v.vidapiId);
     thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
     thisNode = document.getElementById(v.vidContainerId);    
     thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
     v.deInit();
-    useVideo = false;
     v = null;
   }
-  if(useAudio == true){
+  if(a != null){
     a.stopAudio();
     a.endAudio(a);
     var thisNode = document.getElementById(a.audioId);
     thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
     thisNode = document.getElementById(a.audmenuId);
     thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-    useAudio = false;
     a = null;
   }
-  if(useCanvas == true){
+  if(c != null){
     c.deInit();
     c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
-    useCanvas = false;
     c = null;
   }
-  if(useHills == true){
+  if(h != null){
     h.deInit();
     h.c.parentNode.parentNode.parentNode.removeChild(h.c.parentNode.parentNode);
     h.menu.parentNode.removeChild(h.menu);
-    useHills = false;
     h = null;
+  }
+  if(useAdvanced) {
+    if(useThree == true) {
+      useThree = false;
+    }
   }
 }
 
 document.getElementById("canvasmode").onclick = function() {
-  if(useCanvas == false){
+  if(c == null){
     deInitMode();
     c = new circleJS();
-    useCanvas = true;
   }
 }
 
 document.getElementById("videomode").onclick = function() {
-  if(useVideo == false){
+  if(v == null){
     deInitMode();
     v = new videoJS();
-    useVideo = true
   }
 }
 
 document.getElementById("audiomode").onclick = function() {
-  if(useAudio == false){
+  if(a == null){
     deInitMode();
     a = new audioJS();
-    useAudio = true; 
   }
 }
 
 document.getElementById("hillmode").onclick = function() {
-  if(useHills == false){
+  if(h == null){
     deInitMode();
     h = new hillJS();
-    useHills = true;
+  }
+}
+
+if(useAdvanced) {
+  document.getElementById("threemode").onclick = function() {
+    if(useThree == false) {
+      deInitMode();
+      useThree = true;
+    }
   }
 }
 
@@ -336,6 +345,11 @@ s.replayCSV = function() { //REDO IN GENERALIZED FORMAT
         if(useHills == true) {
           h.onData(score);
         }
+        if(useAdvanced) {
+          if(useThree == true) {
+
+          }
+        }
         this.scoreArr.push(this.scoreArr[this.scoreArr.length - 1] + score);
         g.ratio = this.slowSMA;
         g.score = this.scoreArr[this.scoreArr.length - 1];
@@ -398,6 +412,11 @@ var handleEventData = (e) => { //REDO THESE ONES IN A GENERALIZED WAY
           }
           if(useHills == true) {
             h.onData(score);
+          }
+          if(useAdvanced) {
+            if(useThree == true) {
+            
+            }
           }
           s.scoreArr.push(s.scoreArr[s.scoreArr.length - 1] + score);
           g.ratio = s.slowSMA;
