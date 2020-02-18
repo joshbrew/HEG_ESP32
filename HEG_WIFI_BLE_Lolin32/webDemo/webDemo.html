@@ -54,17 +54,25 @@
     camera.position.y = 0;
     camera.position.z = 5;
 
-    window.threeanim;
+    window.threeAnim;
+    window.threeWidth = window.innerWidth;
 
     function render() {
-      threeanim = requestAnimationFrame(render);
+      
+      if(window.threeWidth != window.innerWidth) {
+        renderer.setSize(window.innerWidth, 500);
+        camera.aspect = window.innerWidth / 500;
+        camera.updateProjectionMatrix();
+      }
+      threeAnim = requestAnimationFrame(render);
+
       renderer.render(scene, camera);
     }
     render();
   }
 
   function destroyThreeApp() {
-    cancelAnimationFrame(threeanim);
+    cancelAnimationFrame(threeAnim);
     renderer.domElement.addEventListener('dblclick', null, false); //remove listener to render
     scene = null;
     projector = null;

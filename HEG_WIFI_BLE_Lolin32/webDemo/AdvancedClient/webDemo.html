@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="css/webDemoCSS.css">
-<script src="js/HEGwebAPI.js"></script>
+<link rel="stylesheet" type="text/css" href="webDemoCSS.css">
+<script src="HEGwebAPI.js"></script>
 </head>
 <body>
   <title>HEG Interface</title>
@@ -12,21 +12,21 @@
   
   <div id="main_body"></div>
 
-
-
+  
 <script> //Rough Draft scripts. Generalize the overlays, onData, replayCSV, and handleEventData calls
   
-//Advanced Client
-//Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
-if(window.location.hostname != "192.168.4.1" || "esp32.local") {
-  var useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
-}
-
-if(useAdvanced) { //Setup advanced scripts
-  var link = document.createElement("script");
-  link.src = "js/three.min.js"; //Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-  document.head.appendChild(link); //Append script
-
+  //Advanced Client
+  //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
+  if(window.location.hostname != "192.168.4.1" || "esp32.local") {
+    var useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
+  }
+  
+  if(useAdvanced) { //Setup advanced scripts
+    var link = document.createElement("script");
+    link.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+    document.head.appendChild(link); //Append script
+  
+  
   //Initialize whatever.
   function createThreeApp() {
     var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
@@ -54,17 +54,25 @@ if(useAdvanced) { //Setup advanced scripts
     camera.position.y = 0;
     camera.position.z = 5;
 
-    window.threeanim;
+    window.threeAnim;
+    window.threeWidth = window.innerWidth;
 
     function render() {
-      threeanim = requestAnimationFrame(render);
+      
+      if(window.threeWidth != window.innerWidth) {
+        renderer.setSize(window.innerWidth, 500);
+        camera.aspect = window.innerWidth / 500;
+        camera.updateProjectionMatrix();
+      }
+      threeAnim = requestAnimationFrame(render);
+
       renderer.render(scene, camera);
     }
     render();
   }
 
   function destroyThreeApp() {
-    cancelAnimationFrame(threeanim);
+    cancelAnimationFrame(threeAnim);
     renderer.domElement.addEventListener('dblclick', null, false); //remove listener to render
     scene = null;
     projector = null;
