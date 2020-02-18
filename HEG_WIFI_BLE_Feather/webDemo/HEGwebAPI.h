@@ -124,8 +124,42 @@ class HEGwebAPI {
     hiddenElement.click();
   }
 
-  replayCSV = () => {
-    console.log("Define replay function in script");
+  handleScore() {
+    //Define in-script
+  }
+
+  replayCSV() {
+    if(this.csvIndex < 2){
+      if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
+      this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
+      this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
+      this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
+      this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
+      this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
+      this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
+      this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
+    }
+    this.csvIndex++;
+    if(this.csvIndex < this.csvDat.length - 1){
+      if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
+      this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
+      this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
+      this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
+      this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
+      this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
+      this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
+      this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
+      if(this.us.length >= 2){
+        this.handleScore();
+      }
+    }
+    else {
+      this.replay = false;
+      this.csvDat = [];
+      this.csvIndex = 0;
+    }
+    this.endOfEvent();
+    setTimeout(() => {this.replayCSV();},(this.us[this.csvIndex]-this.us[this.csvIndex-1])*0.001); //Call until end of index.
   }
   
   openCSV() {
@@ -158,8 +192,38 @@ class HEGwebAPI {
     input.click();
   }
 
-  handleData(e){
+  handleEventData(e){
     console.log("HEGDUINO", e.data);
+    if(document.getElementById("heg").innerHTML != e.data){  //on new output
+      document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
+      if(e.data.includes("|")) {
+        var dataArray = e.data.split("|");
+        if(parseFloat(dataArray[3]) > 0) { // Skip values not within a certain error.
+          if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
+          this.us.push(parseInt(dataArray[0]));
+          this.red.push(parseInt(dataArray[1]));
+          this.ir.push(parseInt(dataArray[2]));
+          this.ratio.push(parseFloat(dataArray[3]));
+          this.ambient.push(parseInt(dataArray[4]));
+          this.velAvg.push(parseFloat(dataArray[5]));
+          this.accelAvg.push(parseFloat(dataArray[6]));
+          //handle new data
+          this.handleScore();
+        } 
+      }
+    }
+    //handle if data not changed
+    else if (this.replay == false) {
+      //s.smaSlope = s.scoreArr[s.scoreArr.length - 1];
+      //g.graphY1.shift();
+      //g.graphY1.push(s.scoreArr[s.scoreArr.length - 1 - g.xoffset]);
+      //s.scoreArr.push(s.smaSlope);
+    }
+    this.endOfEvent();
+  }
+
+  endOfEvent() {
+    // Define in-script
   }
 
   openEvent(e){

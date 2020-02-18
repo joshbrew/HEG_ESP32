@@ -36,7 +36,7 @@ const char event_page[] PROGMEM = R"=====(
       window.camera = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 430, 0.1, 1000 );
 
       window.renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth, 430);
+      renderer.setSize(window.innerWidth - 20, 430);
 
       document.getElementById("threeContainer").appendChild(renderer.domElement);
     
