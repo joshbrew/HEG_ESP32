@@ -45,7 +45,7 @@
       } );
 
       //sphere
-      var sphere = new THREE.SphereGeometry(2,20,20);
+      var sphere = new THREE.SphereGeometry(2,40,40);
       var sphereMesh = new THREE.Mesh( sphere, material );
       scene.add( sphereMesh );
 
@@ -64,6 +64,10 @@
           camera.aspect = window.threeWidth / 430;
           camera.updateProjectionMatrix();
         }
+
+        sphereMesh.rotation.y += 0.001;
+        sphereMesh.rotation.z += 0.0005;
+
         threeAnim = requestAnimationFrame(render);
 
         renderer.render(scene, camera);
