@@ -32,10 +32,10 @@
       HEGwebAPI.appendFragment(rendererHTML,'main_body');
       
       window.scene = new THREE.Scene();
-      window.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / 500, 0.1, 1000 );
+      window.camera = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 430, 0.1, 1000 );
 
       window.renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth, 500);
+      renderer.setSize(window.innerWidth, 430);
 
       document.getElementById("threeContainer").appendChild(renderer.domElement);
     
@@ -54,14 +54,14 @@
       camera.position.z = 5;
 
       window.threeAnim;
-      window.threeWidth = window.innerWidth;
+      window.threeWidth = window.innerWidth - 20;
 
       function render() {
         
-        if(window.threeWidth != window.innerWidth) {
-          window.threeWidth = window.innerWidth;
-          renderer.setSize(window.innerWidth, 500);
-          camera.aspect = window.innerWidth / 500;
+        if(window.threeWidth != window.innerWidth - 20) {
+          window.threeWidth = window.innerWidth - 20;
+          renderer.setSize(window.threeWidth, 430);
+          camera.aspect = window.threeWidth / 430;
           camera.updateProjectionMatrix();
         }
         threeAnim = requestAnimationFrame(render);
