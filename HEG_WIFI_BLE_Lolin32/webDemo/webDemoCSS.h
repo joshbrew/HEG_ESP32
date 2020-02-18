@@ -295,7 +295,7 @@ font-family: 'Ibarra Real Nova', serif;
         position: absolute;
         
         font-family:Arial, Helvetica, sans-serif;
-
+        transform: translateX(-50%);
         left: 50%;
         max-height: 420px;
         overflow: auto;
@@ -311,17 +311,15 @@ font-family: 'Ibarra Real Nova', serif;
 
     .databoxmodal {
       top: 100px;
-      transform: translateX(-50%);
+      
     }
 
     .graphboxmodal {
       top: 110px;
-      transform: translateX(-50%);
     }
-
+    
     .feedbackboxmodal {
-      top: 50%;
-      transform: translate(-50%, -50%);
+      top: 200px;
     }
 
 /**Toggle Switch**/
