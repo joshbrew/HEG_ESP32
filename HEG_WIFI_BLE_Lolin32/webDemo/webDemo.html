@@ -15,7 +15,7 @@
   
 <script> //Rough Draft scripts. Generalize the overlays, onData, replayCSV, and handleEventData calls
   
-  //Advanced Client
+  //Advanced Client scripts using external packages
   //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
   if(window.location.hostname != "192.168.4.1" || "esp32.local") {
     var useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
@@ -26,61 +26,61 @@
     link.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
     document.head.appendChild(link); //Append script
   
-  
-  //Initialize whatever.
-  function createThreeApp() {
-    var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
-    HEGwebAPI.appendFragment(rendererHTML,'main_body');
-    
-    window.scene = new THREE.Scene();
-    window.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / 500, 0.1, 1000 );
-
-    window.renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, 500);
-
-    document.getElementById("threeContainer").appendChild(renderer.domElement);
-  
-    //material
-    var material = new THREE.MeshNormalMaterial( {
-      wireframe: true
-    } );
-
-    //sphere
-    var sphere = new THREE.SphereGeometry(2,20,20);
-    var sphereMesh = new THREE.Mesh( sphere, material );
-    scene.add( sphereMesh );
-
-    camera.position.x = 0;
-    camera.position.y = 0;
-    camera.position.z = 5;
-
-    window.threeAnim;
-    window.threeWidth = window.innerWidth;
-
-    function render() {
+    //Initialize whatever.
+    function createThreeApp() {
+      var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
+      HEGwebAPI.appendFragment(rendererHTML,'main_body');
       
-      if(window.threeWidth != window.innerWidth) {
-        renderer.setSize(window.innerWidth, 500);
-        camera.aspect = window.innerWidth / 500;
-        camera.updateProjectionMatrix();
+      window.scene = new THREE.Scene();
+      window.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / 500, 0.1, 1000 );
+
+      window.renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, 500);
+
+      document.getElementById("threeContainer").appendChild(renderer.domElement);
+    
+      //material
+      var material = new THREE.MeshNormalMaterial( {
+        wireframe: true
+      } );
+
+      //sphere
+      var sphere = new THREE.SphereGeometry(2,20,20);
+      var sphereMesh = new THREE.Mesh( sphere, material );
+      scene.add( sphereMesh );
+
+      camera.position.x = 0;
+      camera.position.y = 0;
+      camera.position.z = 5;
+
+      window.threeAnim;
+      window.threeWidth = window.innerWidth;
+
+      function render() {
+        
+        if(window.threeWidth != window.innerWidth) {
+          window.threeWidth = window.innerWidth;
+          renderer.setSize(window.innerWidth, 500);
+          camera.aspect = window.innerWidth / 500;
+          camera.updateProjectionMatrix();
+        }
+        threeAnim = requestAnimationFrame(render);
+
+        renderer.render(scene, camera);
       }
-      threeAnim = requestAnimationFrame(render);
-
-      renderer.render(scene, camera);
+      render();
     }
-    render();
-  }
 
-  function destroyThreeApp() {
-    cancelAnimationFrame(threeAnim);
-    renderer.domElement.addEventListener('dblclick', null, false); //remove listener to render
-    scene = null;
-    projector = null;
-    camera = null;
-    controls = null;
-    document.getElementById("threeContainer").remove();
+    function destroyThreeApp() {
+      cancelAnimationFrame(threeAnim);
+      renderer.domElement.addEventListener('dblclick', null, false); //remove listener to render
+      scene = null;
+      projector = null;
+      camera = null;
+      controls = null;
+      document.getElementById("threeContainer").remove();
+    }
   }
-}
 
 //Session
 var s = new HEGwebAPI('',false);

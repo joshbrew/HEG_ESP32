@@ -61,6 +61,7 @@ const char event_page[] PROGMEM = R"=====(
     function render() {
       
       if(window.threeWidth != window.innerWidth) {
+        window.threeWidth = window.innerWidth;
         renderer.setSize(window.innerWidth, 500);
         camera.aspect = window.innerWidth / 500;
         camera.updateProjectionMatrix();
