@@ -14,7 +14,7 @@ const char event_page[] PROGMEM = R"=====(
   <div id="main_body"></div>
 
   
-<script> //Rough Draft scripts. Generalize the overlays, onData, replayCSV, and handleEventData calls
+<script> //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
   
   //Advanced Client scripts using external packages
   //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
@@ -46,7 +46,7 @@ const char event_page[] PROGMEM = R"=====(
       } );
 
       //sphere
-      var sphere = new THREE.SphereGeometry(2,20,20);
+      var sphere = new THREE.SphereGeometry(2,40,40);
       var sphereMesh = new THREE.Mesh( sphere, material );
       scene.add( sphereMesh );
 
@@ -65,6 +65,10 @@ const char event_page[] PROGMEM = R"=====(
           camera.aspect = window.threeWidth / 430;
           camera.updateProjectionMatrix();
         }
+
+        sphereMesh.rotation.y += 0.001;
+        sphereMesh.rotation.z += 0.0005;
+
         threeAnim = requestAnimationFrame(render);
 
         renderer.render(scene, camera);
@@ -361,7 +365,7 @@ document.getElementById("xscalebutton").onclick = () => {
 
 //Customize session functions
 s.handleScore = function() {
-  parent.postMessage( this.ratio[this.ratio.length-1], "*");
+  parent.postMessage( this.ratio[this.ratio.length-1], "*"); // Data can be accessed through IFrame
   g.us = this.us[this.us.length - 1] - this.startTime;
   if(this.ratio.length > 40){
     this.smaScore(this.ratio);

@@ -760,7 +760,8 @@ class circleJS {
               this.vidQuery.playbackRate = this.playRate;
             }
             else {
-              this.vidQuery.playRate = 1;
+              this.playRate = 1;
+              this.vidQuery.playbackRate = 1;
             }
             document.getElementById("play").innerHTML = "||";
           }
@@ -786,7 +787,7 @@ class circleJS {
            this.vidQuery.playbackRate = 1;
            document.getElementById("useRate").style.opacity = "0.3";
          }
-         else{ this.useRate = true; document.getElementById("useRate").style.opacity = "1.0";}
+         else{ this.useRate = true; this.playRate = 1; document.getElementById("useRate").style.opacity = "1.0";}
         }
 
         document.getElementById("useVol").onclick = () => {
