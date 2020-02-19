@@ -107,6 +107,14 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/18/20
+------
+- Major improvements to code flow
+- Conditional ThreeJS integration (auto detects if you are online or not and attempts to add Three.js.min)
+- Globe turning exercise to demonstrate ThreeJS and how easy modding is.
+- Other minor fixes to feedback and UI.
+- Updated env to latest ESP32 release.
+
 2/14/20
 ------
 - Y offset slider

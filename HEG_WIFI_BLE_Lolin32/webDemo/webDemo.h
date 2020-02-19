@@ -8,7 +8,7 @@ const char event_page[] PROGMEM = R"=====(
 <body>
   <title>HEG Interface</title>
   <div class="header">
-      <h1>HEG ALPHA Ver 0.0.3</h1>
+      <h1>HEG ALPHA Ver 0.0.4</h1>
   </div>
   
   <div id="main_body"></div>
@@ -19,73 +19,18 @@ const char event_page[] PROGMEM = R"=====(
   //Advanced Client scripts using external packages
   //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
   if(window.location.hostname != "192.168.4.1" || "esp32.local") {
-    var useAdvanced = true; //Create a global flag to indicate we're using advanced scripts.
+    var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
   }
   
   if(useAdvanced) { //Setup advanced scripts
-    var link = document.createElement("script");
-    link.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-    document.head.appendChild(link); //Append script
+    var link1 = document.createElement("script");
+    link1.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+    document.head.appendChild(link1); //Append script
   
-    //Initialize whatever.
-    function createThreeApp() {
-      var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
-      HEGwebAPI.appendFragment(rendererHTML,'main_body');
-      
-      window.scene = new THREE.Scene();
-      window.camera = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 430, 0.1, 1000 );
-
-      window.renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth - 20, 430);
-
-      document.getElementById("threeContainer").appendChild(renderer.domElement);
-    
-      //material
-      var material = new THREE.MeshNormalMaterial( {
-        wireframe: true
-      } );
-
-      //sphere
-      var sphere = new THREE.SphereGeometry(2,40,40);
-      var sphereMesh = new THREE.Mesh( sphere, material );
-      scene.add( sphereMesh );
-
-      camera.position.x = 0;
-      camera.position.y = 0;
-      camera.position.z = 5;
-
-      window.threeAnim;
-      window.threeWidth = window.innerWidth - 20;
-
-      function render() {
-        
-        if(window.threeWidth != window.innerWidth - 20) {
-          window.threeWidth = window.innerWidth - 20;
-          renderer.setSize(window.threeWidth, 430);
-          camera.aspect = window.threeWidth / 430;
-          camera.updateProjectionMatrix();
-        }
-
-        sphereMesh.rotation.y += 0.001;
-        sphereMesh.rotation.z += 0.0005;
-
-        threeAnim = requestAnimationFrame(render);
-
-        renderer.render(scene, camera);
-      }
-      render();
-    }
-
-    function destroyThreeApp() {
-      cancelAnimationFrame(threeAnim);
-      renderer.domElement.addEventListener('dblclick', null, false); //remove listener to render
-      scene = null;
-      projector = null;
-      camera = null;
-      controls = null;
-      document.getElementById("threeContainer").remove();
-    }
-  }
+    var link2 = document.createElement("script");
+    link2.src = "threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+    document.head.appendChild(link2); //Append script
+  } 
 
 //Session
 var s = new HEGwebAPI('',false);
@@ -98,6 +43,7 @@ var c = new circleJS(); //Default animation initialized first
 var v = null;
 var a = null;
 var h = null;
+var threeApp = null;
 
 if(useAdvanced) {
   var useThree = false;
@@ -192,7 +138,6 @@ document.getElementById("togBtn").onchange = function(){toggleHEG(document.getEl
 //------------------------------------------------------------------------
 
 
-
 s.createUI("dataBox");
 g.createUI("graphBox")
 
@@ -201,15 +146,17 @@ var modeHTML = '<div class="menudiv" id="menudiv"> \
   <button class="button" id="canvasmode">Circle</button> \
   <button class="button" id="videomode">Video</button> \
   <button class="button" id="audiomode">Audio</button><br> \
-  <button class="button" id="hillmode">Hill Climb</button>';
+  <button class="button" id="hillmode">Hill Climb</button> \
+  </div>';
 
-if(useAdvanced) {
-  modeHTML += '<button class="button" id="threemode">ThreeJS</button>';
-}
 
-modeHTML += '</div>';
 
 HEGwebAPI.appendFragment(modeHTML,"visualBox");
+
+if(useAdvanced) {
+  var threeModeHTML = '<button class="button" id="threemode">ThreeJS</button>';
+  HEGwebAPI.appendFragment(threeModeHTML,"menudiv");
+}
 
 function deInitMode(){
   if(v != null){
@@ -243,7 +190,8 @@ function deInitMode(){
   if(useAdvanced) {
     if(useThree == true) {
       useThree = false;
-      destroyThreeApp();
+      threeApp.destroyThreeApp();
+      threeApp = null;
     }
   }
 }
@@ -280,7 +228,7 @@ if(useAdvanced) {
   document.getElementById("threemode").onclick = function() {
     if(useThree == false) {
       deInitMode();
-      createThreeApp();
+      threeApp = new ThreeGlobe();
       useThree = true;
     }
   }
@@ -384,7 +332,7 @@ s.handleScore = function() {
     }
     if(useAdvanced) {
       if(useThree == true) {
-
+        threeApp.onData(score);
       }
     }
     this.scoreArr.push(this.scoreArr[this.scoreArr.length - 1] + score);

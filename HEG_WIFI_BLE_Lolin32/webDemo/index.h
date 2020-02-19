@@ -87,7 +87,7 @@ form {
 </style>
 </head>
 <body>
-<h3>ESP32 web server demo</h3>
+<h3>ESP32 Web Server</h3>
 <hr>
 <h1>HEG Alpha Web Nav</h1>
 <div id="HEG_NAV" class="hegnav" align="center">
@@ -98,7 +98,7 @@ form {
   <!--<form class="scform" method="get" action="/sc">StateChanger Demo (WIP):<button class="button scbutton" type="submit">GO</button></form><br>-->
 </div>
 <div id="version" style="position:absolute; right:5px; bottom:5px">
-  Alpha v0.1.3. Feb, 7, 2019.
+  Alpha v0.1.4. Feb, 18, 2020.
 </div>
 
 </body>

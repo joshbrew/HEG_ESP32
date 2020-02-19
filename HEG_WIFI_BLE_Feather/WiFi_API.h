@@ -25,6 +25,7 @@
 #include "webDemo/webDemo.h" // Web app page
 #include "webDemo/webDemoCSS.h" // Web app CSS page
 #include "webDemo/help.h" // Help page
+#include "webDemo/threeApp.h" // ThreeJS Module
 
 #include "HEG.h" // HEG driver for ESP32
 
@@ -777,8 +778,12 @@ void setupWiFi(){
   server.on("/HEGwebAPI.js", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/javascript", HEGwebAPI);
   });
+  
   server.on("/webDemoCSS.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/css", webDemoCSS);
+  });
+  server.on("/threeApp.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/javascript", threeAppJS);
   });
   //server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
   //  request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");

@@ -242,7 +242,7 @@ class HEGwebAPI {
   }
 
   hegEvent = (e) => {
-    this.handleData(e);
+    this.handleEventData(e);
   }
 
   createEventListeners(host='') { //Set custom hostname (e.g. http://192.168.4.1). Leave blank for local hosted sessions (i.e. served from the board)
@@ -479,8 +479,6 @@ class graphJS {
       this.yscale = 1;
       this.invScale = 1;
     }
-
-    
 
     var radios = document.graphform.graphview;
     for (var i = 0; i < radios.length; i++) {
