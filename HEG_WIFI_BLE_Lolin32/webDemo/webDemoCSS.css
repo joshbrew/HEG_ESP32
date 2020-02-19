@@ -465,8 +465,12 @@ background-color: #fcfcf6;
 opacity: 1.0;
 }
 
+#sensitivityLabel {
+  text-align: left;
+}
+
 #hostlabel {
-text-align: left;
+  text-align: left;
 }
 
 input[type=range].slider {

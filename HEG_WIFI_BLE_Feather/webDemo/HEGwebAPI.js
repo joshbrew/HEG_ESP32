@@ -277,6 +277,10 @@ class HEGwebAPI {
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td><form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><input type="text" id="command" name="command" placeholder="Command"></td><td><button class="button sendbutton" type="submit">Send</button></form></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
+      <tr><td colspan="2" id="sensitivityLabel">Scoring Sensitivity</td></tr> \
+      <tr><td><button class="button" id="reset_s">Default</button></td> \
+        <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="1000" value="100"></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
       <tr><td><div id="timestamp">Get Current Time</div></td><td><button id="getTime" class="button">Get Time</button></td></tr> \
       <tr><td colspan="2"><textarea id="noteText" placeholder="Point of Interest"></textarea></td></tr>\
       <tr><td colspan="2"><button id="saveNote" class="button">Annotate</button></td></tr> \
@@ -284,9 +288,6 @@ class HEGwebAPI {
       <tr><td><input type="text" id="csvname" name="csvname" placeholder="session_data"></input></td> \
         <td><button class="button saveLoadButtons" id="savecsv">Save CSV</button></td></tr> \
       <tr><td colspan="2"><button class="button saveLoadButtons" id="replaycsv">Replay CSV</button></td></tr> \
-      <tr><td colspan="2"><hr></td></tr> \
-      <tr><td><button class="button" id="reset_s">Default</button></td> \
-        <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="1000" value="100"></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2" id="hostlabel">Host</td></tr> \
       <tr><td><input type="text" id="hostname" name="hostname" placeholder="http://192.168.4.1"></input></td><td><button id="submithost" class="button">Connect</button></td></tr>  \

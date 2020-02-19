@@ -238,10 +238,11 @@ const char help_page[] PROGMEM= R"=====(
         The other data you will see are not used in the current rudimentary feedback setup. <br><br>
         <hr class="hr4">
         <h3>Feedback Options: </h3>
-        There are 4 feedback methods currently, though each needs a lot of polish. The Circle and Audio
-        exercises are the only recommendable ones for now, as well as HEGstudio which is Windows-only. <br><br>
+        There are 4 feedback methods currently, though each needs polish. The Circle and Audio
+        exercises are the most recommendable ones for now while we continue tuning them. <br><br>
+        If you connect the device online, you will find an exciting ThreeJS option. This is a work-in-progress visual where you control the rotation of a planet and make the sun rise or set. ThreeJS enables much more, which we will be working on showing off.<br><br>
         Audio accepts MP3s, Video accepts MP4s. <br><br>
-        If you connect the device online there is a default video that plays, as a basic web streaming example. <br><br>
+        There is a default video that plays when connected online, as a basic streaming example. <br><br>
         <hr class="hr4">
         <h3>Graph Options:</h3>
         XOffset: Lets you roll back data.<br><br>
@@ -250,6 +251,8 @@ const char help_page[] PROGMEM= R"=====(
         <hr class="hr4">
         <h3>Data Options: </h3>
         The Data menu contains ways to send commands to the device and control the scoring sensitivity.<br>
+        <h4>Annotating:</h4>
+        Click "Get Time" at any point in your exercise to get the current time stamp. You can then type in a quick (or extensive) note and click "Annotate" for it to show up in the saved CSV.
         <h4>Saving and Replaying Data:</h4>
         Click on the Data tab and look for "Save CSV". The window next to it lets you type in a name or will
         use a default name otherwise. This will create a simple comma-separated-value spreadsheet of your raw session data.
@@ -258,6 +261,10 @@ const char help_page[] PROGMEM= R"=====(
         When you click "Replay CSV" a window will open asking for a CSV file in the same format. This will begin streaming the 
         data as if it was playing a session. We are still working on session exploration features as well as timestamped annotating. 
         We will soon also have backend support so data will be able to be saved online to a secure server.
+        <h4>Host:</h4>
+        This is an option that lets you define a custom EventSource host. This is for if you are not connected directly to the device and want to access it remotely or from a local development client for faster iteration.
+        <h4>Output:</h4>
+        This shows the raw data coming from the device, this data all is collected in the CSV along with your annotations.
         <br><br>
         
         
