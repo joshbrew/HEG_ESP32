@@ -19,6 +19,7 @@ class ThreeGlobe {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 435, 0.1, 1000 );
         this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth - 20, 435);
         document.getElementById("threeContainer").appendChild(this.renderer.domElement);
 
@@ -26,9 +27,9 @@ class ThreeGlobe {
 
         for ( var i = 0; i < 10000; i ++ ) {
 
-            var x = THREE.Math.randFloatSpread( 1000 );
-            var y = THREE.Math.randFloatSpread( 1000 );
-            var z = THREE.Math.randFloatSpread( 1000 );
+            var x = THREE.Math.randFloatSpread( 1200 );
+            var y = THREE.Math.randFloatSpread( 1200 );
+            var z = THREE.Math.randFloatSpread( 1200 );
 
             vertices.push( x, y, z );
         }
@@ -117,15 +118,16 @@ class ThreeGlobe {
         this.sphereMesh.rotation.z += 1;
         this.points.rotation.z += 1;
         this.camera.position.x = -2.3;
-        this.camera.position.y = 0;
-        this.camera.position.z = 0;
+        this.camera.position.y = -0.2;
+        this.camera.position.z = -0.4;
 
-        this.camera.rotation.y = -0.35;
-        this.camera.rotation.z = 0.3;
+        this.camera.rotation.x = 0.13;
+        this.camera.rotation.y = -0.4;
+        this.camera.rotation.z = 0.32;
 
         this.begin = 0;
         this.ticks = 0;
-        this.change = 0.001;
+        this.change = 0.00025; //Default speed
         this.threeAnim;
         this.threeWidth = window.innerWidth - 20;
 
@@ -154,6 +156,7 @@ class ThreeGlobe {
     render = () => {
         if(this.threeWidth != window.innerWidth - 20) {
             this.threeWidth = window.innerWidth - 20;
+            this.renderer.setPixelRatio(window.devicePixelRatio);
             this.renderer.setSize(this.threeWidth, 435);
             this.camera.aspect = this.threeWidth / 435;
             this.camera.updateProjectionMatrix();
@@ -163,12 +166,12 @@ class ThreeGlobe {
         //this.sphereMesh.rotation.y += this.change;
         this.points.rotation.y += this.change;
 
-        var theta = (this.ticks + 2800) * 0.001;
-        this.pointLight.position.x = Math.sin(theta) * 20;
+        var theta = (this.ticks + 2500) * 0.001;
+        this.pointLight.position.x = Math.sin(theta) * 40;
         //this.pointLight.position.y = Math.cos( time * 7 ) * 3;
-        this.pointLight.position.z = Math.cos(theta) * 20;
-        this.sunMesh.position.x = Math.sin(theta - 0.2) * 20;
-        this.sunMesh.position.z = Math.cos(theta - 0.2) * 20;
+        this.pointLight.position.z = Math.cos(theta) * 40;
+        this.sunMesh.position.x = Math.sin(theta - 0.1) * 40;
+        this.sunMesh.position.z = Math.cos(theta - 0.1) * 40;
         
         this.composer.render();
         this.threeAnim = requestAnimationFrame(this.render);
