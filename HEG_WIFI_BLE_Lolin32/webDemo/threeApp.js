@@ -43,6 +43,7 @@ class ThreeGlobe {
 
         var sunmat = new THREE.MeshBasicMaterial( {
             wireframe: false,
+            color: 0xffe8c6
         } );
         
         var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
@@ -60,10 +61,13 @@ class ThreeGlobe {
 
         //material
         var globemat = new THREE.MeshPhysicalMaterial( {
-            wireframe: false
+            wireframe: false,
+            color: 0x2a5aff,
+            reflectivity: 1,
+            roughness: 0.8
         } );
         //globemat.map = myTexture;
-
+        
         //sphere
         var sphere = new THREE.SphereBufferGeometry(2,50,50);
         this.sphereMesh = new THREE.Mesh( sphere, globemat );
@@ -86,6 +90,30 @@ class ThreeGlobe {
 
         this.scene.add( this.pointLight );
 
+        this.composer = new POSTPROCESSING.EffectComposer(this.renderer);
+        this.renderPass = new POSTPROCESSING.RenderPass( this.scene, this.camera )
+        
+        this.composer.addPass( this.renderPass );
+
+        var godRaysEffect = new POSTPROCESSING.GodRaysEffect(this.camera, this.sunMesh, {
+			height: 720,
+			density: 3,
+			decay: 0.92,
+			weight: 0.5,
+			exposure: 0.6,
+			samples: 60,
+            clampMax: 1.0,
+		});
+
+        godRaysEffect.dithering = true;
+        this.effect = godRaysEffect;
+        
+        this.effectpass = new POSTPROCESSING.EffectPass(this.camera, this.effect);
+        this.composer.addPass(this.effectpass)
+        
+        this.renderPass.renderToScreen = false;
+        this.effectpass.renderToScreen = true;
+
         this.sphereMesh.rotation.z += 1;
         this.points.rotation.z += 1;
         this.camera.position.x = -2.3;
@@ -100,30 +128,6 @@ class ThreeGlobe {
         this.change = 0.001;
         this.threeAnim;
         this.threeWidth = window.innerWidth - 20;
-
-        this.composer = new POSTPROCESSING.EffectComposer(this.renderer);
-        this.renderPass = new POSTPROCESSING.RenderPass( this.scene, this.camera )
-        
-        this.composer.addPass( this.renderPass );
-
-        var godRaysEffect = new POSTPROCESSING.GodRaysEffect(this.camera, this.sunMesh, {
-			height: 720,
-			density: 3,
-			decay: 0.92,
-			weight: 0.5,
-			exposure: 0.6,
-			samples: 60,
-			clampMax: 1.0
-		});
-
-        godRaysEffect.dithering = true;
-        this.effect = godRaysEffect;
-        
-        this.effectpass = new POSTPROCESSING.EffectPass(this.camera, this.effect);
-        this.composer.addPass(this.effectpass)
-        
-        this.renderPass.renderToScreen = false;
-        this.effectpass.renderToScreen = true;
 
         this.render();
     }
