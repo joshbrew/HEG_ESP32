@@ -1,3 +1,16 @@
+//ThreeJS App(s)
+var link1 = document.createElement("script");
+link1.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+link1.async = false;
+document.head.appendChild(link1); //Append script
+
+var link2 = document.createElement("script");
+link2.src = "https://cdn.jsdelivr.net/npm/postprocessing@6.10.0/build/postprocessing.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+link2.async = false;
+document.head.appendChild(link2); //Append script
+
+
+
 class ThreeGlobe {
     constructor() {
         var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
@@ -9,17 +22,6 @@ class ThreeGlobe {
         this.renderer.setSize(window.innerWidth - 20, 435);
         document.getElementById("threeContainer").appendChild(this.renderer.domElement);
 
-        //material
-        var globemat = new THREE.MeshPhysicalMaterial( {
-            wireframe: false
-        } );
-
-        //sphere
-        var sphere = new THREE.SphereGeometry(2,50,50);
-        this.sphereMesh = new THREE.Mesh( sphere, globemat );
-
-        this.scene.add( this.sphereMesh );
-
         var vertices = [];
 
         for ( var i = 0; i < 10000; i ++ ) {
@@ -30,7 +32,7 @@ class ThreeGlobe {
 
             vertices.push( x, y, z );
         }
-
+        
         var geometry = new THREE.BufferGeometry();
         geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 
@@ -40,14 +42,33 @@ class ThreeGlobe {
         this.scene.add( this.points );
 
         var sunmat = new THREE.MeshBasicMaterial( {
-            wireframe: false
+            wireframe: false,
         } );
-
+        
         var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
         this.sunMesh = new THREE.Mesh( sphere, sunmat );
+
         this.sunMesh.position.set(-5, 0, -10);
 
         this.scene.add( this.sunMesh );
+
+        //var myUrl = 'https://i.imgur.com/1RXQSUL.jpg'
+
+        //var textureLoader = new THREE.TextureLoader()
+        //textureLoader.crossOrigin = "Anonymous"
+        //var myTexture = textureLoader.load(myUrl);
+
+        //material
+        var globemat = new THREE.MeshPhysicalMaterial( {
+            wireframe: false
+        } );
+        //globemat.map = myTexture;
+
+        //sphere
+        var sphere = new THREE.SphereBufferGeometry(2,50,50);
+        this.sphereMesh = new THREE.Mesh( sphere, globemat );
+
+        this.scene.add( this.sphereMesh );
 
         this.pointLight = new THREE.PointLight(0xFFFFFF);
         this.pointLight.position.set( 0, 0, -10 );
@@ -67,7 +88,6 @@ class ThreeGlobe {
 
         this.sphereMesh.rotation.z += 1;
         this.points.rotation.z += 1;
-
         this.camera.position.x = -2.3;
         this.camera.position.y = 0;
         this.camera.position.z = 0;
@@ -81,12 +101,37 @@ class ThreeGlobe {
         this.threeAnim;
         this.threeWidth = window.innerWidth - 20;
 
+        this.composer = new POSTPROCESSING.EffectComposer(this.renderer);
+        this.renderPass = new POSTPROCESSING.RenderPass( this.scene, this.camera )
+        
+        this.composer.addPass( this.renderPass );
+
+        var godRaysEffect = new POSTPROCESSING.GodRaysEffect(this.camera, this.sunMesh, {
+			height: 720,
+			density: 3,
+			decay: 0.92,
+			weight: 0.5,
+			exposure: 0.6,
+			samples: 60,
+			clampMax: 1.0
+		});
+
+        godRaysEffect.dithering = true;
+        this.effect = godRaysEffect;
+        
+        this.effectpass = new POSTPROCESSING.EffectPass(this.camera, this.effect);
+        this.composer.addPass(this.effectpass)
+        
+        this.renderPass.renderToScreen = false;
+        this.effectpass.renderToScreen = true;
+
         this.render();
     }
 
     destroyThreeApp = () => {
         cancelAnimationFrame(this.threeAnim);
         this.renderer.domElement.addEventListener('dblclick', null, false); //remove listener to render
+        this.composer = null;
         this.scene = null;
         this.projector = null;
         this.camera = null;
@@ -111,7 +156,7 @@ class ThreeGlobe {
             }
 
         this.ticks += this.change*1000;
-        this.sphereMesh.rotation.y += this.change;
+        //this.sphereMesh.rotation.y += this.change;
         this.points.rotation.y += this.change;
 
         var theta = (this.ticks + 2800) * 0.001;
@@ -120,9 +165,9 @@ class ThreeGlobe {
         this.pointLight.position.z = Math.cos(theta) * 20;
         this.sunMesh.position.x = Math.sin(theta - 0.2) * 20;
         this.sunMesh.position.z = Math.cos(theta - 0.2) * 20;
-
+        
+        this.composer.render();
         this.threeAnim = requestAnimationFrame(this.render);
 
-        this.renderer.render(this.scene, this.camera);
     }  
 } 
