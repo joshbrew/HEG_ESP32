@@ -96,24 +96,37 @@ class ThreeGlobe {
         
         this.composer.addPass( this.renderPass );
 
-        var godRaysEffect = new POSTPROCESSING.GodRaysEffect(this.camera, this.sunMesh, {
-			height: 720,
-			density: 3,
+        this.godrayeffect = new POSTPROCESSING.GodRaysEffect(this.camera, this.sunMesh, {
+            height: 720,
+            kernelSize: POSTPROCESSING.KernelSize.SMALL,
+            density: 3,
 			decay: 0.92,
 			weight: 0.5,
 			exposure: 0.6,
 			samples: 60,
-            clampMax: 1.0,
+            clampMax: 1.0
 		});
 
-        godRaysEffect.dithering = true;
-        this.effect = godRaysEffect;
-        
-        this.effectpass = new POSTPROCESSING.EffectPass(this.camera, this.effect);
-        this.composer.addPass(this.effectpass)
-        
+        this.godrayeffect.dithering = true;
+
+        this.godraypass = new POSTPROCESSING.EffectPass(this.camera, this.godrayeffect);
+        this.composer.addPass(this.godraypass)
+
+        this.bloomEffect = new POSTPROCESSING.BloomEffect({
+            blendFunction: POSTPROCESSING.BlendFunction.SCREEN,
+            kernelSize: POSTPROCESSING.KernelSize.SMALL,
+            luminanceThreshold: 0.3,
+            luminanceSmoothing: 0.6,
+            opacity: 2,
+            height: 480
+        })
+
+        this.bloompass = new POSTPROCESSING.EffectPass(this.camera, this.bloomEffect);
+        this.composer.addPass(this.bloompass);
+
         this.renderPass.renderToScreen = false;
-        this.effectpass.renderToScreen = true;
+        this.godraypass.renderToScreen = false;
+        this.bloompass.renderToScreen = true;
 
         this.sphereMesh.rotation.z += 1;
         this.points.rotation.z += 1;
@@ -127,7 +140,7 @@ class ThreeGlobe {
 
         this.begin = 0;
         this.ticks = 0;
-        this.change = 0.00025; //Default speed
+        this.change = 0.00025; //Default
         this.threeAnim;
         this.threeWidth = window.innerWidth - 20;
 
