@@ -107,6 +107,11 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/19/20
+------
+- Added postprocessing fx to threejs demo
+- More code cleanup.
+
 2/18/20
 ------
 - Major improvements to code flow

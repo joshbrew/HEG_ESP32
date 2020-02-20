@@ -16,38 +16,12 @@ const char event_page[] PROGMEM = R"=====(
   
 <script> //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
   
-  //Advanced Client scripts using external packages
-  //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
-  if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
-    var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
-  }
-  
-  if(useAdvanced) { //Setup advanced scripts
-    var link1 = document.createElement("script");
-    link1.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-    document.head.appendChild(link1); //Append script
-  
-    var link2 = document.createElement("script");
-    link2.src = "threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-    document.head.appendChild(link2); //Append script
-  } 
-
-//Session
-var s = new HEGwebAPI('',false);
-
-//Graph
-var g = new graphJS(1000,[255,100,80,1],1,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
-
-//Feedback
-var c = new circleJS(); //Default animation initialized first
-var v = null;
-var a = null;
-var h = null;
-var threeApp = null;
-
-if(useAdvanced) {
-  var useThree = false;
+//Advanced Client scripts using external packages
+//Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
+if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
+  var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
 }
+
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -137,9 +111,21 @@ document.getElementById("togBtn").onchange = function(){toggleHEG(document.getEl
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
+//Session
+var s = new HEGwebAPI('',false);
+
+//Graph
+var g = new graphJS(1000,[255,100,80,1],1,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
 
 s.createUI("dataBox");
 g.createUI("graphBox")
+
+//Feedback
+var c = new circleJS(); //Default animation initialized first
+var v = null;
+var a = null;
+var h = null;
+
 
 var modeHTML = '<div class="menudiv" id="menudiv"> \
   Modes:<br> \
@@ -149,14 +135,35 @@ var modeHTML = '<div class="menudiv" id="menudiv"> \
   <button class="button" id="hillmode">Hill Climb</button> \
   </div>';
 
-
-
 HEGwebAPI.appendFragment(modeHTML,"visualBox");
 
-if(useAdvanced) {
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+
+if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
+  var link2 = document.createElement("script");
+  link2.src = "threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+  document.head.appendChild(link2); //Append script
+
+  var threeApp = null;
+
   var threeModeHTML = '<button class="button" id="threemode">ThreeJS</button>';
   HEGwebAPI.appendFragment(threeModeHTML,"menudiv");
-}
+
+  document.getElementById("threemode").onclick = function() {
+    if(threeApp == null) {
+        deInitMode();
+        threeApp = new ThreeGlobe();
+    }
+  }
+
+  //var link3 = document.createElement("script");
+  //link3.src = "https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.5.0/viewer.min.js";
+  //document.head.appendChild(link3);
+} 
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
 function deInitMode(){
   if(v != null){
@@ -187,9 +194,8 @@ function deInitMode(){
     h.menu.parentNode.removeChild(h.menu);
     h = null;
   }
-  if(useAdvanced) {
-    if(useThree == true) {
-      useThree = false;
+  if(useAdvanced) { //Score handling for advanced scripts
+    if(threeApp != null) {
       threeApp.destroyThreeApp();
       threeApp = null;
     }
@@ -221,16 +227,6 @@ document.getElementById("hillmode").onclick = function() {
   if(h == null){
     deInitMode();
     h = new hillJS();
-  }
-}
-
-if(useAdvanced) {
-  document.getElementById("threemode").onclick = function() {
-    if(useThree == false) {
-      deInitMode();
-      threeApp = new ThreeGlobe();
-      useThree = true;
-    }
   }
 }
 
@@ -330,8 +326,8 @@ s.handleScore = function() {
     if(h != null) {
       h.onData(score);
     }
-    if(useAdvanced) {
-      if(useThree == true) {
+    if(useAdvanced) { //Score handling for advanced scripts
+      if(threeApp != null) {
         threeApp.onData(score);
       }
     }
