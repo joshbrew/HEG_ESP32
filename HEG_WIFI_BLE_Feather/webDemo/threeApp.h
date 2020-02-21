@@ -2,18 +2,18 @@ const char threeAppJS[] PROGMEM = R"=====(
 //ThreeJS App(s)
 var link1 = document.createElement("script");
 link1.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-link1.async = false;
+link1.async = false; // Load synchronously
 document.head.appendChild(link1); //Append script
-
+//Postprocessing Dependency
 var link2 = document.createElement("script");
 link2.src = "https://cdn.jsdelivr.net/npm/postprocessing@6.10.0/build/postprocessing.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-link2.async = false;
+link2.async = false; // Load synchronously
 document.head.appendChild(link2); //Append script
-
 
 
 class ThreeGlobe {
     constructor() {
+        //ThreeJS 
         var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
             HEGwebAPI.appendFragment(rendererHTML,'main_body');
 
@@ -24,13 +24,15 @@ class ThreeGlobe {
         this.renderer.setSize(window.innerWidth - 20, 435);
         document.getElementById("threeContainer").appendChild(this.renderer.domElement);
 
+        var nStars = 5000;
+
         var vertices = [];
 
-        for ( var i = 0; i < 10000; i ++ ) {
+        for ( var i = 0; i < nStars; i ++ ) {
 
-            var x = THREE.Math.randFloatSpread( 1200 );
-            var y = THREE.Math.randFloatSpread( 1200 );
-            var z = THREE.Math.randFloatSpread( 1200 );
+            var x = THREE.Math.randFloatSpread( 500 );
+            var y = THREE.Math.randFloatSpread( 1000 );
+            var z = THREE.Math.randFloatSpread( 1500 );
 
             vertices.push( x, y, z );
         }
@@ -38,8 +40,44 @@ class ThreeGlobe {
         var geometry = new THREE.BufferGeometry();
         geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 
-        var pointmat = new THREE.PointsMaterial( { color: 0x888888 } );
+        var color = new THREE.Color();
+        var colors = [];
 
+        for (var i = 0; i < nStars; i++) {
+            var roll = Math.random();
+            if(roll <= 0.3){
+                color.set('skyblue');
+                colors.push(color.r,color.g,color.b);
+            }
+            else if ((roll > 0.3) && (roll <= 0.6)) { 
+                color.set('tomato');
+                colors.push(color.r,color.g,color.b);
+            }
+            else if ((roll > 0.6) && (roll < 0.9)) {
+                color.set('white');
+                colors.push(color.r,color.g,color.b);
+            }
+            else {
+                color.set('goldenrod');
+                colors.push(color.r,color.g,color.b);
+            }
+        }
+
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute( colors, 3));
+
+        var pointmat = new THREE.PointsMaterial( { 
+            vertexColors: THREE.VertexColors,
+            opacity:0.99
+        } );
+
+        /*
+        var spriteUrl = 'https://i.ibb.co/NsRgxZc/star.png';
+
+        var textureLoader = new THREE.TextureLoader()
+        textureLoader.crossOrigin = "Anonymous"
+        var myTexture = textureLoader.load(spriteUrl);
+        pointmat.map = myTexture;
+        */
         this.points = new THREE.Points( geometry, pointmat );
         this.scene.add( this.points );
 
@@ -116,8 +154,8 @@ class ThreeGlobe {
         this.bloomEffect = new POSTPROCESSING.BloomEffect({
             blendFunction: POSTPROCESSING.BlendFunction.SCREEN,
             kernelSize: POSTPROCESSING.KernelSize.SMALL,
-            luminanceThreshold: 0.3,
-            luminanceSmoothing: 0.6,
+            luminanceThreshold: 0.1,
+            luminanceSmoothing: 0.8,
             opacity: 2,
             height: 480
         })
@@ -141,7 +179,7 @@ class ThreeGlobe {
 
         this.begin = 0;
         this.ticks = 0;
-        this.change = 0.00025; //Default
+        this.change = 0.00015; //Default
         this.threeAnim;
         this.threeWidth = window.innerWidth - 20;
 
@@ -172,9 +210,10 @@ class ThreeGlobe {
             this.threeWidth = window.innerWidth - 20;
             this.renderer.setPixelRatio(window.devicePixelRatio);
             this.renderer.setSize(this.threeWidth, 435);
+            this.composer.setSize(this.threeWidth, 435);
             this.camera.aspect = this.threeWidth / 435;
             this.camera.updateProjectionMatrix();
-            }
+        }
 
         this.ticks += this.change*1000;
         //this.sphereMesh.rotation.y += this.change;

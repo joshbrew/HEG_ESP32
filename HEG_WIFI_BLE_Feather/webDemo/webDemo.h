@@ -111,17 +111,17 @@ document.getElementById("togBtn").onchange = function(){toggleHEG(document.getEl
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
-//Session
-var s = new HEGwebAPI('',false);
+//Initialize Session
+var s = new HEGwebAPI('',false); 
 
-//Graph
-var g = new graphJS(1000,[255,100,80,1],1,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
+//Initialize Graph
+var g = new graphJS(1155,[255,100,80,1],1,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
 
 s.createUI("dataBox");
 g.createUI("graphBox")
 
 //Feedback
-var c = new circleJS(); //Default animation initialized first
+var c = new circleJS(); //Default animation initialize
 var v = null;
 var a = null;
 var h = null;
@@ -158,12 +158,64 @@ if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
   }
 
   //var link3 = document.createElement("script");
-  //link3.src = "https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.5.0/viewer.min.js";
+  //link3.src = "https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.5.0/viewer.min.js"; // PDF Viewer JS (text scrolling experiment)
   //document.head.appendChild(link3);
 } 
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+
+//Customize session functions
+s.handleScore = function() {
+  parent.postMessage( this.ratio[this.ratio.length-1], "*"); // Data can be accessed through IFrame
+  g.us = this.us[this.us.length - 1] - this.startTime;
+  if(this.ratio.length > 40){
+    if(g.sampleRate == null) {
+      g.sampleRate = (this.us[this.us.length - 1] - this.us[0]) * 0.000001 / this.us.length // Seconds / Sample
+    }
+    this.smaScore(this.ratio);
+    var score = this.smaSlope*this.sensitivity.value*0.01;
+    if(c != null){
+      c.onData(score);
+    }
+    if (v != null) {
+      v.onData(score);
+    }
+    if(a != null) {
+      a.onData(score);
+    }
+    if(h != null) {
+      h.onData(score);
+    }
+    if(useAdvanced) { //Score handling for advanced scripts
+      if(threeApp != null) {
+        threeApp.onData(score);
+      }
+    }
+    this.scoreArr.push(this.scoreArr[this.scoreArr.length - 1] + score);
+    g.ratio = this.slowSMA;
+    g.score = this.scoreArr[this.scoreArr.length - 1];
+    g.graphY1.shift();
+    g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.xoffset]);
+    g.graphY2.shift();
+    g.graphY2.push(this.slowSMAarr[this.slowSMAarr.length - 1 - g.xoffset]);
+  }
+  else {
+    //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
+    //g.graphY1.shift();
+    //g.graphY1.push(this.smaSlope);
+    //this.scoreArr.push(this.smaSlope);
+  }
+  this.updateTable();
+}
+
+s.endOfEvent = function() {
+  if(g.xoffsetSlider.max < this.scoreArr.length){
+    if(this.scoreArr.length % 20 == 0) { 
+      g.xoffsetSlider.max = this.scoreArr.length - 3; //Need 2 vertices minimum
+    }
+  }
+}
 
 function deInitMode(){
   if(v != null){
@@ -230,6 +282,36 @@ document.getElementById("hillmode").onclick = function() {
   }
 }
 
+
+document.getElementById("resetSession").onclick = () => { // Override default function
+  s.resetVars();
+  g.resetVars();
+
+  if(c != null) {
+    deInitMode();
+    c = new circleJS();
+  }
+  if(v != null) {
+    deInitMode();
+    v = new videoJS();
+  }
+  if(a != null) {
+    deInitMode();
+    a = new audioJS();
+  }
+  if(h != null) {
+    deInitMode();
+    h = new hillJS();
+  }
+  if(useAdvanced){
+    if(threeApp != null) {
+      deInitMode();
+      threeApp = new ThreeGlobe();
+    }
+  }
+}
+
+
 g.xoffsetSlider.onchange = () => {
    if(g.xoffsetSlider.value > s.scoreArr.length) {
      g.xoffsetSlider.value = s.scoreArr.length - 1;
@@ -280,7 +362,7 @@ g.xscaleSlider.onchange = () => {
 
 document.getElementById("xscalebutton").onclick = () => {
   var len = g.graphY1.length;
-  g.xscaleSlider.value = 1000;
+  g.xscaleSlider.value = g.nPoints;
   if(g.xscaleSlider.value < len) { // Remove from front.
     for(var i = 0; i < len - g.xscaleSlider.value; i++){
       g.graphY1.shift();
@@ -300,60 +382,6 @@ document.getElementById("xscalebutton").onclick = () => {
     }
   }
   g.VERTEX_LENGTH = g.xscaleSlider.value;
-}
-
-//document.getElementById("resetButton").onclick = () => {
-  //s.resetVars();
-  //g.graphY1 = [...Array(g.VERTEX_LENGTH).fill(0)]
-//}
-
-//Customize session functions
-s.handleScore = function() {
-  parent.postMessage( this.ratio[this.ratio.length-1], "*"); // Data can be accessed through IFrame
-  g.us = this.us[this.us.length - 1] - this.startTime;
-  if(this.ratio.length > 40){
-    this.smaScore(this.ratio);
-    var score = this.smaSlope*this.sensitivity.value*0.01;
-    if(c != null){
-      c.onData(score);
-    }
-    if (v != null) {
-      v.onData(score);
-    }
-    if(a != null) {
-      a.onData(score);
-    }
-    if(h != null) {
-      h.onData(score);
-    }
-    if(useAdvanced) { //Score handling for advanced scripts
-      if(threeApp != null) {
-        threeApp.onData(score);
-      }
-    }
-    this.scoreArr.push(this.scoreArr[this.scoreArr.length - 1] + score);
-    g.ratio = this.slowSMA;
-    g.score = this.scoreArr[this.scoreArr.length - 1];
-    g.graphY1.shift();
-    g.graphY1.push(this.scoreArr[this.scoreArr.length - 1 - g.xoffset]);
-    g.graphY2.shift();
-    g.graphY2.push(this.slowSMAarr[this.slowSMAarr.length - 1 - g.xoffset]);
-  }
-  else {
-    //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
-    //g.graphY1.shift();
-    //g.graphY1.push(this.smaSlope);
-    //this.scoreArr.push(this.smaSlope);
-  }
-  this.updateTable();
-}
-
-s.endOfEvent = function() {
-  if(g.xoffsetSlider.max < this.scoreArr.length){
-    if(this.scoreArr.length % 20 == 0) { 
-      g.xoffsetSlider.max = this.scoreArr.length - 3; //Need 2 vertices minimum
-    }
-  }
 }
 
 </script>

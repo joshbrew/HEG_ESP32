@@ -73,6 +73,7 @@ class HEGwebAPI {
   }
 
   resetVars() {
+      this.startTime = 0;
       this.us = [];
       this.red = [];
       this.ir = [];
@@ -88,6 +89,13 @@ class HEGwebAPI {
       this.smaSlope = 0;
       this.scoreArr = [0];
       this.replay = false;
+
+      this.csvDat = [];
+      this.csvIndex = 0;
+  
+      this.curIndex = 0;
+      this.noteIndex = [];
+      this.noteText = [];
   }
 
   smaScore(input) {
@@ -278,6 +286,8 @@ class HEGwebAPI {
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td><form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><input type="text" id="command" name="command" placeholder="Command"></td><td><button class="button sendbutton" type="submit">Send</button></form></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
+      <tr><td colspan="2"><button class="button" id="resetSession" name="resetSession">Reset Session</button></td></tr> \
+      <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2" id="sensitivityLabel">Scoring Sensitivity</td></tr> \
       <tr><td><button class="button" id="reset_s">Default</button></td> \
         <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="1000" value="100"></td></tr> \
@@ -327,6 +337,9 @@ class HEGwebAPI {
 
     document.getElementById("savecsv").onclick = () => {this.saveCSV();}
     document.getElementById("replaycsv").onclick = () => {this.openCSV();}
+
+    document.getElementById("resetSession").onclick = () => {this.resetVars();}
+
     this.sensitivity = document.getElementById("sensitivity");
     document.getElementById("reset_s").onclick = () => { 
       this.sensitivity.value = 100; 
@@ -345,7 +358,7 @@ class HEGwebAPI {
   }
 }
 class graphJS {
-  constructor(nPoints=[1000], color=[0,255,0,1], yscale=1, res=[1400,600], parentId="main_body", canvasId="g", defaultUI=true){
+  constructor(nPoints=[1155], color=[0,255,0,1], yscale=1, res=[1400,600], parentId="main_body", canvasId="g", defaultUI=true){
     //WebGL graph based on: https://tinyurl.com/y5roydhe
     //HTML : <canvas id={canvasId}></canvas><canvas id={canvasId+"text"}></canvas>;
     this.gl,
@@ -359,11 +372,13 @@ class graphJS {
     this.color = color;
     this.res = res;
           
+    this.sampleRate = null;
     this.us = 0;
     this.ratio = 0;
     this.score = 0;
     this.viewing = 0;
 
+    this.nPoints = nPoints;
     this.VERTEX_LENGTH = nPoints;
     this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
     this.graphY2 = [...Array(this.VERTEX_LENGTH).fill(0)];
@@ -379,11 +394,11 @@ class graphJS {
     ]);
 
     this.yAxis = new Float32Array([
-    -0.75,-1.0,
-    -0.75,1.0
+    -0.765,-1.0,
+    -0.765,1.0
     ]);
 
-    this.gradient = new Float32Array([
+    this.xgradient = new Float32Array([
     -1.0,-0.75,
     1.0,-0.75,
     -1.0,-0.5,
@@ -396,6 +411,15 @@ class graphJS {
     1.0,0.5,
     -1.0,0.75,
     1.0,0.75
+    ]);
+
+    this.ygradient = new Float32Array([
+      -0.5,-1.0,
+      -0.5,1.0,
+      0.0,-1.0,
+      0.0,1.0,
+      0.5,-1.0,
+      0.5,1.0
     ]);
 
     this.VERTEX_SHADER = `
@@ -432,10 +456,12 @@ class graphJS {
   }
 
   resetVars() {
+    this.startTime = null;
     this.us = 0;
     this.ratio = 0;
     this.score = 0;
     this.viewing = 0;
+    this.VERTEX_LENGTH = this.nPoints;
 
     this.graphY1 = [...Array(this.VERTEX_LENGTH).fill(0)];
     this.graphY2 = [...Array(this.VERTEX_LENGTH).fill(0)];
@@ -448,7 +474,7 @@ class graphJS {
     var graphOptions = '<div class="scale"> \
       <table id="graphSliderTable"> \
       <tr><td>X Offset:<br><input type="range" class="slider" id="xoffset" min=0 max=1000 value=0></td><td><button id="xoffsetbutton" class="button">Reset</button></td></tr> \
-      <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max='+(this.VERTEX_LENGTH * 3).toFixed(0)+' value='+this.VERTEX_LENGTH.toFixed(0)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
+      <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max='+(this.VERTEX_LENGTH * 5).toFixed(0)+' value='+this.VERTEX_LENGTH.toFixed(0)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
       <tr><td>Y Offset:<br><input type="range" class="slider" id="yoffset" min=0 max=10000 value=5000></td><td><button id="yoffsetbutton" class="button">Reset</button></td></tr> \
       <tr><td>Y Scale:<br><input type="range" class="slider" id="yscale" min=1 max=400 value=200></td><td><button id="yscalebutton" class="button">Reset</button></td></tr> \
       </table><br> \
@@ -580,21 +606,27 @@ class graphJS {
     }
   }
 
+  normalize(val, max=255, min=0) { return (val - min) / (max - min); }
+
   draw = () => {
     //Create main graph
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
     //xAxis
-    this.createVertices(this.xAxis,[255,255,255,0.8]);
+    this.createVertices(this.xAxis,[255,255,255,0.6]);
     this.gl.drawArrays(this.gl.LINES, 0, 2);
 
     //yAxis
-    this.createVertices(this.yAxis, [255,255,255,0.8]);
+    this.createVertices(this.yAxis, [255,255,255,0.6]);
     this.gl.drawArrays(this.gl.LINES, 0, 2);
 
-    //gradient
-    this.createVertices(this.gradient, [70,70,70,0.8]);
+    //xgradient
+    this.createVertices(this.xgradient, [70,70,70,0.8]);
     this.gl.drawArrays(this.gl.LINES, 0, 12);
+
+    //ygradient
+    this.createVertices(this.ygradient, [70,70,70,0.8]);
+    this.gl.drawArrays(this.gl.LINES, 0, 6);
     
     //Data line
     if(this.viewing == 0){
@@ -606,7 +638,7 @@ class graphJS {
     this.createVertices(this.vertices);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array(this.vertices));
     this.gl.drawArrays(this.gl.LINE_STRIP, 0, this.VERTEX_LENGTH);
-    //Create text overlay
+    //Create text overlay -- TODO: Only update on change so it's not constantly redrawing
     this.graphtext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if(window.innerWidth > 700){
@@ -632,16 +664,24 @@ class graphJS {
       this.graphtext.fillText("   Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
     }
     this.graphtext.fillStyle = "#707070";
-    var xoffset = this.graphtext.canvas.width * 0.133;
+    var xoffset = this.graphtext.canvas.width * 0.125;
     this.graphtext.fillText((this.invScale * 0.75 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
     this.graphtext.fillText((this.invScale * 0.5 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.25); 
     this.graphtext.fillText((this.invScale * 0.25 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.375); 
     this.graphtext.fillText((this.invScale * -0.25 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
     this.graphtext.fillText((this.invScale * -0.5 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
     this.graphtext.fillText((this.invScale * -0.75 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
+    
+    if(this.sampleRate != null) { //X-axis approximation.
+      this.graphtext.fillStyle = "#303030";
+      this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.5)).toFixed(0)+"s", this.graphtext.canvas.width * 0.501, this.graphtext.canvas.height * 0.85);
+      this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.25)).toFixed(0)+"s", this.graphtext.canvas.width * 0.751, this.graphtext.canvas.height * 0.85);
+      this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.75)).toFixed(0)+"s", this.graphtext.canvas.width * 0.251, this.graphtext.canvas.height * 0.85);
+    }
+
     this.animationId = requestAnimationFrame(this.draw);
   }
-  normalize(val, max=255, min=0) { return (val - min) / (max - min); }
+  
 }
     
 class circleJS {
