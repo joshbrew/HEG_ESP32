@@ -107,6 +107,12 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/20/20
+------
+- Added a formal Reset Session button (instead of reloading page)
+- Seconds passed approximation in graph.
+- ThreeJS demonstration is even prettier now. 
+
 2/19/20
 ------
 - Added postprocessing fx to threejs demo
