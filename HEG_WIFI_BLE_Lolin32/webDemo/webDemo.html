@@ -12,7 +12,6 @@
   
   <div id="main_body"></div>
 
-  
 <script> //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
   
 //Advanced Client scripts using external packages
@@ -20,7 +19,6 @@
 if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
   var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
 }
-
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -62,7 +60,6 @@ var tabHTML = '<div id="tabContainer"> \
       </button> \
     </div> \
   </div>';
-
 
 HEGwebAPI.appendFragment(switchHTML, "main_body");
 HEGwebAPI.appendFragment(tabHTML, "main_body");
