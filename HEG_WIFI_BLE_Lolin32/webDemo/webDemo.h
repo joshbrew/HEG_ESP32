@@ -8,12 +8,11 @@ const char event_page[] PROGMEM = R"=====(
 <body>
   <title>HEG Interface</title>
   <div class="header">
-      <h1>HEG ALPHA Ver 0.0.4</h1>
+      <h1>HEG ALPHA Ver 0.0.5</h1>
   </div>
   
   <div id="main_body"></div>
 
-  
 <script> //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
   
 //Advanced Client scripts using external packages
@@ -21,7 +20,6 @@ const char event_page[] PROGMEM = R"=====(
 if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
   var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
 }
-
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -63,7 +61,6 @@ var tabHTML = '<div id="tabContainer"> \
       </button> \
     </div> \
   </div>';
-
 
 HEGwebAPI.appendFragment(switchHTML, "main_body");
 HEGwebAPI.appendFragment(tabHTML, "main_body");
@@ -383,7 +380,6 @@ document.getElementById("xscalebutton").onclick = () => {
   }
   g.VERTEX_LENGTH = g.xscaleSlider.value;
 }
-
 </script>
 </body>
 </html>

@@ -107,6 +107,13 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+2/26/20
+------
+- Fixed yoffset slider (changed a + to a - for the y-axis text)
+- Timer now shows minutes and seconds proper.
+- Touched up Update page
+- Touched up ThreeJS demo colors
+
 2/20/20
 ------
 - Added a formal Reset Session button (instead of reloading page)

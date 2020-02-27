@@ -66,7 +66,7 @@ form {
   background-color: gray; 
 }
 .cvbutton{
-  background-color: rgb(30, 230, 63);
+  background-color: rgb(26, 211, 57);
 }
 .cvbutton:hover {
   background-color: green;
@@ -91,14 +91,14 @@ form {
 <hr>
 <h1>HEG Alpha Web Nav</h1>
 <div id="HEG_NAV" class="hegnav" align="center">
-  <form method="get" class="cvform" action="/listen"><button class="button cvbutton" type="submit">HTML5 Web Demo</button></form><br>
+  <form method="get" class="cvform" action="/listen"><button class="button cvbutton" type="submit">HTML5 Web App</button></form><br>
   <form  method="get" class="csform" action="/connect"><button class="button csbutton" type="submit">Connection Settings</button></form><br>
   <form method="get" class="uform" action="/update"><button class="button csbutton" type="submit">Update</button></form><br>
   <form method="get" class="hform" action="/help"><button class="button hbutton" type="submit">Help (WIP)</button></form>
   <!--<form class="scform" method="get" action="/sc">StateChanger Demo (WIP):<button class="button scbutton" type="submit">GO</button></form><br>-->
 </div>
 <div id="version" style="position:absolute; right:5px; bottom:5px">
-  Alpha v0.1.4. Feb, 18, 2020.
+  Alpha v0.1.5. Feb, 26, 2020.
 </div>
 
 </body>

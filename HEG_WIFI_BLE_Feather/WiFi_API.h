@@ -14,7 +14,6 @@
 #include <EEPROM.h>
 //#include "SPIFFS.h"
 
-#include "settings.h" //ESP32 Settings (not really used, may use later)
 #include "webDemo/api.h" // Uninitialized API page for external apps.
 #include "webDemo/index.h"  //Index/intro page
 #include "webDemo/update.h" //Update page
@@ -33,6 +32,11 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 AsyncWebSocketClient * globalWSClient = NULL;
 AsyncEventSource events("/events");
+
+bool defaultConnectWifi = false; //Set whether to attempt to connect to a router by default.
+const char* ssid = "--------";
+const char* password = "--------";
+//const char* static_ip = "192.168.2.2";
 
 //Enter your WiFi SSID and PASSWORD
 const char* host = "esp32";

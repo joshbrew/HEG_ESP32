@@ -44,12 +44,20 @@ class ThreeGlobe {
 
         for (var i = 0; i < nStars; i++) {
             var roll = Math.random();
-            if(roll <= 0.3){
+            if(roll <= 0.15){
                 color.set('skyblue');
                 colors.push(color.r,color.g,color.b);
             }
-            else if ((roll > 0.3) && (roll <= 0.6)) { 
-                color.set('tomato');
+            else if ((roll > 0.15) && (roll <= 0.3)) {
+                color.set('royalblue');
+                colors.push(color.r,color.g,color.b);
+            }
+            else if ((roll > 0.3) && (roll <= 0.45)) { 
+                color.set('purple');
+                colors.push(color.r,color.g,color.b);
+            }
+            else if ((roll > 0.45) && (roll <= 0.6)) { 
+                color.set('firebrick');
                 colors.push(color.r,color.g,color.b);
             }
             else if ((roll > 0.6) && (roll < 0.9)) {

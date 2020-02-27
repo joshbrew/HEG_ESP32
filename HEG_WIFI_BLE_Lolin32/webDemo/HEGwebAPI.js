@@ -205,7 +205,8 @@ class HEGwebAPI {
       document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
       if(e.data.includes("|")) {
         var dataArray = e.data.split("|");
-        if(parseFloat(dataArray[3]) > 0) { // Skip values not within a certain error.
+        var thisRatio = parseFloat(dataArray[3]);
+        if((thisRatio > 0)){ //&& (((this.us.length > 2) && ((thisRatio / this.ratio[this.ratio.length - 1] > 0.6) && (thisRatio/this.ratio[this.ratio.length - 1] < 1.4))) || (this.us.length < 2))) { // Add error filtering here.
           if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
           this.us.push(parseInt(dataArray[0]));
           this.red.push(parseInt(dataArray[1]));
@@ -648,9 +649,14 @@ class graphJS {
     }
     this.graphtext.canvas.width = this.canvas.width*1.3;
     this.graphtext.font = "2em Arial";
+
+    var seconds = Math.floor(this.us*0.000001);
+    var minutes = Math.floor(seconds*0.01667);
+    seconds = seconds - minutes * 60
+    if(seconds < 10){seconds = "0"+seconds}
     if(this.viewing == 0) {
       this.graphtext.fillStyle = "#00ff00";
-      this.graphtext.fillText("|  Time (s): " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("|  Time (s): " + minutes + ":" + seconds,this.graphtext.canvas.width - 300,50);
       this.graphtext.fillText("|  Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
       this.graphtext.fillStyle = "#99ffbb";
       this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2),this.graphtext.canvas.width - 720,50);
@@ -664,12 +670,12 @@ class graphJS {
     }
     this.graphtext.fillStyle = "#707070";
     var xoffset = this.graphtext.canvas.width * 0.125;
-    this.graphtext.fillText((this.invScale * 0.75 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
-    this.graphtext.fillText((this.invScale * 0.5 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.25); 
-    this.graphtext.fillText((this.invScale * 0.25 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.375); 
-    this.graphtext.fillText((this.invScale * -0.25 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
-    this.graphtext.fillText((this.invScale * -0.5 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
-    this.graphtext.fillText((this.invScale * -0.75 + this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
+    this.graphtext.fillText((this.invScale * 0.75 - this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.125); 
+    this.graphtext.fillText((this.invScale * 0.5 - this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.25); 
+    this.graphtext.fillText((this.invScale * 0.25 - this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.375); 
+    this.graphtext.fillText((this.invScale * -0.25 - this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.625); 
+    this.graphtext.fillText((this.invScale * -0.5 - this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.75); 
+    this.graphtext.fillText((this.invScale * -0.75 - this.yoffset).toFixed(3), xoffset, this.graphtext.canvas.height * 0.875); 
     
     if(this.sampleRate != null) { //X-axis approximation.
       this.graphtext.fillStyle = "#303030";
