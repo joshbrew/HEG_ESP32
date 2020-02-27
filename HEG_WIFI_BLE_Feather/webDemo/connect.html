@@ -3,7 +3,7 @@
 <head>
 <style>
 body {
-  background-color:#707070;
+  background-color:#303030;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -36,6 +36,12 @@ input[type=submit]{
   align-items: center;
   min-height: 100vh;
 }
+#staticoptions{
+  opacity: 0.3;
+}
+#staticextoptions{
+  opacity: 0.3
+}
 </style>
 </head>
 <body>
@@ -54,20 +60,25 @@ input[type=submit]{
       <input type='radio' id='defaultC' name='choices' value='9' checked>Auto-Connect (find the IP via your router or via USB Serial output on boot)<br>
       <input type='radio' id='suggestIP' name='choices' value = '4'>Suggest Static IP (Return to this page after reconnecting to this device)<br>
       <br>
-    Optional Static IP mode: <br>
+      <hr>
+
+    Optional Static IP mode: <br><br>
+    <div id="staticoptions">
     Static IP (e.g. 192.168.0.199, first 3 numbers must match gateway):<br>
       <input type='text' id='static' name='static'><br>
     Gateway IP (e.g. 192.168.0.1, check router settings):<br>
       <input type='text' id='gateway' name='gateway'><br>
     Subnet Mask (e.g. 255.255.255.0, check router settings):<br>
-      <input type='text' id='subnet' name='subnet'><br>
+      <input type='text' id='subnet' name='subnet'></div>
     <input type='radio' id='use_static' name='choices' value='0'>Use Static IP<br>
     <br>
-    For use with Static IP with DNS mode:<br>
+    <hr>
+    <div id="staticextoptions">
+    For use with Static IP with DNS mode:<br><br>
     Primary DNS:<br>
       <input type='text' id='primary' name='primary'><br>
     Secondary DNS (optional):<br>
-      <input type='text' id='secondary' name='secondary'><br>
+      <input type='text' id='secondary' name='secondary'></div>
       <input type='radio' id='use_dns' name='choices' value = '3'>Use Static IP with DNS<br>
     <br>
     <input type='submit' id='Connect' value='Connect'>
@@ -75,5 +86,19 @@ input[type=submit]{
   </form>
   <div id="scanResults">
   </div>
+
+  <script>
+    document.getElementById("use_static").onclick = function() {
+      document.getElementById("staticoptions").style.opacity = 1.0;
+    }
+    document.getElementById("use_dns").onclick = function() {
+      document.getElementById("staticoptions").style.opacity = 1.0;
+      document.getElementById("staticextoptions").style.opacity = 1.0;
+    }
+    document.getElementById("defaultC").onclick = function() {
+      document.getElementById("staticoptions").style.opacity = 0.3;
+      document.getElementById("staticextoptions").style.opacity = 0.3;
+    }
+  </script>
 </body>
 </html>
