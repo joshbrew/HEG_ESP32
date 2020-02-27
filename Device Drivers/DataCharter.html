@@ -1,0 +1,217 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <style>
+          table {
+            width:100%;
+            text-align: center; 
+            border: 1.5px solid black;
+            padding: 4px 1px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+          }
+          td {
+            border-right:1px solid black;
+            border-left:1px solid black;
+          }
+          #filelabel{
+            border: 1px solid black;
+            padding: 8px 14px;
+            display: inline-block;
+            transition: all 0.5s ease;
+            -webkit-transition: all 0.5s ease;
+            -moz-transition: all 0.5s ease;
+            -ms-transition: all 0.5s ease;
+            -o-transition: all 0.5s ease;
+          }
+          #filelabel:hover {
+            color:white;
+            background-color:black;
+          }
+          #fileinput {
+            display: none;
+          }
+          div {
+            transition: opacity 0.8s ease-in-out;
+            -webkit-transition: opacity 0.8s ease-in-out;
+            -moz-transition: opacity 0.8s ease-in-out;
+            -ms-transition: opacity 0.8s ease-in-out;
+            -o-transition: opacity 0.8s ease-in-out;
+          }
+        </style>
+    </head>
+<body>
+<div id="chartContainer"></div>
+<label id="filelabel">Chart HEG Data</label>
+<script>   
+       var drawChart = function( csvUrl, chartId ) {
+         d3.csv( csvUrl, d3.autoType).then(function( rows ) {
+            console.log("Data: ", rows);
+            //var ctx = document.getElementById(chartId)
+            var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.000001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
+            var redMap = rows.map(function(d) {return d.red});
+            var irMap = rows.map(function(d) {return d.ir});
+            var ratioMap = rows.map(function(d) {return d.ratio});
+            var ambientMap = rows.map(function(d) {if(d.ambient){return d.ambient}else{return d.adcAvg}});
+            var velMap = rows.map(function(d) {if(d.Vel){return d.Vel}else{return d.ratioSlope}});
+            var accelMap = rows.map(function(d) {if(d.Accel){return d.Accel}else if(d.AI){return d.AI}else{return d.vAI}});
+            
+            console.log("Ratio Map: ",ratioMap);
+            var trace1 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: ratioMap,//ratioMap,
+                name: 'Ratio'
+            };
+            var trace2 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: redMap,//ratioMap,
+                name: 'Red',
+                visible: 'legendonly'
+            };
+            var trace3 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: irMap,//ratioMap,
+                name: 'IR',
+                visible: 'legendonly'
+            };
+            var trace4 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: ambientMap,//ratioMap,
+                name: 'ambient',
+                visible: 'legendonly'
+            };
+            var trace5 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: velMap,//ratioMap,
+                name: 'vel.',
+                visible: 'legendonly'
+            };
+            var trace6 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: accelMap,//ratioMap,
+                name: 'accel.',
+                visible: 'legendonly'
+            };
+            var data = [trace1,trace2,trace3,trace4,trace5,trace6];
+            var layout = {
+                title: { 
+                  text: chartId.replace("_chart"," Session Chart"),
+                },
+                xaxis: {
+                  title: {
+                    text: 'Minutes'
+                  }
+                },
+                showlegend: true,
+            };
+
+            var icon1 = {
+                'width': 500,
+                'height': 600,
+                'path': 'M224 512c35.32 0 63.97-28.65 63.97-64H160.03c0 35.35 28.65 64 63.97 64zm215.39-149.71c-19.32-20.76-55.47-51.99-55.47-154.29 0-77.7-54.48-139.9-127.94-155.16V32c0-17.67-14.32-32-31.98-32s-31.98 14.33-31.98 32v20.84C118.56 68.1 64.08 130.3 64.08 208c0 102.3-36.15 133.53-55.47 154.29-6 6.45-8.66 14.16-8.61 21.71.11 16.4 12.98 32 32.1 32h383.8c19.12 0 32-15.6 32.1-32 .05-7.55-2.61-15.27-8.61-21.71z'
+            }
+
+            var config = { 
+                scrollZoom: true, 
+                responsive: true, 
+                displaylogo: false,
+                showEditInChartStudio: true,
+                modeBarButtonsToAdd: [
+                  {
+                    name: 'Delete',
+                    icon: icon1,
+                    click: function(gd) {
+                      document.getElementById(chartId).style.opacity = 0.0;
+                      document.getElementById(chartId+"_keys").style.opacity = 0.0;
+                      setTimeout(function() {
+                        Plotly.purge(document.getElementById(chartId));
+                        document.getElementById(chartId+"_keys").remove();
+                        document.getElementById('fileinput').value = '';
+                      }, 800);
+                    }
+                  }
+                ]
+            };
+            Plotly.newPlot(chartId, data, layout, config);
+
+            function sessionAnalytics() { // Use this to set up a data display table for each chart.
+              var sessionTime = usMap[usMap.length - 1];
+              var sessionSec = Math.floor((sessionTime*60-(Math.floor(sessionTime)*60)));
+              if(sessionSec < 10) { sessionSec = "0"+sessionSec}
+              var ratioMean = ratioMap.reduce((previous,current) => current += previous) / ratioMap.length;
+              var ratioBaseline = ratioMap.slice(0,200); // Use first n samples for baseline.
+              ratioBaseline = ratioBaseline.reduce((previous,current) => current += previous) / ratioBaseline.length;
+              var sessionGain = ratioMean / ratioBaseline;
+              var gainColor = 'red';
+              if(sessionGain >= 1){gainColor = 'green'}
+              var tableHTML = "<table>"
+              tableHTML += "<tr><td>Session Time: "+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio: "+ratioBaseline.toFixed(3)+"</td><td>Average Ratio: "+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain: "+(sessionGain*100-100).toFixed(2)+"%</td></tr>";
+              tableHTML += "</table><hr>"; 
+              document.getElementById(chartId+"_keys").innerHTML = tableHTML;
+            }
+            sessionAnalytics();
+            document.getElementById(chartId).style.opacity = 1;
+            document.getElementById(chartId+"_keys").style.opacity = 1;
+          });
+       }
+
+       d3.select("html")
+          .style("height","100%")
+
+       d3.select("#filelabel")
+          .style("font", "14px sans-serif")
+
+        .append("input")
+          .attr("type", "file")
+          .attr("id","fileinput")
+          .attr("accept", ".csv")
+          .style("margin", "5px")
+          .on("change", function() {
+            var file = d3.event.target.files[0];
+            if (file) {
+              parent.postMessage(file,'*'); // Post file
+              var reader = new FileReader();
+                reader.onloadend = function(evt) {
+                  var dataUrl = evt.target.result;
+                  var chartId = file.name+"_chart"
+                  d3.select("#chartContainer")
+                    .append("div")
+                        .attr("id", chartId)
+                        .style("margin", "5px")
+                        .style("opacity", "0.0")
+                    
+                  d3.select("#chartContainer")
+                    .append("div")
+                        .attr("id", chartId+"_keys")
+                        .style("margin", "5px")
+                        .style("opacity", "0.0")
+                  // The following call results in an "Access denied" error in IE.
+                  drawChart(dataUrl, chartId);
+                };
+               reader.readAsDataURL(file);
+              }
+            })
+
+        window.addEventListener("message", receiveMessage, false);
+        
+        function receiveMessage(event) {
+            console.log("message: ", event.data)
+            var file = new File([""],event.data);
+            console.log(file);
+            var reader = new FileReader();
+            reader.readAsText(file); //event.data); for chart.js event
+            reader.onload = event => {
+                console.log("File Contents: ", event.target.result);
+                //document.getElementById("preview").innerHTML = event.target.result;
+            }
+        }
+</script>
+</body>
+</html>
