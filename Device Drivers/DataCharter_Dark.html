@@ -3,20 +3,24 @@
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
+          body {
+            background-color: black;
+            color: white;
+          }
           table {
             width:100%;
             text-align: center; 
-            border: 1.5px solid black;
+            border: 1.5px solid white;
             padding: 4px 1px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
           }
           td {
-            border-right:1px solid black;
-            border-left:1px solid black;
+            border-right:1px solid white;
+            border-left:1px solid white;
           }
           #filelabel{
-            border: 1px solid black;
+            border: 1px solid white;
             padding: 8px 14px;
             display: inline-block;
             transition: all 0.5s ease;
@@ -26,8 +30,8 @@
             -o-transition: all 0.5s ease;
           }
           #filelabel:hover {
-            color:white;
-            background-color:black;
+            color:black;
+            background-color:white;
           }
           #fileinput {
             display: none;
@@ -104,19 +108,33 @@
                 title: { 
                   text: chartId.replace("_chart"," Session Chart"),
                 },
+                font: {
+                  family: 'Courier New, Courier, monospace',
+                  color: 'white'
+                },
+                plot_bgcolor: '#080808',
+                paper_bgcolor: '#080808',
                 xaxis: {
                   title: {
                     text: 'Time (min)'
-                  }
+                  },
+                  gridcolor: '#1a1a1a',
+                  tickcolor: 'white',
+                  zerolinecolor: 'white'
                 },
-                showlegend: true,
+                yaxis: {
+                  gridcolor: '#1a1a1a',
+                  tickcolor: 'white',
+                  zerolinecolor: 'white'
+                },
                 margin: {
                   l: 30,
                   r: 10,
                   b: 40,
                   t: 85,
                   pad: 4
-                }
+                },
+                showlegend: true,
             };
 
             var icon1 = {
