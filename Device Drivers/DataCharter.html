@@ -59,7 +59,7 @@
             var velMap = rows.map(function(d) {if(d.Vel){return d.Vel}else{return d.ratioSlope}});
             var accelMap = rows.map(function(d) {if(d.Accel){return d.Accel}else if(d.AI){return d.AI}else{return d.vAI}});
 
-            var smaMap = sma(ratioMap, 40); // ~1 second average
+            var smaMap = sma(ratioMap, 40); // ~2 second average
 
             var trace1 = {
                 type: 'scatter',
