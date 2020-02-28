@@ -179,11 +179,11 @@
               var sma_ratioError = 0;
               var sma_ratioMSE = 0;
               smaMap.forEach((item, idx) => {
-                sma_ratioError += Math.abs(ratioMap[idx] - item) / item;
+                sma_ratioError += Math.abs((ratioMap[idx] - item) / item);
                 sma_ratioMSE += Math.pow(ratioMap[idx] - item, 2); 
               }); // Math.abs(ratio - sma) / sma;
-              sma_ratioError = sma_ratioError / smaMap.length;
-              sma_ratioRMSE = Math.sqrt(sma_ratioMSE / smaMap.length);
+              sma_ratioError = sma_ratioError / smaMap.length; // Mean Absolute Error
+              sma_ratioRMSE = Math.sqrt(sma_ratioMSE / smaMap.length); //Root Mean Square Error
 
               var tableHTML = "<table>"
               tableHTML += "<tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
