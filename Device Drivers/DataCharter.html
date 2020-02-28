@@ -14,6 +14,8 @@
           td {
             border-right:1px solid black;
             border-left:1px solid black;
+            border-bottom:1px solid black;
+            border-top: 1px solid black;
           }
           #filelabel{
             border: 1px solid black;
@@ -52,12 +54,13 @@
             var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.000001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
             var redMap = rows.map(function(d) {return d.red});
             var irMap = rows.map(function(d) {return d.ir});
-            var ratioMap = rows.map(function(d) {return d.ratio});
+            var ratioMap = rows.map(function(d) {return d.ratio}); //console.log("Ratio Map: ",ratioMap);
             var ambientMap = rows.map(function(d) {if(d.ambient){return d.ambient}else{return d.adcAvg}});
             var velMap = rows.map(function(d) {if(d.Vel){return d.Vel}else{return d.ratioSlope}});
             var accelMap = rows.map(function(d) {if(d.Accel){return d.Accel}else if(d.AI){return d.AI}else{return d.vAI}});
-            
-            console.log("Ratio Map: ",ratioMap);
+
+            var smaMap = sma(ratioMap, 40); // ~1 second average
+
             var trace1 = {
                 type: 'scatter',
                 x: usMap,//usMap,
@@ -69,14 +72,20 @@
                 x: usMap,//usMap,
                 y: redMap,//ratioMap,
                 name: 'Red',
-                visible: 'legendonly'
+                visible: 'legendonly',
+                line: {
+                  color: 'red'
+                }
             };
             var trace3 = {
                 type: 'scatter',
                 x: usMap,//usMap,
                 y: irMap,//ratioMap,
                 name: 'IR',
-                visible: 'legendonly'
+                visible: 'legendonly',
+                line: {
+                  color: 'limegreen'
+                }
             };
             var trace4 = {
                 type: 'scatter',
@@ -99,7 +108,13 @@
                 name: 'accel.',
                 visible: 'legendonly'
             };
-            var data = [trace1,trace2,trace3,trace4,trace5,trace6];
+            var trace7 = {
+              type: 'scatter',
+              x: usMap,
+              y: smaMap,
+              name: 'Ratio SMA',
+            }
+            var data = [trace1,trace7,trace2,trace3,trace4,trace5,trace6];
             var layout = {
                 title: { 
                   text: chartId.replace("_chart"," Session Chart"),
@@ -152,15 +167,28 @@
               var sessionTime = usMap[usMap.length - 1];
               var sessionSec = Math.floor((sessionTime*60-(Math.floor(sessionTime)*60)));
               if(sessionSec < 10) { sessionSec = "0"+sessionSec}
+              
               var ratioMean = ratioMap.reduce((previous,current) => current += previous) / ratioMap.length;
               var ratioBaseline = ratioMap.slice(0,200); // Use first n samples for baseline.
               ratioBaseline = ratioBaseline.reduce((previous,current) => current += previous) / ratioBaseline.length;
+              
               var sessionGain = ratioMean / ratioBaseline;
               var gainColor = 'red';
               if(sessionGain >= 1){gainColor = 'green'}
+
+              var sma_ratioError = 0;
+              var sma_ratioMSE = 0;
+              smaMap.forEach((item, idx) => {
+                sma_ratioError += Math.abs(ratioMap[idx] - item) / item;
+                sma_ratioMSE += Math.pow(ratioMap[idx] - item, 2); 
+              }); // Math.abs(ratio - sma) / sma;
+              sma_ratioError = sma_ratioError / smaMap.length;
+              sma_ratioRMSE = Math.sqrt(sma_ratioMSE / smaMap.length);
+
               var tableHTML = "<table>"
-              tableHTML += "<tr><td>Session Time: "+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio: "+ratioBaseline.toFixed(3)+"</td><td>Average Ratio: "+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain: "+(sessionGain*100-100).toFixed(2)+"%</td></tr>";
-              tableHTML += "</table><hr>"; 
+              tableHTML += "<tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
+               <tr><td>Mean Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td></tr> \
+               </table><hr>"; 
               document.getElementById(chartId+"_keys").innerHTML = tableHTML;
             }
             sessionAnalytics();
@@ -218,6 +246,25 @@
                 console.log("File Contents: ", event.target.result);
                 //document.getElementById("preview").innerHTML = event.target.result;
             }
+        }
+
+        function sma(arr, window) {
+          var temp = [];
+          for(i = 0; i < arr.length; i++) {
+            if(i == 0) {
+              temp.push(arr[0]);
+            }
+            else if(i < window) {
+              var arrslice = arr.slice(0,i+1);
+              temp.push(arrslice.reduce((previous,current) => current += previous ) / i);
+            }
+            else {
+              var arrslice = arr.slice(i-window,i);
+              temp.push(arrslice.reduce((previous,current) => current += previous) / window);
+            }
+          }
+          //console.log(temp);
+          return temp;
         }
 </script>
 </body>
