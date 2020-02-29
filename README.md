@@ -1,24 +1,7 @@
 # HEG_ESP32 - Open Source
-Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's. [Join the Slack!](https://join.slack.com/t/hegopensource/shared_invite/enQtMzg4ODAzODQxMzY1LWUyOGU4N2ZiM2EwM2Y1YzJmMmU0YWFkY2YyMWI1NGJmODA3ZjczOGM0NzI3MjAwOTJkYjY1MTU1MmRmYTJkMjM)
+Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's.
 
-Use the HEG_WIFI_BLE sketch in the arduino IDE on your ESP32. Pin definitions in HEG.h for the SDA/SCL, and LEDs need to be adjusted according to your setup. These builds are tested on the Lolin32 and Huzzah32 Feather respectively but should work on any board after modifying the pinouts in HEG.h
-
-See the README in the Arduino sketch folder for flashing instructions. Requires the Espressif ESP32 IDE installed for Arduino - we recommend the developer build so you can tweak the files.
-
--------------------------------------------------------------------------------------------
-
-Now on CrowdSupply!!! This includes an article elaborating on the science: https://crowdsupply.com/alaskit/hegduino
-
-Youtube announcement link: https://www.youtube.com/watch?v=uuF9yuV2Kxk 
-
--------------------------------------------------------------------------------------------
-
-We have patched the original open source HEGstudio by Jonathan Toomim to work with our HEG! [Get it here](https://github.com/moothyknight/HEGstudio-Fork-HEGduino)
-
-Find our modified HEGstudio v0.1.5 source with EXE for Windows. Tested for Windows 7, 8, and 10 available in this repo. Bugs are definitely present from old source code. Try the different modes. Source and exe [available on our other repo](https://github.com/moothyknight/HEGstudio-Fork-HEGduino), the original videos are available from the Jonathan's sourceforge: [Link](https://sourceforge.net/projects/hegstudio/)
-
-See also (very deprecated):
-[Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
+Join our little community at: [HEG Alpha](https://hegalpha.com)
 
 ## What is it?
 Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
@@ -29,58 +12,32 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 
 ## Software
 
-WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
+### Arduino Setup
+See the [Device_Readme.txt](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt) in the [Arduino](https://www.arduino.cc/en/Main/Software) sketch folder for flashing instructions, including which dependencies are required for the Arduino IDE.
 
-You can demo it now via the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge.
+Use the HEG_WIFI_BLE sketch in the arduino IDE on your respective ESP32. Pin definitions in HEG.h for the SDA/SCL and LEDs need to be adjusted according to your setup. 
+
+These builds are tested on the Lolin32 and Huzzah32 Feather respectively but should work on any board after modifying the pinouts in HEG.h
+
+### All Open Source Games, Tools, & APIs.
+On the firmware you will find a WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
+
+You can demo it now via the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
-## Materials
-- Arduino Huzzah32 Feather ($18) or Lolin32 V1.0.0 ($4). Other ESP32 arduino boards are compatible but usually have different pinouts. We also really like the TTGO T1 for its SD card support at ~$5 per board (i.e. remote data collection).
-- ADS 1115 w/ PGA, 16-bit ADC
-- OPT101 Photodiode
-- 1 HAN1102W or DN1102W Infrared LED
-- 1 BR1102W Red LED
-- 6 pin SOT23 socket (for mounting LEDs)
-- MicroUSB cable. 
-
-You can save quite a bit of money if you use Ebay or Aliexpress for the ESP32 dev board, ADS1115, and OPT101. Mouser or Digikey should have the LEDs, note the HAN1102W is the latest version of the AN1102W and is easier to find. DN1102W is preferred at 850nm for IR by Biocomp as it is has fairly identical reflectivity between Hb or HbO2, providing a better baseline. You can get a prototype together for less than 15 dollars buying singular components (before shipping) if you know what you are doing.
-
-Placeholder... UPDATING SOON.
-## Schematics
-![Schematic](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEG_ESP32Arduino_BP.PNG?raw=true)
-
-## Assembly
-We used cheap perfboard to mount our DIY prototypes. For the sensor we used a protoboard snapped in half and taped together for a pseudo flexible circuit.
-
-1. Cut your wire leads to be the desired length between the sensor, which goes on your forehead, and the receiver. Sensor-only or ADC to ESP32 leads should be the shortest distance, which will vary for different setups so use your judgment.
-
-2. Wire it up based on the above schematics diagram. The anode marks on the LEDs are green. Use a 6 pin SOT23 socket to mount the SMT LEDs, they should only be a few cents. Use electrical tape to cover any pins or wires exposed so they do not contact your forehead. Ensure each component is grounded separately to minimize noise and crosstalk (made that mistake).
-
-3. Install ESP32 firmware on device via Arduino IDE. Requires [ADS1x15 library](https://github.com/adafruit/Adafruit_ADS1X15) and [arduino ESP32 library](https://github.com/espressif/arduino-esp32) 
-
-4. Secure sensor to forehead, make sure ALL light is blocked as the photodiode is very sensitive.
-
-5. The data output via WiFi, serial USB, or bluetooth (toggleable in the script or via serial) is structured as: Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
-Red/IR Ratio Average | small Sav Lay Filter | large Sav Lay Filter |
-adc Avg | position Average | ratio Slope | Attention Index
-
-Data will not transmit if the photodiode is saturated, use command 'T' to test diode or activate debug options.
-
-We'll soon be adding free Windows and Android apps. We have compatibility with the original HEGstudio by Jonathan Toomim! It's hacky but the feedback outputs more or less are identical to the Peanut.
-
-### Testing Notes
-The photodiode is very sensitive. Any moisture or stray light will throw off the readings. Block off any light in-between and around the LEDs and the photodiode to ensure no leaks.
-
-The maximum ADC reading is 32768 (15 bits) and each step is 0.125mV at the maximum 16X gain on the ADS1115. This is plenty sensitive for blood-oxygen detection. The range for real data is in the 200-3000 range. The script will not set the baseline unless it is below a specified light threshold.
-
-An ADC read of -1 means the ADC is not selected on the right pins (or those pins aren't soldered), or unpowered, or even fried. If you are however receiving random values with no responsiveness your A0 pin connection to the photodiode needs to be checked. A constant value of 32768 with no responsiveness to light means there is a short or the 1MΩ pin might not be connected to the signal output of the photodiode.
-
-Be sure to cover the photodiode pins and the LED contacts with electrical tape so your forehead doesn't complete the circuit and throw off readings.
-
-If there is moisture expect ADC or score readings to decline to zero and even negative values.
-
-If your IR LED is not working the ratio will be positive as the red LED has a lower intensity. Ratio = Red / Infrared. You can reduce the flash rate in the arduino script to test conclusively via the ADC.
-
-## HEGstudio with this HEG
+## Modded HEGstudio with this HEG (available [HERE](https://github.com/moothyknight/HEGstudio-Fork-HEGduino))
+You may use the classic software that shipped with the nIR Peanut HEG (with some fixes), modified for our HEG output via USB (Windows only)
 ![](https://raw.githubusercontent.com/moothyknight/HEG_ESP32/master/Pictures/20190211_201736.PNG)
+
+
+## More Links
+Our website: [HEG Alpha](https://hegalpha.com)
+
+Find us on [CrowdSupply](https://crowdsupply.com/alaskit/hegduino)
+
+Special thanks to the [Biocomp/Biofeedback Institute of LA](https://www.biocompresearch.org/), [Brain Trainer](https://brain-trainer.com/), and [AlasKit](https://alaskit.net)
+
+See also (very deprecated):
+[Arduino Nano V3 HEG](https://github.com/moothyknight/HEG_Arduino)
+
