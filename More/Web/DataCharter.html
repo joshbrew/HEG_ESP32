@@ -19,6 +19,7 @@
             border-left:1px solid black;
             border-bottom:1px solid black;
             border-top: 1px solid black;
+            width: 25%;
           }
           label{
             font-size: 14px;
@@ -47,6 +48,11 @@
             -moz-transition: opacity 0.8s ease-in-out;
             -ms-transition: opacity 0.8s ease-in-out;
             -o-transition: opacity 0.8s ease-in-out;
+          }
+          .compare {
+            width: 91.25%;
+            padding: 10px 0px; 
+            height: 100%;
           }
         </style>
     </head>
@@ -210,7 +216,7 @@
               if(sma_ratioError >= 0.10) {errColor = 'orange';}
               var tableHTML = "<table>"
               tableHTML += "<tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
-               <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td><td><label id='"+chartId+"_compare'>Compare Data</label></td></tr> \
+               <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td><td>♥ ฅ(=^ᆽ^=ฅ)</td><td><label id='"+chartId+"_compare' class='compare'>Compare Data</label></td></tr> \
                </table><hr>"; 
               document.getElementById(chartId+"_keys").innerHTML = tableHTML;
               
@@ -246,7 +252,7 @@
             }
             else {
               data = [...olddata,...data];
-              Plotly.react(chartId, data);
+              Plotly.react(chartId, data, layout);
             }
             
           });
