@@ -11,13 +11,20 @@
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
           }
+          input[type=file] {
+            display: none;
+          }
           td {
             border-right:1px solid black;
             border-left:1px solid black;
             border-bottom:1px solid black;
             border-top: 1px solid black;
           }
-          #filelabel{
+          label{
+            font-size: 14px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: normal;
+            margin: 4px;
             border: 1px solid black;
             padding: 8px 14px;
             display: inline-block;
@@ -27,7 +34,7 @@
             -ms-transition: all 0.5s ease;
             -o-transition: all 0.5s ease;
           }
-          #filelabel:hover {
+          label:hover {
             color:white;
             background-color:black;
           }
@@ -48,7 +55,7 @@
 <label id="filelabel">Chart HEG Data</label>
 <script>   
       //TODO: Show notes as hover-expanding info points
-       var drawChart = function( csvUrl, chartId ) {
+       var drawChart = function( csvUrl, chartId, updatePlot=false, olddata=[] ) {
          d3.csv( csvUrl, d3.autoType).then(function( rows ) {
             console.log("Data: ", rows);
             //var ctx = document.getElementById(chartId)
@@ -115,6 +122,21 @@
               y: smaMap,
               name: 'Ratio SMA',
             }
+            if(updatePlot == true){
+              trace1.name = "Ratio 2";
+              trace2.name = "Red 2";
+              trace2.line = {
+                  color: 'firebrick'
+                }
+              trace3.name = "IR 2";
+              trace3.line = {
+                  color: 'forestgreen'
+                }
+              trace4.name = "ambient 2"
+              trace5.name = "vel. 2"
+              trace6.name = "accel. 2"
+              trace7.name = "Ratio SMA 2"
+            }
             var data = [trace1,trace7,trace2,trace3,trace4,trace5,trace6];
             var layout = {
                 title: { 
@@ -162,7 +184,6 @@
                   }
                 ]
             };
-            Plotly.newPlot(chartId, data, layout, config);
 
             function sessionAnalytics() { // Use this to set up a data display table for each chart.
               var sessionTime = usMap[usMap.length - 1];
@@ -189,13 +210,45 @@
               if(sma_ratioError >= 0.10) {errColor = 'orange';}
               var tableHTML = "<table>"
               tableHTML += "<tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
-               <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td></tr> \
+               <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td><td><label id='"+chartId+"_compare'>Compare Data</label></td></tr> \
                </table><hr>"; 
               document.getElementById(chartId+"_keys").innerHTML = tableHTML;
+              
+              var fragment = document.createDocumentFragment();
+              var inputElem = document.createElement("input");
+              inputElem.type = "file";
+              inputElem.setAttribute("id",chartId+"_fileinput")
+              inputElem.setAttribute("accept", ".csv");
+              fragment.appendChild(inputElem)
+              document.getElementById(chartId+"_compare").appendChild(fragment);
+              document.getElementById(chartId+"_fileinput").onchange = function(event) {
+                var file = event.target.files[0];
+                if (file) {
+                  //parent.postMessage(file,'*'); // Post file
+                  var reader = new FileReader();
+                    reader.onloadend = function(evt) {
+                      var dataUrl = evt.target.result;
+                      // The following call results in an "Access denied" error in IE.
+                      drawChart(dataUrl, chartId, true, data);
+                    };
+                  reader.readAsDataURL(file);
+                }
+              }
+              
+            
             }
-            sessionAnalytics();
-            document.getElementById(chartId).style.opacity = 1;
-            document.getElementById(chartId+"_keys").style.opacity = 1;
+
+            if(updatePlot == false){
+              Plotly.newPlot(chartId, data, layout, config);
+              sessionAnalytics();
+              document.getElementById(chartId).style.opacity = 1;
+              document.getElementById(chartId+"_keys").style.opacity = 1;
+            }
+            else {
+              data = [...olddata,...data];
+              Plotly.react(chartId, data);
+            }
+            
           });
        }
 
@@ -203,13 +256,11 @@
           .style("height","100%")
 
        d3.select("#filelabel")
-          .style("font", "14px sans-serif")
-
+      
         .append("input")
           .attr("type", "file")
           .attr("id","fileinput")
           .attr("accept", ".csv")
-          .style("margin", "5px")
           .on("change", function() {
             var file = d3.event.target.files[0];
             if (file) {
@@ -230,7 +281,7 @@
                         .style("margin", "5px")
                         .style("opacity", "0.0")
                   // The following call results in an "Access denied" error in IE.
-                  drawChart(dataUrl, chartId);
+                  drawChart(dataUrl, chartId, false);
                 };
                reader.readAsDataURL(file);
               }
