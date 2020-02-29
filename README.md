@@ -1,6 +1,7 @@
 # HEG_ESP32 - Open Source
 Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's.
-Join our community at: [HEG Alpha](https://hegalpha.com)
+
+Join our little community at: [HEG Alpha](https://hegalpha.com)
 
 ## What is it?
 Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
