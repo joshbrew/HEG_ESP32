@@ -333,12 +333,12 @@
         function sma(arr, window) {
           var temp = [];
           for(i = 0; i < arr.length; i++) {
-            if(i == 0) {
+            if((i == 0)) {
               temp.push(arr[0]);
             }
             else if(i < window) {
               var arrslice = arr.slice(0,i+1);
-              temp.push(arrslice.reduce((previous,current) => current += previous ) / i);
+              temp.push(arrslice.reduce((previous,current) => current += previous ) / (i+1));
             }
             else {
               var arrslice = arr.slice(i-window,i);

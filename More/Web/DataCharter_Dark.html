@@ -233,7 +233,7 @@
               
               var errCat = "♥ ฅ(=^ᆽ^=ฅ)";
               
-              var errColor = 'black';
+              var errColor = 'white';
               if(sma_ratioError >= 0.20) {{errColor = 'red'; errCat = "(=XᆽX=)";}}
               else if(sma_ratioError >= 0.10) {errColor = 'orange'; errCat = "(=ʘᆽʘ=)?";}
 
@@ -338,7 +338,7 @@
             }
             else if(i < window) {
               var arrslice = arr.slice(0,i+1);
-              temp.push(arrslice.reduce((previous,current) => current += previous ) / i);
+              temp.push(arrslice.reduce((previous,current) => current += previous ) / (i+1));
             }
             else {
               var arrslice = arr.slice(i-window,i);
