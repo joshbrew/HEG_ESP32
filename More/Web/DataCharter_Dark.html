@@ -4,13 +4,13 @@
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
           body {
-            background-color: white;
-            color: black;
+            background-color: black;
+            color: white;
           }
           table {
             width:100%;
             text-align: center; 
-            border: 1.5px solid black;
+            border: 1.5px solid white;
             padding: 4px 1px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
@@ -19,10 +19,10 @@
             display: none;
           }
           td {
-            border-right:1px solid black;
-            border-left:1px solid black;
-            border-bottom:1px solid black;
-            border-top: 1px solid black;
+            border-right:1px solid white;
+            border-left:1px solid white;
+            border-bottom:1px solid white;
+            border-top: 1px solid white;
             width: 25%;
           }
           label{
@@ -30,7 +30,7 @@
             font-family: Arial, Helvetica, sans-serif;
             font-weight: normal;
             margin: 4px;
-            border: 1px solid black;
+            border: 1px solid white;
             padding: 8px 14px;
             display: inline-block;
             transition: all 0.5s ease;
@@ -40,8 +40,8 @@
             -o-transition: all 0.5s ease;
           }
           label:hover {
-            color:white;
-            background-color:black;
+            color:black;
+            background-color:white;
           }
           #fileinput {
             display: none;
@@ -154,22 +154,22 @@
                 },
                 font: {
                   family: 'Courier New, Courier, monospace',
-                  color: 'black'
+                  color: 'white'
                 },
-                plot_bgcolor: '#white',
-                paper_bgcolor: '#white',
+                plot_bgcolor: '#080808',
+                paper_bgcolor: '#080808',
                 xaxis: {
                   title: {
                     text: 'Time (min)'
                   },
-                  gridcolor: '#ghostwhite',
-                  tickcolor: '#1a1a1a',
-                  zerolinecolor: '#1a1a1a'
+                  gridcolor: '#1a1a1a',
+                  tickcolor: 'white',
+                  zerolinecolor: 'white'
                 },
                 yaxis: {
-                  gridcolor: '#ghostwhite',
-                  tickcolor: '#1a1a1a',
-                  zerolinecolor: '#1a1a1a'
+                  gridcolor: '#1a1a1a',
+                  tickcolor: 'white',
+                  zerolinecolor: 'white'
                 },
                 showlegend: true,
                 margin: {
