@@ -84,7 +84,7 @@
     </head>
 <body>
 <div id="chartContainer"></div>
-<label id="filelabel">Chart HEG Data</label>
+<label id="filelabel">Load HEG CSV</label>
 <script>   
       var icon1 = { // Bell SVG
         'width': 500,
@@ -97,7 +97,7 @@
          d3.csv( csvUrl, d3.autoType).then(function( rows ) {
             //console.log("Data: ", rows);
             //var ctx = document.getElementById(chartId)
-            var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.000001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
+            var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
             var redMap = rows.map(function(d) {return d.red});
             var irMap = rows.map(function(d) {return d.ir});
             var ratioMap = rows.map(function(d) {return d.ratio}); //console.log("Ratio Map: ",ratioMap);
@@ -160,6 +160,10 @@
               y: smaMap,
               name: 'Ratio SMA',
             }
+            if(rows[0].AI || rows[0].vAI){
+              trace5.name = "rSlope";
+              trace6.name = "vAI";
+            }
             if(updatePlot == true){
               trace1.name = "Ratio 2";
               trace2.name = "Red 2";
@@ -174,6 +178,10 @@
               trace5.name = "vel. 2"
               trace6.name = "accel. 2"
               trace7.name = "Ratio SMA 2"
+              if(rows[0].AI || rows[0].vAI){
+                trace5.name = "rSlope";
+                trace6.name = "vAI";
+              }
             }
             var data = [trace1,trace7,trace2,trace3,trace4,trace5,trace6];
             var layout = {
@@ -263,7 +271,7 @@
               <table> \
                 <tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
                 <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td><td>"+errCat+"</td><td><label id='"+chartId+"_compare' class='compare'>Compare Data</label></td></tr> \
-                <tr><td><button id='"+chartId+"_makehisto' class='chartbutton'>Ratio Histogram</button></td><td><button id='"+chartId+"_makeledhisto' class='chartbutton'>LED Histogram</button></td><td><button id='"+chartId+"_ledfft' class='chartbutton'>LED FFT</button></td></tr>  \
+                <tr><td><button id='"+chartId+"_makehisto' class='chartbutton'>Ratio Histogram</button></td><td><button id='"+chartId+"_makeledhisto' class='chartbutton'>LED Histogram</button></td><td><button id='"+chartId+"_ledfft' class='chartbutton'>Frequency Analysis</button></td><td><button id='"+chartId+"_post' class='chartbutton'>Post Session</button></td></tr>  \
               </table><hr>";
            
               document.getElementById(chartId+"_keys").innerHTML = tableHTML;
@@ -289,6 +297,10 @@
                     };
                   reader.readAsDataURL(file);
                 }
+              }
+
+              document.getElementById(chartId+"_post").onclick = () => {
+                parent.postMessage(rows,"*");
               }
 
               document.getElementById(chartId+"_makehisto").onclick = () => {
@@ -317,31 +329,11 @@
               }
 
               document.getElementById(chartId+"_ledfft").onclick = () => {
-                /*With a complex DFT Array (Matlab notes)
-                  Freq:
-                  fs=20; %~20sps in our case
-                  N=tdat.length; %FFT size
-                  X = 1/N*fftshift(fft(x,N));%N-point complex DFT
-
-                  df=fs/N; %frequency resolution
-                  sampleIndex = -N/2:N/2-1; %ordered index for FFT plot
-                  f=sampleIndex*df; %x-axis index converted to ordered frequencies
-                  stem(f,abs(X)); %magnitudes vs frequencies
-                  xlabel('f (Hz)'); ylabel('|X(k)|');
-
-                  Phase:
-                  X2=X;%store the FFT results in another array
-                  %detect noise (very small numbers (eps)) and ignore them
-                  threshold = max(abs(X))/10000; %tolerance threshold
-                  X2(abs(X)<threshold) = 0; %maskout values that are below the threshold
-                  phase=atan2(imag(X2),real(X2))*180/pi; %phase information
-                  plot(f,phase); %phase vs frequencies
-                */
-                
+                  
                 var fs = 1/(usMap[2]*60-usMap[1]*60); // Approx sampling rate based on assumed uniform sample rate (Hz)
-                if (fs > 1000) {fs = fs*0.001}
+                if (fs > 1000) {fs = fs*0.001} // Just a hotfix for old data
                 var N = data[0].y.length; // FFT size is n sample size of dataset
-                var df = fs/N; // frequency resolution
+                //var df = fs/N; // frequency resolution
                 
                 //Red
                 var redDom = frequencyDomain(data[2].y,fs)
@@ -475,7 +467,7 @@
             Plotly.react(chartId, data, layout);
           }
           
-        });
+        }); // end of d3.csv() call
        }
 
        function makeHistogram(chartId, binsize=1, arr1, name1, arr2=null, name2) {
@@ -601,14 +593,13 @@
         window.addEventListener("message", receiveMessage, false);
         
         function receiveMessage(event) {
-            console.log("message: ", event.data)
-            var file = new File([""],event.data);
-            console.log(file);
-            var reader = new FileReader();
-            reader.readAsText(file); //event.data); for chart.js event
-            reader.onload = event => {
-                console.log("File Contents: ", event.target.result);
-                //document.getElementById("preview").innerHTML = event.target.result;
+            //console.log("message: ", event.data)
+            if(event.data.length != undefined) {
+              console.log("Received JSON!");
+              console.log(event.data[0]);
+            }
+            else {
+              console.log("Received File!")
             }
         }
 
@@ -771,7 +762,7 @@
         function frequencyDomain(data, fs){ // Returns Frequency Domain object: [frequency Distribution, amplitude Distribution] with range based on input sample rate. Assumes constant sample rate.
           var tdat = [...data]; // Red
           var len = tdat.length;
-          var transformArr = cfft(tdat, len);
+          var transformArr = cfft(tdat, len); //Returns Time Domain FFT
           var transform = icfft(transformArr[0]); //console.log(transform);
           var tranScaled = scaleTransform(transform, transform.length);
           
@@ -793,6 +784,28 @@
         }
 
         /*
+        With a complex DFT Array X (from Matlab tutorial)
+          Freq:
+          fs=20; %~20sps in our case
+          N=tdat.length; %FFT size
+          X = 1/N*fftshift(fft(x,N));%N-point complex DFT
+
+          df=fs/N; %frequency resolution
+          sampleIndex = -N/2:N/2-1; %ordered index for FFT plot
+          f=sampleIndex*df; %x-axis index converted to ordered frequencies
+          stem(f,abs(X)); %magnitudes vs frequencies
+          xlabel('f (Hz)'); ylabel('|X(k)|');
+
+          Phase:
+          X2=X;%store the FFT results in another array
+          %detect noise (very small numbers (eps)) and ignore them
+          threshold = max(abs(X))/10000; %tolerance threshold
+          X2(abs(X)<threshold) = 0; %maskout values that are below the threshold
+          phase=atan2(imag(X2),real(X2))*180/pi; %phase information
+          plot(f,phase); %phase vs frequencies
+        */
+
+        /*
         function fftShift(fftarr){ // Two sided FFT ordering. Assumes even-length input array
           var temp = [];
           var len = fftarr.length
@@ -807,9 +820,7 @@
           });
         }*/
 
-        //test code
-        //console.log( cfft([1,1,1,1,0,0,0,0]) );
-        //console.log( icfft(cfft([1,1,1,1,0,0,0,0])) );
+        
 
 </script>
 </body>
