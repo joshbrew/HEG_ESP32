@@ -94,8 +94,8 @@
       }
 
       //TODO: Show notes as hover-expanding info points
-       var drawChart = function( csvUrl, chartId, updatePlot=false, olddata=[] ) {
-         d3.csv( csvUrl, d3.autoType).then(function( rows ) {
+       var drawChart = function( rows, chartId, updatePlot=false, olddata=[] ) {
+            // end of d3.csv() call
             //console.log("Data: ", rows);
             //var ctx = document.getElementById(chartId)
             var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
@@ -294,14 +294,19 @@
                     reader.onloadend = function(evt) {
                       var dataUrl = evt.target.result;
                       // The following call results in an "Access denied" error in IE.
-                      drawChart(dataUrl, chartId, true, data);
+                      var csvDat;
+                      d3.csv( dataUrl, d3.autoType).then(function( rows ) {
+                        csvDat = rows;
+                      }).then(function() {
+                        drawChart(csvDat, chartId, false);
+                      });
                     };
                   reader.readAsDataURL(file);
                 }
               }
 
               document.getElementById(chartId+"_post").onclick = () => {
-                parent.postMessage(rows,"*");
+                parent.postMessage([rows,chartId.replace("_chart","")],"*");
               }
 
               document.getElementById(chartId+"_makehisto").onclick = () => {
@@ -467,8 +472,6 @@
             data = [...olddata,...data];
             Plotly.react(chartId, data, layout);
           }
-          
-        }); // end of d3.csv() call
        }
 
        function makeHistogram(chartId, binsize=1, arr1, name1, arr2=null, name2) {
@@ -568,7 +571,7 @@
           .on("change", function() {
             var file = d3.event.target.files[0];
             if (file) {
-              parent.postMessage(file,'*'); // Post file
+              //parent.postMessage(file,'*'); // Post file
               var reader = new FileReader();
                 reader.onloadend = function(evt) {
                   var dataUrl = evt.target.result;
@@ -585,7 +588,12 @@
                         .style("margin", "5px")
                         .style("opacity", "0.0")
                   // The following call results in an "Access denied" error in IE.
-                  drawChart(dataUrl, chartId, false);
+                  var csvDat;
+                  d3.csv( dataUrl, d3.autoType).then(function( rows ) {
+                    csvDat = rows;
+                  }).then(function() {
+                    drawChart(csvDat, chartId, false);
+                    });
                 };
                reader.readAsDataURL(file);
               }
@@ -597,7 +605,26 @@
             //console.log("message: ", event.data)
             if(event.data.length != undefined) {
               console.log("Received JSON!");
-              console.log(event.data[0]);
+              //console.log(JSON.parse(event.data[0]));
+              //console.log(event.data[1]);
+              if(event.data[2] == "draw") {
+                var chartId = event.data[1]+"_chart"
+                d3.select("#chartContainer")
+                  .append("div")
+                      .attr("id", chartId)
+                      .style("margin", "5px")
+                      .style("opacity", "0.0")
+                  
+                d3.select("#chartContainer")
+                  .append("div")
+                      .attr("id", chartId+"_keys")
+                      .style("margin", "5px")
+                      .style("opacity", "0.0")
+                drawChart(JSON.parse(event.data[0]),chartId,false);
+              }
+              if(event.data[2] == "save"){
+                console.log("Save CSV!");
+              }
             }
             else {
               console.log("Received File!")
@@ -820,9 +847,6 @@
             }
           });
         }*/
-
-        
-
 </script>
 </body>
 </html>
