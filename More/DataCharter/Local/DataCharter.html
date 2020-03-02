@@ -1,0 +1,801 @@
+<html>
+    <head>
+        <script src="js/d3.v5.min.js"></script>
+        <script src="js/plotly-latest.min.js"></script>
+        <style>
+          body {
+            background-color: white;
+            color: black;
+          }
+          table {
+            width:100%;
+            min-width:500px;
+            text-align: center; 
+            border: 1.5px solid black;
+            padding: 4px 1px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+          }
+          input[type=file] {
+            display: none;
+          }
+          td {
+            border-right:1px solid black;
+            border-left:1px solid black;
+            border-bottom:1px solid black;
+            border-top: 1px solid black;
+            width: 25%;
+          }
+          label{
+            font-size: 14px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: normal;
+            border: 1px solid black;
+            padding: 8px 14px;
+            display: inline-block;
+            transition: all 0.5s ease;
+            -webkit-transition: all 0.5s ease;
+            -moz-transition: all 0.5s ease;
+            -ms-transition: all 0.5s ease;
+            -o-transition: all 0.5s ease;
+          }
+          label:hover {
+            color:white;
+            background-color:black;
+          }
+          #fileinput {
+            display: none;
+          }
+          div {
+            transition: opacity 0.8s ease-in-out;
+            -webkit-transition: opacity 0.8s ease-in-out;
+            -moz-transition: opacity 0.8s ease-in-out;
+            -ms-transition: opacity 0.8s ease-in-out;
+            -o-transition: opacity 0.8s ease-in-out;
+          }
+          button {
+            transition: opacity 0.8s ease-in-out;
+            -webkit-transition: opacity 0.8s ease-in-out;
+            -moz-transition: opacity 0.8s ease-in-out;
+            -ms-transition: opacity 0.8s ease-in-out;
+            -o-transition: opacity 0.8s ease-in-out;
+          }
+          .compare {
+            width: 99%;
+            padding: 10px 0px;
+          }
+          .chartbutton {
+            font-size: 14px;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 14px 0px;
+            width: 100%;
+            color: black;
+            background-color: white;
+            border: 1px solid black;
+          }
+          .chartbutton:hover {
+            color: white;
+            background-color: black;
+          }
+          #chartContainer {
+            min-width: 500px;
+          }
+        </style>
+    </head>
+<body>
+<div id="chartContainer"></div>
+<label id="filelabel">Chart HEG Data</label>
+<script>   
+      var icon1 = { // Bell SVG
+        'width': 500,
+        'height': 600,
+        'path': 'M224 512c35.32 0 63.97-28.65 63.97-64H160.03c0 35.35 28.65 64 63.97 64zm215.39-149.71c-19.32-20.76-55.47-51.99-55.47-154.29 0-77.7-54.48-139.9-127.94-155.16V32c0-17.67-14.32-32-31.98-32s-31.98 14.33-31.98 32v20.84C118.56 68.1 64.08 130.3 64.08 208c0 102.3-36.15 133.53-55.47 154.29-6 6.45-8.66 14.16-8.61 21.71.11 16.4 12.98 32 32.1 32h383.8c19.12 0 32-15.6 32.1-32 .05-7.55-2.61-15.27-8.61-21.71z'
+      }
+
+      //TODO: Show notes as hover-expanding info points
+       var drawChart = function( csvUrl, chartId, updatePlot=false, olddata=[] ) {
+         d3.csv( csvUrl, d3.autoType).then(function( rows ) {
+            //console.log("Data: ", rows);
+            //var ctx = document.getElementById(chartId)
+            var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.000001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
+            var redMap = rows.map(function(d) {return d.red});
+            var irMap = rows.map(function(d) {return d.ir});
+            var ratioMap = rows.map(function(d) {return d.ratio}); //console.log("Ratio Map: ",ratioMap);
+            var ambientMap = rows.map(function(d) {if(d.ambient){return d.ambient}else{return d.adcAvg}});
+            var velMap = rows.map(function(d) {if(d.Vel){return d.Vel}else{return d.ratioSlope}});
+            var accelMap = rows.map(function(d) {if(d.Accel){return d.Accel}else if(d.AI){return d.AI}else{return d.vAI}});
+
+            var smaMap = sma(ratioMap, 40); // ~2 second average
+
+            var trace1 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: ratioMap,//ratioMap,
+                name: 'Ratio'
+            };
+            var trace2 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: redMap,//ratioMap,
+                name: 'Red',
+                visible: 'legendonly',
+                line: {
+                  color: 'red'
+                }
+            };
+            var trace3 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: irMap,//ratioMap,
+                name: 'IR',
+                visible: 'legendonly',
+                line: {
+                  color: 'limegreen'
+                }
+            };
+            var trace4 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: ambientMap,//ratioMap,
+                name: 'ambient',
+                visible: 'legendonly'
+            };
+            var trace5 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: velMap,//ratioMap,
+                name: 'velocity',
+                visible: 'legendonly'
+            };
+            var trace6 = {
+                type: 'scatter',
+                x: usMap,//usMap,
+                y: accelMap,//ratioMap,
+                name: 'acceleration',
+                visible: 'legendonly'
+            };
+            var trace7 = {
+              type: 'scatter',
+              x: usMap,
+              y: smaMap,
+              name: 'Ratio SMA',
+            }
+            if(updatePlot == true){
+              trace1.name = "Ratio 2";
+              trace2.name = "Red 2";
+              trace2.line = {
+                  color: 'firebrick'
+                }
+              trace3.name = "IR 2";
+              trace3.line = {
+                  color: 'forestgreen'
+                }
+              trace4.name = "ambient 2"
+              trace5.name = "vel. 2"
+              trace6.name = "accel. 2"
+              trace7.name = "Ratio SMA 2"
+            }
+            var data = [trace1,trace7,trace2,trace3,trace4,trace5,trace6];
+            var layout = {
+                title: { 
+                  text: chartId.replace("_chart"," Session Chart"),
+                },
+                font: {
+                  family: 'Courier New, Courier, monospace',
+                  color: 'black'
+                },
+                plot_bgcolor: '#white',
+                paper_bgcolor: '#white',
+                xaxis: {
+                  title: {
+                    text: 'Time (min)'
+                  },
+                  gridcolor: '#ghostwhite',
+                  tickcolor: '#1a1a1a',
+                  zerolinecolor: '#1a1a1a'
+                },
+                yaxis: {
+                  gridcolor: '#ghostwhite',
+                  tickcolor: '#1a1a1a',
+                  zerolinecolor: '#1a1a1a'
+                },
+                showlegend: true,
+                margin: {
+                  l: 40,
+                  r: 10,
+                  b: 40,
+                  t: 85,
+                  pad: 4
+                }
+            };
+
+            var config = { 
+                scrollZoom: true, 
+                responsive: true, 
+                displaylogo: false,
+                showEditInChartStudio: true,
+                modeBarButtonsToAdd: [
+                  {
+                    name: 'Delete',
+                    icon: icon1,
+                    click: function(gd) {
+                      document.getElementById(chartId).style.opacity = 0.0;
+                      document.getElementById(chartId+"_keys").style.opacity = 0.0;
+                      setTimeout(function() {
+                        Plotly.purge(document.getElementById(chartId));
+                        document.getElementById(chartId+"_keys").remove();
+                        document.getElementById('fileinput').value = '';
+                      }, 500);
+                    }
+                  }
+                ]
+            };
+
+            function sessionAnalytics() { // Use this to set up a data display table for each chart.
+              var sessionTime = usMap[usMap.length - 1];
+              var sessionSec = Math.floor((sessionTime*60-(Math.floor(sessionTime)*60)));
+              if(sessionSec < 10) { sessionSec = "0"+sessionSec}
+              
+              var ratioMean = ratioMap.reduce((previous,current) => current += previous) / ratioMap.length;
+              var ratioBaseline = ratioMap.slice(0,200); // Use first n samples for baseline.
+              ratioBaseline = ratioBaseline.reduce((previous,current) => current += previous) / ratioBaseline.length;
+              
+              var sessionGain = ratioMean / ratioBaseline;
+              var gainColor = 'red';
+              if(sessionGain >= 1){gainColor = 'green'}
+
+              var sma_ratioError = 0;
+              var sma_ratioMSE = 0;
+              smaMap.forEach((item, idx) => {
+                sma_ratioError += Math.abs((ratioMap[idx] - item) / item);
+                sma_ratioMSE += Math.pow(ratioMap[idx] - item, 2); 
+              }); // Math.abs(ratio - sma) / sma;
+              sma_ratioError = sma_ratioError / smaMap.length; // Mean Relative Error
+              sma_ratioRMSE = Math.sqrt(sma_ratioMSE / smaMap.length); //Root Mean Square Error
+              
+              var errCat = "♥ ฅ(=^ᆽ^=ฅ)";
+              
+              var errColor = 'black';
+              if(sma_ratioError >= 0.20) {{errColor = 'red'; errCat = "(=XᆽX=)";}}
+              else if(sma_ratioError >= 0.10) {errColor = 'orange'; errCat = "(=ʘᆽʘ=)?";}
+
+              var tableHTML = "<div id='"+chartId+"_histo'></div> \
+              <table> \
+                <tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
+                <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td><td>"+errCat+"</td><td><label id='"+chartId+"_compare' class='compare'>Compare Data</label></td></tr> \
+                <tr><td><button id='"+chartId+"_makehisto' class='chartbutton'>Ratio Histogram</button></td><td><button id='"+chartId+"_makeledhisto' class='chartbutton'>LED Histogram</button></td><td><button id='"+chartId+"_ledfft' class='chartbutton'>LED FFT</button></td></tr>  \
+              </table><hr>";
+           
+              document.getElementById(chartId+"_keys").innerHTML = tableHTML;
+              
+              var fragment = document.createDocumentFragment();
+              var inputElem = document.createElement("input");
+              inputElem.type = "file";
+              inputElem.setAttribute("id",chartId+"_fileinput")
+              inputElem.setAttribute("accept", ".csv");
+              fragment.appendChild(inputElem)
+              
+              document.getElementById(chartId+"_compare").appendChild(fragment);
+              
+              document.getElementById(chartId+"_fileinput").onchange = function(event) {
+                var file = event.target.files[0];
+                if (file) {
+                  //parent.postMessage(file,'*'); // Post file
+                  var reader = new FileReader();
+                    reader.onloadend = function(evt) {
+                      var dataUrl = evt.target.result;
+                      // The following call results in an "Access denied" error in IE.
+                      drawChart(dataUrl, chartId, true, data);
+                    };
+                  reader.readAsDataURL(file);
+                }
+              }
+
+              document.getElementById(chartId+"_makehisto").onclick = () => {
+                var fragment = document.createDocumentFragment();
+                var div = document.createElement('div');
+                div.setAttribute('id',chartId+"_histochart");
+                fragment.appendChild(div);
+                document.getElementById(chartId+"_histo").appendChild(fragment);
+                var gd = document.getElementById(chartId);
+                //console.log(gd);
+                if(gd.data.length > 7){makeHistogram(chartId+"_histochart", 0.02, gd.data[0].y, "Ratio 1", gd.data[7].y, "Ratio 2");}
+                else{makeHistogram(chartId+"_histochart", 0.02, gd.data[0].y, "Ratio");}
+                gd.layout.title = chartId.replace("_chart"," Ratio Histogram");
+              }
+
+              document.getElementById(chartId+"_makeledhisto").onclick = () => {
+                var fragment = document.createDocumentFragment();
+                var div = document.createElement('div');
+                div.setAttribute('id',chartId+"_ledhistochart");
+                fragment.appendChild(div);
+                document.getElementById(chartId+"_histo").appendChild(fragment);
+                var gd = document.getElementById(chartId);
+                //console.log(gd);
+                makeHistogram(chartId+"_ledhistochart", 2, gd.data[2].y, "Red", gd.data[3].y, "IR");
+                gd.layout.title = chartId.replace("_chart", " LED Histogram")
+              }
+
+              document.getElementById(chartId+"_ledfft").onclick = () => {
+                /*With a complex DFT Array (Matlab notes)
+                  Freq:
+                  fs=20; %~20sps in our case
+                  N=tdat.length; %FFT size
+                  X = 1/N*fftshift(fft(x,N));%N-point complex DFT
+
+                  df=fs/N; %frequency resolution
+                  sampleIndex = -N/2:N/2-1; %ordered index for FFT plot
+                  f=sampleIndex*df; %x-axis index converted to ordered frequencies
+                  stem(f,abs(X)); %magnitudes vs frequencies
+                  xlabel('f (Hz)'); ylabel('|X(k)|');
+
+                  Phase:
+                  X2=X;%store the FFT results in another array
+                  %detect noise (very small numbers (eps)) and ignore them
+                  threshold = max(abs(X))/10000; %tolerance threshold
+                  X2(abs(X)<threshold) = 0; %maskout values that are below the threshold
+                  phase=atan2(imag(X2),real(X2))*180/pi; %phase information
+                  plot(f,phase); %phase vs frequencies
+                */
+                var tdat = [...data[2].y]; // Red
+                var len = tdat.length;
+                var transformArr = cfft(tdat, len);
+                var transform = transformArr[0];
+                var tranScaled = scaleTransform(transform, transform.length);
+                
+                var amplitudes = [];
+                tranScaled.forEach(function(item, idx) { //Extract amplitude spectrum
+                  amplitudes.push(Math.sqrt(Math.pow(item["re"],2)+Math.pow(item["im"],2))); //sqrt(real^2 + imag^2) = amplitude
+                });
+                //console.log("Transform: ", tranScaled);
+                //console.log("Amplitudes: ", amplitudes);
+
+                var fs = 20; // Approx max sampling resolution
+                var N = transform.length; // FFT size
+                var df = fs/N; // frequency resolution
+                var positiveFrequencyAmplitudes = amplitudes.slice(0,(N/2)); //Past N/2 should be the negative frequencies
+                //console.log(positiveFrequencyAmplitudes);
+                var freqDist = [];
+                for(var i=0; i<fs; i+=(2*fs/N)) {
+                  freqDist.push(i);
+                }
+                //console.log(freqDist.length);
+                
+                //Graph Amplitude vs Frequency Dist 
+                var freqDomRed = {
+                  x: freqDist,
+                  y: positiveFrequencyAmplitudes,
+                  type: 'histogram',
+                  histfunc:"sum",
+                  xbins: {
+                    size: 0.125
+                  },
+                  marker: {
+                    color: "rgba(255,0,0, 0.75)"
+                  },
+                  name: "Red"
+                }
+
+                var t2dat = [...data[3].y];
+                var len2 = t2dat.length;
+                var transformArr2 = cfft(t2dat,len2);
+                var transform2 = transformArr2[0];
+                var tranScaled2 =  scaleTransform(transform2, transform2.length);
+                
+                var amplitudes2 = [];
+                tranScaled2.forEach(function(item, idx) { //Extract amplitude spectrum
+                  amplitudes2.push(Math.sqrt(Math.pow(item["re"],2)+Math.pow(item["im"],2))); //sqrt(real^2 + imag^2) = amplitude
+                });
+                //console.log("Transform: ", tranScaled);
+                //console.log("Amplitudes: ", amplitudes);
+                var positiveFrequencyAmplitudes2 = amplitudes2.slice(0,(N/2)); //Past N/2 should be the negative frequencies
+                var freqDist2 = [];
+                for(var i=0; i<fs; i+=(2*fs/N)) {
+                  freqDist2.push(i);
+                }
+
+                var freqDomIR = {
+                  x: freqDist2,
+                  y: positiveFrequencyAmplitudes2,
+                  type: 'histogram',
+                  histfunc:"sum",
+                  xbins: {
+                    size: 0.125
+                  },
+                  name: "IR",
+                  marker: {
+                    color: "rgba(100,255,100, 1)"
+                  }
+                }
+
+                var freqLayout = {
+                  barmode: 'overlay',
+                  title: { 
+                    text: chartId.replace("_chart"," LED FFT Histogram"),
+                  },
+                  font: {
+                    family: 'Courier New, Courier, monospace',
+                    color: 'black'
+                  },
+                  plot_bgcolor: '#white',
+                  paper_bgcolor: '#white',
+                  xaxis: {
+                    title: {
+                      text: 'Frequency (Hz)'
+                    },
+                    gridcolor: '#ghostwhite',
+                    tickcolor: '#1a1a1a',
+                    zerolinecolor: '#1a1a1a'
+                  },
+                  yaxis: {
+                    gridcolor: '#ghostwhite',
+                    tickcolor: '#1a1a1a',
+                    zerolinecolor: '#1a1a1a'
+                  },
+                  showlegend: true,
+                  margin: {
+                    l: 40,
+                    r: 10,
+                    b: 40,
+                    t: 85,
+                    pad: 4
+                  }
+              };
+
+                var freqConfig = {
+                  scrollZoom: true, 
+                  responsive: true, 
+                  displaylogo: false,
+                  showEditInChartStudio: true,
+                  modeBarButtonsToAdd: [
+                    {
+                      name: 'Delete',
+                      icon: icon1,
+                      click: function(gd) {
+                        document.getElementById(chartId+"_freqhistochart").style.opacity = 0.0;
+                        setTimeout(function() {
+                          Plotly.purge(document.getElementById(chartId+"_freqhistochart"));
+                          document.getElementById(chartId+"_freqhistochart").remove();
+                        }, 500);
+                      }
+                    }
+                  ]
+                }
+
+                //Create plot
+                var fragment = document.createDocumentFragment();
+                var div = document.createElement('div');
+                div.setAttribute('id',chartId+"_freqhistochart");
+                fragment.appendChild(div);
+                document.getElementById(chartId+"_histo").appendChild(fragment);
+
+                Plotly.newPlot(chartId+"_freqhistochart", [freqDomIR,freqDomRed], freqLayout, freqConfig);
+                
+              }
+            }
+
+            if(updatePlot == false){
+              Plotly.newPlot(chartId, data, layout, config);
+              sessionAnalytics();
+              document.getElementById(chartId).style.opacity = 1;
+              document.getElementById(chartId+"_keys").style.opacity = 1;
+            }
+            else {
+              data = [...olddata,...data];
+              Plotly.react(chartId, data, layout);
+            }
+            
+          });
+       }
+
+       function makeHistogram(chartId, binsize=1, arr1, name1, arr2=null, name2) {
+          var trace1 = {
+              x: arr1,
+              type: 'histogram',
+              marker: {
+                color: "rgba(255,100,100, 1)"
+              },
+              name: name1,
+              xbins: {
+                size: binsize
+              }
+          };
+          var data;
+          if(arr2 != null){
+            var trace2 = {
+              x: arr2,
+              type: 'histogram',
+              name: name2,
+              marker: {
+                color: "rgba(100,255,100, 0.75)"
+              },
+              xbins: {
+                size: binsize
+              }
+            };
+            var data = [trace1, trace2];
+          }
+          else {
+            var data = [trace1];
+          }
+          var layout = {
+            bargap: 0.05,
+            barmode: "overlay",
+            font: {
+              family: 'Courier New, Courier, monospace',
+              color: 'black'
+            },
+            plot_bgcolor: '#white',
+            paper_bgcolor: '#white',
+            xaxis: {
+              gridcolor: '#ghostwhite',
+              tickcolor: '#1a1a1a',
+              zerolinecolor: '#1a1a1a'
+            },
+            yaxis: {
+              gridcolor: '#ghostwhite',
+              tickcolor: '#1a1a1a',
+              zerolinecolor: '#1a1a1a'
+            },
+            showlegend: true,
+            margin: {
+              l: 40,
+              r: 10,
+              b: 40,
+              t: 85,
+              pad: 4
+            }
+          }
+          if(arr2 != null){
+            layout.xaxis.name += " vs " + name2;
+          }
+          var config = {
+            scrollZoom: true,
+            responsive: true, 
+            displaylogo: false,
+            showEditInChartStudio: true,
+            modeBarButtonsToAdd: [
+              {
+                name: 'Delete',
+                icon: icon1,
+                click: function(gd) {
+                  //console.log(chartId);
+                  document.getElementById(chartId).style.opacity = 0.0;
+                  setTimeout(function() {
+                    Plotly.purge(document.getElementById(chartId));
+                    document.getElementById(chartId).remove();
+                  }, 500);
+                }
+              }
+            ]
+          }
+          Plotly.newPlot(chartId, data, layout, config);
+        }
+
+
+       d3.select("html")
+          .style("height","100%")
+
+       d3.select("#filelabel")
+      
+        .append("input")
+          .attr("type", "file")
+          .attr("id","fileinput")
+          .attr("accept", ".csv")
+          .on("change", function() {
+            var file = d3.event.target.files[0];
+            if (file) {
+              parent.postMessage(file,'*'); // Post file
+              var reader = new FileReader();
+                reader.onloadend = function(evt) {
+                  var dataUrl = evt.target.result;
+                  var chartId = file.name+"_chart"
+                  d3.select("#chartContainer")
+                    .append("div")
+                        .attr("id", chartId)
+                        .style("margin", "5px")
+                        .style("opacity", "0.0")
+                    
+                  d3.select("#chartContainer")
+                    .append("div")
+                        .attr("id", chartId+"_keys")
+                        .style("margin", "5px")
+                        .style("opacity", "0.0")
+                  // The following call results in an "Access denied" error in IE.
+                  drawChart(dataUrl, chartId, false);
+                };
+               reader.readAsDataURL(file);
+              }
+            })
+
+        window.addEventListener("message", receiveMessage, false);
+        
+        function receiveMessage(event) {
+            console.log("message: ", event.data)
+            var file = new File([""],event.data);
+            console.log(file);
+            var reader = new FileReader();
+            reader.readAsText(file); //event.data); for chart.js event
+            reader.onload = event => {
+                console.log("File Contents: ", event.target.result);
+                //document.getElementById("preview").innerHTML = event.target.result;
+            }
+        }
+
+        function sma(arr, window) {
+          var temp = [];
+          for(i = 0; i < arr.length; i++) {
+            if((i == 0)) {
+              temp.push(arr[0]);
+            }
+            else if(i < window) {
+              var arrslice = arr.slice(0,i+1);
+              temp.push(arrslice.reduce((previous,current) => current += previous ) / (i+1));
+            }
+            else {
+              var arrslice = arr.slice(i-window,i);
+              temp.push(arrslice.reduce((previous,current) => current += previous) / window);
+            }
+          }
+          //console.log(temp);
+          return temp;
+        }
+
+        
+
+        /*
+        basic complex number arithmetic from 
+        http://rosettacode.org/wiki/Fast_Fourier_transform#Scala
+        */
+        function Complex(re, im) 
+        {
+          this.re = re;
+          this.im = im || 0.0;
+        }
+        Complex.prototype.add = function(other, dst)
+        {
+          dst.re = this.re + other.re;
+          dst.im = this.im + other.im;
+          return dst;
+        }
+        Complex.prototype.sub = function(other, dst)
+        {
+          dst.re = this.re - other.re;
+          dst.im = this.im - other.im;
+          return dst;
+        }
+        Complex.prototype.mul = function(other, dst)
+        {
+          //cache re in case dst === this
+          var r = this.re * other.re - this.im * other.im;
+          dst.im = this.re * other.im + this.im * other.re;
+          dst.re = r;
+          return dst;
+        }
+        Complex.prototype.cexp = function(dst)
+        {
+          var er = Math.exp(this.re);
+          dst.re = er * Math.cos(this.im);
+          dst.im = er * Math.sin(this.im);
+          return dst;
+        }
+        Complex.prototype.log = function()
+        {
+          /*
+          although 'It's just a matter of separating out the real and imaginary parts of jw.' is not a helpful quote
+          the actual formula I found here and the rest was just fiddling / testing and comparing with correct results.
+          http://cboard.cprogramming.com/c-programming/89116-how-implement-complex-exponential-functions-c.html#post637921
+          */
+          if( !this.re )
+            console.log(this.im.toString()+'j');
+          else if( this.im < 0 )
+            console.log(this.re.toString()+this.im.toString()+'j');
+          else
+            console.log(this.re.toString()+'+'+this.im.toString()+'j');
+        }
+
+        /*
+        complex fast fourier transform and inverse from
+        http://rosettacode.org/wiki/Fast_Fourier_transform#C.2B.2B
+        */
+        function icfft(amplitudes) //for use on a cfft array
+        {
+          var N = amplitudes.length;
+          var iN = 1 / N;
+        
+          //conjugate if imaginary part is not 0
+          for(var i = 0 ; i < N; ++i)
+            if(amplitudes[i] instanceof Complex)
+              amplitudes[i].im = -amplitudes[i].im;
+        
+          //apply fourier transform
+          amplitudes = cfft(amplitudes)
+        
+          for(var i = 0 ; i < N; ++i)
+          {
+            //conjugate again
+            amplitudes[i].im = -amplitudes[i].im;
+            //scale
+            amplitudes[i].re *= iN;
+            amplitudes[i].im *= iN;
+          }
+          return amplitudes;
+        }
+         
+        
+        function cfft(amplitudes, size)
+        {
+          var N = amplitudes.length;
+          
+          if((amplitudes.length == size) && (amplitudes.length/2 != Math.floor(amplitudes.length/2))){
+            amplitudes.pop(); //Make the initial array even to make the rest work.
+            size = size-1;
+          }
+          if( N <= 1 )
+            return [amplitudes,size];
+        
+          var hN = N / 2;
+          var even = [];
+          var odd = [];
+          if((amplitudes.length != size) && (Math.floor(hN) != hN)) { return [amplitudes,size];} // If the sub-index is not an integer stop
+          even.length = Math.floor(hN);
+          odd.length = Math.floor(hN);
+          for(var i = 0; i < hN; ++i)
+          {
+            even[i] = amplitudes[i*2];
+            odd[i] = amplitudes[i*2+1];
+          }
+          var evenfft = cfft(even, size);
+          var oddfft = cfft(odd, size);
+          even = evenfft[0];
+          odd = oddfft[0];
+        
+          var a = -2*Math.PI;
+          for(var k = 0; k < hN; ++k)
+          {
+            if(!(even[k] instanceof Complex))
+              even[k] = new Complex(even[k], 0);
+            if(!(odd[k] instanceof Complex))
+              odd[k] = new Complex(odd[k], 0);
+            var p = k/N;
+            var t = new Complex(0, a * p);
+            t.cexp(t).mul(odd[k], t);
+            amplitudes[k] = even[k].add(t, odd[k]);
+            amplitudes[k + hN] = even[k].sub(t, even[k]);
+          }
+          return [amplitudes,size];
+        }
+        
+        function scaleTransform(trans, size) {
+          var i = 0,
+              bSi = 1.0 / size,
+              x = trans;
+          while(i < x.length) {
+            x[i]["re"] *= bSi;
+            x[i]["im"] *= bSi; i++;
+          }
+          return x;
+        };
+
+        /*
+        function fftShift(fftarr){ // Two sided FFT ordering. Assumes even-length input array
+          var temp = [];
+          var len = fftarr.length
+          temp.length = len;
+          fftarr.forEach(function(item,idx) {
+            if(idx < len/2) {
+              temp[idx+len/2] = item;
+            }
+            else{
+              temp[idx] = item;
+            }
+          });
+        }*/
+
+        //test code
+        //console.log( cfft([1,1,1,1,0,0,0,0]) );
+        //console.log( icfft(cfft([1,1,1,1,0,0,0,0])) );
+
+</script>
+</body>
+</html>

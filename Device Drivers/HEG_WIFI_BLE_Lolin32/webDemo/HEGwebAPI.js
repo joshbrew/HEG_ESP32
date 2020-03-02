@@ -112,7 +112,7 @@ class HEGwebAPI {
     var csv = "us,Red,IR,Ratio,ambient,Vel,Accel,Notes\n"; //csv header
     for(var i = 0; i<this.us.length - 1; i++) {
       if(this.noteIndex.findIndex(i) != -1) {
-        var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i],this.noteText[this.noteIndex.findIndex(i)]].join(',') + "\n";
+        var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i],[this.noteText[this.noteIndex.findIndex(i)]]].join(',') + "\n";
       }
       else{
         var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i]].join(',') + "\n";
