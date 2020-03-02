@@ -624,6 +624,30 @@
               }
               if(event.data[2] == "save"){
                 console.log("Save CSV!");
+                var csvDat = "";
+                var evtDat = JSON.parse(event.data[0]);
+                if(evtDat[0].us) { csvDat += "us,";}
+                else { csvDat += "ms"}
+                if(evtDat[0].Vel) {
+                  csvDat += "Red,IR,Ratio,ambient,Vel,Accel,Notes\n";
+                  evtDat.forEach((item, idx) => {
+                    console.log(item);
+                    if(!item.Notes) {item.Notes = ""} 
+                    csvDat += [item.us || item.ms,item.red,item.ir,item.ratio,item.ambient || item.adcAvg,item.Vel || item.vel,item.Accel || item.accel,item.Notes || item.notes].join(",")+"\n";
+                  });
+                }
+                else {
+                  csvDat += "us,Red,IR,Ratio,ambient,rSlope,vAI,Notes\n";
+                  evtDat.forEach((item, idx) => {
+                    if(!item.Notes) {item.Notes = ""}
+                    csvDat += [item.us || item.ms,item.red,item.ir,item.ratio,item.ambient || item.adcAvg,item.rSlope || item.ratioSlope,item.vAI || item.AI,item.Notes || item.notes].join(",")+"\n";
+                  });
+                }
+                var hiddenElement = document.createElement('a');
+                hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvDat);
+                hiddenElement.target = "_blank";
+                hiddenElement.download = event.data[1];
+                hiddenElement.click();
               }
             }
             else {
