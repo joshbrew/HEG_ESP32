@@ -340,7 +340,7 @@
                 var tdat = [...data[2].y]; // Red
                 var len = tdat.length;
                 var transformArr = cfft(tdat, len);
-                var transform = transformArr[0];
+                var transform = icfft(transformArr[0]); //console.log(transform);
                 var tranScaled = scaleTransform(transform, transform.length);
                 
                 var amplitudes = [];
@@ -350,7 +350,7 @@
                 //console.log("Transform: ", tranScaled);
                 //console.log("Amplitudes: ", amplitudes);
 
-                var fs = 20; // Approx max sampling resolution
+                var fs = 1/(usMap[2]*60-usMap[1]*60); // Approx sampling rate (Hz)
                 var N = transform.length; // FFT size
                 var df = fs/N; // frequency resolution
                 var positiveFrequencyAmplitudes = amplitudes.slice(0,(N/2)); //Past N/2 should be the negative frequencies
@@ -379,7 +379,7 @@
                 var t2dat = [...data[3].y];
                 var len2 = t2dat.length;
                 var transformArr2 = cfft(t2dat,len2);
-                var transform2 = transformArr2[0];
+                var transform2 = icfft(transformArr2[0]);
                 var tranScaled2 =  scaleTransform(transform2, transform2.length);
                 
                 var amplitudes2 = [];
@@ -709,7 +709,8 @@
               amplitudes[i].im = -amplitudes[i].im;
         
           //apply fourier transform
-          amplitudes = cfft(amplitudes)
+          temp = cfft(amplitudes)
+          amplitudes = temp[0]
         
           for(var i = 0 ; i < N; ++i)
           {
