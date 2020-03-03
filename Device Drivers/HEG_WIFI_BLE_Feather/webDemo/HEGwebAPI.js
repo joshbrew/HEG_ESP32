@@ -39,6 +39,32 @@ class HEGwebAPI {
     this.createEventListeners(host);
   }
 
+  resetVars() {
+    this.startTime = 0;
+    this.us = [];
+    this.red = [];
+    this.ir = [];
+    this.ratio = [];
+    this.ambient = [];
+    this.velAvg = [];
+    this.accelAvg = [];
+    
+    this.slowSMA = 0;
+    this.slowSMAarr = [0];
+    this.fastSMA = 0;
+    this.fastSMAarr[0];
+    this.smaSlope = 0;
+    this.scoreArr = [0];
+    this.replay = false;
+
+    this.csvDat = [];
+    this.csvIndex = 0;
+
+    this.curIndex = 0;
+    this.noteIndex = [];
+    this.noteText = [];
+  }
+
   //appendId is the element Id you want to append this fragment to
   static appendFragment(HTMLtoAppend, parentId) {
 
@@ -71,39 +97,31 @@ class HEGwebAPI {
       document.getElementById(parentId).appendChild(fragment);
   }
 
-  resetVars() {
-      this.startTime = 0;
-      this.us = [];
-      this.red = [];
-      this.ir = [];
-      this.ratio = [];
-      this.ambient = [];
-      this.velAvg = [];
-      this.accelAvg = [];
-      
-      this.slowSMA = 0;
-      this.slowSMAarr = [0];
-      this.fastSMA = 0;
-      this.fastSMAarr[0];
-      this.smaSlope = 0;
-      this.scoreArr = [0];
-      this.replay = false;
-
-      this.csvDat = [];
-      this.csvIndex = 0;
-  
-      this.curIndex = 0;
-      this.noteIndex = [];
-      this.noteText = [];
+  static sma(arr, window) {
+    var temp = [];
+    for(var i = 0; i < arr.length; i++) {
+      if((i == 0)) {
+        temp.push(arr[0]);
+      }
+      else if(i < window) {
+        var arrslice = arr.slice(0,i+1);
+        temp.push(arrslice.reduce((previous,current) => current += previous ) / (i+1));
+      }
+      else {
+        var arrslice = arr.slice(i-window,i);
+        temp.push(arrslice.reduce((previous,current) => current += previous) / window);
+      }
+    }
+    //console.log(temp);
+    return temp;
   }
 
   smaScore(input) {
-    var temp = input.slice(input.length - 40,input.length);
-    var temp2 = input.slice(input.length - 20,input.length);
-    this.slowSMA = temp.reduce((a,b) => a + b, 0) / 40;
-    this.fastSMA = temp2.reduce((a,b) => a + b, 0) / 20;
-    this.slowSMAarr.push(this.slowSMA);
-    this.fastSMAarr.push(this.fastSMA);
+    this.slowSMAarr = HEGwebAPI.sma(input,40);
+    this.fastSMAarr = HEGwebAPI.sma(input,20);
+    this.fastSMA = this.fastSMAarr[this.fastSMAarr.length - 1];
+    this.slowSMA = this.slowSMAarr[this.slowSMAarr.length - 1];
+
     this.smaSlope = this.fastSMA - this.slowSMA;
     //this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
   }
@@ -202,7 +220,7 @@ class HEGwebAPI {
   handleEventData(e){
     console.log("HEGDUINO", e.data);
     if(document.getElementById("heg").innerHTML != e.data){  //on new output
-      document.getElementById("heg").innerHTML = e.data; // Use stored variable for this instead to save memory
+      document.getElementById("heg").innerHTML = e.data;
       if(e.data.includes("|")) {
         var dataArray = e.data.split("|");
         var thisRatio = parseFloat(dataArray[3]);
@@ -215,6 +233,18 @@ class HEGwebAPI {
           this.ambient.push(parseInt(dataArray[4]));
           this.velAvg.push(parseFloat(dataArray[5]));
           this.accelAvg.push(parseFloat(dataArray[6]));
+
+          if(this.us.length > 5) { // SMA filtering for ratio
+            var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 6, this.ratio.length),5);
+            if((this.ratio[this.ratio.length - 1] < temp[0] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[0] * 1.3)) {
+              this.ratio[this.ratio.length - 1] = this.ratio[this.ratio.length - 2]; // Roll the ratio back if outside margin 
+              this.red[this.red.length - 1] = this.red[this.red.length - 2]; // roll back the other values too for good measure
+              this.ir[this.ir.length - 1] = this.ir[this.ir.length - 2];
+              this.ambient[this.ambient.length - 1] = this.ambient[this.ambient.length - 2];
+              this.velAvg[this.velAvg.length - 1] = this.velAvg[this.velAvg.length - 2];
+              this.accelAvg[this.accelAvg.length - 1] = this.accelAvg[this.accelAvg.length - 2];
+            } 
+          }
           //handle new data
           this.handleScore();
         } 
