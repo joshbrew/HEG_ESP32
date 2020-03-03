@@ -573,7 +573,6 @@
           Plotly.newPlot(chartId, data, layout, config);
         }
 
-
        d3.select("html")
           .style("height","100%")
 
@@ -591,17 +590,15 @@
                 reader.onloadend = function(evt) {
                   var dataUrl = evt.target.result;
                   var chartId = file.name+"_chart"
-                  d3.select("#chartContainer")
-                    .append("div")
-                        .attr("id", chartId)
-                        .style("margin", "5px")
-                        .style("opacity", "0.0")
-                    
-                  d3.select("#chartContainer")
-                    .append("div")
-                        .attr("id", chartId+"_keys")
-                        .style("margin", "5px")
-                        .style("opacity", "0.0")
+
+                  var fragment = document.createDocumentFragment();
+                  var div = document.createElement('div');
+                  div.setAttribute('id',chartId+"_box");
+                  fragment.appendChild(div);
+                  document.getElementById('chartContainer').appendChild(fragment);
+
+                  document.getElementById(chartId+'_box').innerHTML += "<div id='"+chartId+"' style='margin: 5px; opacity: 0.0;'></div><div id='"+chartId+"_keys' style='margin: 5px; opacity: 0.0;'> </div>"
+
                   // The following call results in an "Access denied" error in IE.
                   //var csvDat;
                   d3.csv( dataUrl, d3.autoType).then(function( rows ) {
