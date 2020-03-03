@@ -109,6 +109,7 @@ Changelog:
 *-*-*-*-*-*-*
 3/2/20
 ------
+- Updated SMA function, added basic fault testing for ratio (within 25% error)
 - Fixed Annotating
 - Some minor tweaks here and there
 - DataCharter.html introduced, it's IFrame-ready and meshes with JSON, will soon also be loaded as an online-only option for the firmware. See it in action at hegalpha.com/data (account required)
