@@ -311,12 +311,12 @@
               }
 
               document.getElementById(chartId+"_viewnotes").onclick = () => {
-                var tableHTML = "<table>";
+                var tableHTML = "<table style='width:100%;'>";
                 rows.forEach((item, idx) => {
                   var temp = item.Notes || item.notes;
                   if(temp != undefined) {
                     console.log(temp);
-                    tableHTML += "<tr><td width='10%'>"+ min_to_stamp(usMap[idx])+"</td><td width='90%'>"+temp+"</td></tr>";
+                    tableHTML += "<tr><td style='width:20%;'>"+ min_to_stamp(usMap[idx])+"</td><td style='width:80%'>"+temp+"</td></tr>";
                   }
                 });
                 tableHTML += "</table>";
