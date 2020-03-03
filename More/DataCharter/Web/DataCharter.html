@@ -96,16 +96,16 @@
       //TODO: Show notes as hover-expanding info points
        var drawChart = function( rows, chartId, updatePlot=false, olddata=[] ) {
             // end of d3.csv() call
-            //console.log("Data: ", rows);
+            
             //var ctx = document.getElementById(chartId)
             var usMap = rows.map(function(d) {if(d.ms){return (d.ms - rows[0]['ms'])*0.001*0.01667}else{return (d.us- rows[0]['us'])*0.000001*0.01666}});
-            var redMap = rows.map(function(d) {return d.red});
-            var irMap = rows.map(function(d) {return d.ir});
-            var ratioMap = rows.map(function(d) {return d.ratio}); //console.log("Ratio Map: ",ratioMap);
+            var redMap = rows.map(function(d) {if(d.red) {return d.red} else {return d.Red}});
+            var irMap = rows.map(function(d) {if(d.ir) {return d.ir} else {return d.IR}});
+            var ratioMap = rows.map(function(d) {if(d.ratio) {return d.ratio} else {return d.Ratio}}); //console.log("Ratio Map: ",ratioMap);
             var ambientMap = rows.map(function(d) {if(d.ambient){return d.ambient}else{return d.adcAvg}});
             var velMap = rows.map(function(d) {if(d.Vel){return d.Vel}else{return d.ratioSlope}});
             var accelMap = rows.map(function(d) {if(d.Accel){return d.Accel}else if(d.AI){return d.AI}else{return d.vAI}});
-
+            console.log("redMap: ", redMap);
             var smaMap = sma(ratioMap, 40); // ~2 second average
 
             var trace1 = {
@@ -268,11 +268,12 @@
               if(sma_ratioError >= 0.20) {{errColor = 'red'; errCat = "(=XᆽX=)";}}
               else if(sma_ratioError >= 0.10) {errColor = 'orange'; errCat = "(=ʘᆽʘ=)?";}
 
-              var tableHTML = "<div id='"+chartId+"_histo'></div> \
+              var tableHTML = "<div id='"+chartId+"_histo'></div><div id='"+chartId+"_notes'></div> \
               <table> \
                 <tr><td>Session Time:<br>"+sessionTime.toFixed(0)+":"+sessionSec+"</td><td>Baseline Ratio:<br>"+ratioBaseline.toFixed(3)+"</td><td>Average Ratio:<br>"+ratioMean.toFixed(3)+"</td><td style='color: "+gainColor+";'>Session Gain:<br>"+(sessionGain*100-100).toFixed(2)+"%</td></tr> \
                 <tr><td style='color:"+errColor+";'>Ratio-SMA Error:<br>"+(sma_ratioError*100).toFixed(2)+"%</td><td style='color:"+errColor+";'>Ratio-SMA RMSE:<br>"+(sma_ratioRMSE).toFixed(4)+"</td><td>"+errCat+"</td><td><label id='"+chartId+"_compare' class='compare'>Compare Data</label></td></tr> \
                 <tr><td><button id='"+chartId+"_makehisto' class='chartbutton'>Ratio Histogram</button></td><td><button id='"+chartId+"_makeledhisto' class='chartbutton'>LED Histogram</button></td><td><button id='"+chartId+"_ledfft' class='chartbutton'>Frequency Analysis</button></td><td><button id='"+chartId+"_post' class='chartbutton'>Post Session</button></td></tr>  \
+                <tr><td><button id='"+chartId+"_viewnotes' class='chartbutton'>View Notes</button></td></tr> \
               </table><hr>";
            
               document.getElementById(chartId+"_keys").innerHTML = tableHTML;
@@ -307,6 +308,20 @@
 
               document.getElementById(chartId+"_post").onclick = () => {
                 parent.postMessage([rows,chartId.replace("_chart","")],"*");
+              }
+
+              document.getElementById(chartId+"_viewnotes").onclick = () => {
+                var tableHTML = "<table>";
+                rows.forEach((item, idx) => {
+                  var temp = item.Notes || item.notes;
+                  if(temp != undefined) {
+                    console.log(temp);
+                    tableHTML += "<tr><td width='10%'>"+ min_to_stamp(usMap[idx])+"</td><td width='90%'>"+temp+"</td></tr>";
+                  }
+                });
+                tableHTML += "</table>";
+
+                document.getElementById(chartId+"_notes").innerHTML = tableHTML;
               }
 
               document.getElementById(chartId+"_makehisto").onclick = () => {
@@ -588,12 +603,10 @@
                         .style("margin", "5px")
                         .style("opacity", "0.0")
                   // The following call results in an "Access denied" error in IE.
-                  var csvDat;
+                  //var csvDat;
                   d3.csv( dataUrl, d3.autoType).then(function( rows ) {
-                    csvDat = rows;
-                  }).then(function() {
-                    drawChart(csvDat, chartId, false);
-                    });
+                    drawChart(rows, chartId, false);
+                  });
                 };
                reader.readAsDataURL(file);
               }
@@ -674,7 +687,28 @@
           return temp;
         }
 
-        
+        function min_to_stamp(min) {
+          var mintemp = Math.floor(min);
+          var sectemp = min*60 - mintemp*60;
+          var mstemp = sectemp*1000 - Math.floor(sectemp)*1000
+          if(mintemp < 10) {
+            mintemp = "0"+mintemp;
+          }
+          if(sectemp < 10) {
+            sectemp = "0"+sectemp.toFixed(0);
+          }
+          else {
+            sectemp = sectemp.toFixed(0);
+          }
+          if(mstemp < 10) {
+            mstemp = "000"+mstemp.toFixed(0);
+          }
+          else if(mstemp < 100) {
+            mstemp = "00"+mstemp.toFixed(0);
+          }
+          else {mstemp = "0"+mstemp.toFixed(0);}
+          return mintemp + ":" + sectemp + ":" + mstemp;
+        }
 
         /*
         basic complex number arithmetic from 
