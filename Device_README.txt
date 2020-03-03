@@ -107,6 +107,12 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+3/2/20
+------
+- Fixed Annotating
+- Some minor tweaks here and there
+- DataCharter.html introduced, it's IFrame-ready and meshes with JSON, will soon also be loaded as an online-only option for the firmware. See it in action at hegalpha.com/data (account required)
+
 2/26/20
 ------
 - Fixed yoffset slider (changed a + to a - for the y-axis text)

@@ -45,6 +45,10 @@ font-family: 'Ibarra Real Nova', serif;
     border:0; 
     border:none;
  }
+ .hegapi table{
+   margin-left: auto;
+   margin-right: auto;
+ }
  .hegapi button{
    width: 100%;
  }
@@ -57,6 +61,9 @@ font-family: 'Ibarra Real Nova', serif;
  .dattable {
     position: relative;
     table-layout: fixed;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
     font-family: Console, Lucida, monospace;
  }
  .dattable th {
@@ -303,9 +310,13 @@ font-family: 'Ibarra Real Nova', serif;
         color: white;
         padding: 20px;
         box-shadow: 0 1px 5px rgba(0,0,0,0.7);
+        justify-content: center;
+        display: inline-block;
+        margin-left: auto;
+        margin-right: auto;
         text-align: center;
         border-radius: 4px;
-        width: 500px; /* This just a default width */
+        width: 600px; /* This just a default width */
         transition: all 300ms ease-in-out;
       }
 
