@@ -30,6 +30,8 @@ You can demo it now via the firmware, it's evolving fast. We will eventually be 
 You may use the classic software that shipped with the nIR Peanut HEG (with some fixes), modified for our HEG output via USB (Windows only)
 ![](https://raw.githubusercontent.com/moothyknight/HEG_ESP32/master/Pictures/20190211_201736.PNG)
 
+## Data Charter (WIP) CSV analyzer for the web app (also found on our [Data page on our website](https://hegalpha.com))
+![HEGCharter](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/datacharter.PNG?raw=true)
 
 ## More Links
 Our website: [HEG Alpha](https://hegalpha.com)
