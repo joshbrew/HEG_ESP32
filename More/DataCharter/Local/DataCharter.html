@@ -1,8 +1,8 @@
 <html>
   <!-- By Joshua Brewster (MIT License) -->
     <head>
-        <script src="js/d3.v5.min.js"></script>
-        <script src="js/plotly-latest.min.js"></script>
+        <script src="https://js/d3.v5.min.js"></script>
+        <script src="https://js/plotly-latest.min.js"></script>
         <style>
           body {
             background-color: white;
@@ -298,11 +298,12 @@
                       var csvDat;
                       d3.csv( dataUrl, d3.autoType).then(function( rows ) {
                         csvDat = rows;
-                      }).then(function() {
-                        drawChart(csvDat, chartId, false);
+                        drawChart(csvDat, chartId, true, [...data]);
                       });
+                      reader = null;
                     };
                   reader.readAsDataURL(file);
+                  
                 }
               }
 
@@ -604,6 +605,7 @@
                   d3.csv( dataUrl, d3.autoType).then(function( rows ) {
                     drawChart(rows, chartId, false);
                   });
+                  reader = null;
                 };
                reader.readAsDataURL(file);
               }

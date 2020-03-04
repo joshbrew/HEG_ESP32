@@ -298,8 +298,7 @@
                       var csvDat;
                       d3.csv( dataUrl, d3.autoType).then(function( rows ) {
                         csvDat = rows;
-                      }).then(function() {
-                        drawChart(csvDat, chartId, false);
+                        drawChart(csvDat, chartId, true, [...data]);
                       });
                       reader = null;
                     };
