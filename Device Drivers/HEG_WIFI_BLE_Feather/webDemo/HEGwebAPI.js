@@ -235,8 +235,8 @@ class HEGwebAPI {
           this.accelAvg.push(parseFloat(dataArray[6]));
 
           if(this.us.length > 5) { // SMA filtering for ratio
-            var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 6, this.ratio.length),5);
-            if((this.ratio[this.ratio.length - 1] < temp[0] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[0] * 1.3)) {
+            var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 7, this.ratio.length-1),5);
+            if((this.ratio[this.ratio.length - 1] < temp[4] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[4] * 1.3)) {
               this.ratio[this.ratio.length - 1] = this.ratio[this.ratio.length - 2]; // Roll the ratio back if outside margin 
               this.red[this.red.length - 1] = this.red[this.red.length - 2]; // roll back the other values too for good measure
               this.ir[this.ir.length - 1] = this.ir[this.ir.length - 2];

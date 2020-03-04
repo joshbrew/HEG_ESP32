@@ -8,7 +8,7 @@ const char event_page[] PROGMEM = R"=====(
 <body>
   <title>HEG Interface</title>
   <div class="header">
-      <h1>HEG ALPHA Ver 0.0.5</h1>
+      <h1>HEG ALPHA Ver 0.0.6</h1>
   </div>
   
   <div id="main_body"></div>

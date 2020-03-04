@@ -301,8 +301,10 @@
                       }).then(function() {
                         drawChart(csvDat, chartId, false);
                       });
+                      reader = null;
                     };
                   reader.readAsDataURL(file);
+                  
                 }
               }
 
@@ -604,6 +606,7 @@
                   d3.csv( dataUrl, d3.autoType).then(function( rows ) {
                     drawChart(rows, chartId, false);
                   });
+                  reader = null;
                 };
                reader.readAsDataURL(file);
               }
