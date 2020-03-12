@@ -40,8 +40,8 @@ bool SEND_DUMMY_VALUE = false;
 
 bool BLE_ON, BLE_SETUP = false;
 
-const int ledRate = 17000;        // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
-const int sampleRate = 8000;      // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. Current lib limits it to 125sps
+const int ledRate = 17000;        // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
+const int sampleRate = 8000;      // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms or 1160 us. Current lib limits it to 125sps. The addicore lib is unlocked.
 const int samplesPerRatio = 2; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
 const int BTRate = 100000;        // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 const int USBRate = 0;         // No need to delay USB unless on old setups.
