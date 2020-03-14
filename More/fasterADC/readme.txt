@@ -1,0 +1,1 @@
+You can replace your HEG.h and WiFi_API.h with these as well as add the library to your Arduino Libraries folder in order to have a fully programmable ADS1115 and push the speed. You need the I2C Dev Lib here: https://github.com/jrowberg/i2cdevlib
