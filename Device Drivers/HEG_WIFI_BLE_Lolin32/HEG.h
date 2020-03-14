@@ -154,10 +154,45 @@ class MyCallbacks : public BLECharacteristicCallbacks
       { 
         coreProgramEnabled = true;
         Serial.println("Turning ON!");
+        reset=true;
+        digitalWrite(LED, LOW); // LOLIN32 Indicator LED
       }
       else if (rxValue.find("f") != -1)
       {
         Serial.println("Turning OFF!");
+        coreProgramEnabled = false;
+        delay(300);
+        digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+        digitalWrite(RED, LOW);
+        digitalWrite(IR, LOW);
+        no_led = true;
+        red_led = false;
+        ir_led = false;
+        reset = true;
+      }
+      else if (rxValue.find("b") != -1)
+      {
+        EEPROM.begin(512);
+        if (EEPROM.read(0) == 0)
+        {
+          EEPROM.write(0,1);
+          EEPROM.commit();
+          EEPROM.end();
+          delay(100);
+          ESP.restart();
+        }
+        else
+        {
+          EEPROM.write(0,0);
+          EEPROM.commit();
+          EEPROM.end();
+          delay(100);
+          ESP.restart();
+        }
+      }
+      else if (rxValue.find("R") != -1) {
+        delay(300);
+        ESP.restart();
       }
     }
   }

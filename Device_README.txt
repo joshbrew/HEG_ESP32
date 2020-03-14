@@ -107,6 +107,11 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+3/14/20
+------
+- Added more BLE commands
+- Re-added alternative ADS1115 library setup, which is fully programmable up to the full sampling rate (with variable consistency in the data)
+
 3/2/20
 ------
 - Updated SMA function, added basic fault testing for ratio (within 25% error)

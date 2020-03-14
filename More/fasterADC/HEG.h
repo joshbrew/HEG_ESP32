@@ -4,23 +4,40 @@
 
 /*
    TODO
+   - Fix noise reduction, it never worked
    - HRV basic calculation, adjust LED flash rate accordingly (50ms is viable at bare min) Alternatively, get an ECG chip or use the MAX30102?
    - Accurate SpO2 reading?
    - Check power draw  
    */
 
-
-#include <Wire.h>
-#include <Adafruit_ADS1015.h>
+#include "ADS1115.h"
+//#include <Wire.h>
+//#include <Adafruit_ADS1015.h>
 #include <esp_timer.h>
 //#include <esp_bt.h>
 //#include <ArduinoJson.h>
 
 #include "BLE_API.h"
-
+//#include <BluetoothSerial.h>
 //#include <SavLayFilter.h>
+
+double filteredRatio;
+
 //SavLayFilter smallFilter(&filteredRatio, 0, 5);  //Cubic smoothing with windowsize of 5
 //SavLayFilter largeFilter(&filteredRatio, 0, 25); //Cubic smoothing with windowsize of 25
+
+//Slope variables
+
+const int SLOPE_SIZE = 20;
+int slopeCounter = 0;
+float slopeArray[SLOPE_SIZE];
+void setupStateChanger()
+{
+  for (int x = 0; x < SLOPE_SIZE; x++)
+  {
+    slopeArray[x] = 0;
+  }
+}
 
 bool USE_USB = true;          // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
 bool USE_BT = false;          // WRITE 'b' TO TOGGLE.
@@ -28,22 +45,21 @@ bool pIR_MODE = false;        // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED
 bool NOISE_REDUCTION = false; // WRITE 'n' TO TOGGLE USING 4 LEDS FOR NOISE CANCELLING *EXPERIMENTAL*
 bool USE_DIFF = false;        // Use differential read mode, can reduce noise.
 bool USE_2_3 = false;         // Use channels 2 and 3 for differential read.
-bool USE_AMBIENT = true;     // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
-bool ADC_ERR_CATCH = false;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
+bool USE_AMBIENT = true;      // Subtract the value of an intermediate no-led reading (good in case of voltage bleeding).
+bool ADC_ERR_CATCH = false;   // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
 bool ADC_ERR_CAUGHT = false;
-bool GET_BASELINE = false;
 
 bool DEBUG_ESP32 = false;
-bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
+bool DEBUG_ADC = false;        // FOR USE IN A SERIAL MONITOR
 bool DEBUG_LEDS = false;
 bool SEND_DUMMY_VALUE = false;
 
 bool BLE_ON, BLE_SETUP = false;
 
-const int ledRate = 17000;        // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
-const int sampleRate = 8000;      // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms or 1160 us. Current lib limits it to 125sps. The addicore lib is unlocked.
-const int samplesPerRatio = 2; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
-const int BTRate = 100000;        // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
+const int ledRate = 2106;      // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
+const int sampleRate = 2106;   // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. 
+const int samplesPerRatio = 3; // Minimum number of samples per LED to accumulate before makitng a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
+const int BTRate = 100000;     // Bluetooth notify rate (us). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 const int USBRate = 0;         // No need to delay USB unless on old setups.
 
 const int nSensors = 1; // Number of sensors (for automated testing)
@@ -62,11 +78,11 @@ int RED3 = 12;
 float scaling = 1;
 
 const int LED = 5;  // Lolin32 V1.0.0 LED on Pin 5
-//const int PWR = 14;//21; // GPIO power to ADC and OPT101 - NOT RECOMMENDED
+//const int PWR = 14;//21; // Powers ADC and OPT101
 
 //SET NON-DEFAULT SDA AND SCL PINS
-#define SDA0_PIN 25//23 //5
-#define SCL0_PIN 26//19 //18
+#define SDA0_PIN 23 //5
+#define SCL0_PIN 19 //18
 
 //For dual i2c or i2c switching
 //#define SDA1_PIN ?
@@ -76,7 +92,7 @@ const int LED = 5;  // Lolin32 V1.0.0 LED on Pin 5
 bool coreProgramEnabled = false;
 bool adcEnabled = false;
 bool reset = false;
-bool deviceConnected = false;
+bool deviceConnected= false;
 
 String output = "";
 
@@ -85,8 +101,8 @@ int16_t lastRead = 0;
 int lastLED = 0; // 0 = NO LED, 1 = RED, 2 = IR
 
 //Setup ADS1115
-Adafruit_ADS1115 ads(0x48);
-long adcChannel = 0; //Channel on the ADC to read. Default 2.
+ADS1115 ads(ADS1115_DEFAULT_ADDRESS);
+long adcChannel = 0; //Channel on the ADC to read. Default 0.
 
 float Voltage = 0.0;
 float range = 32767; // 16 bit ADC (15 bits of range)
@@ -114,9 +130,12 @@ float ratioAvg = 0, adcAvg = 0, velAvg = 0, accelAvg = 0;
 //char adcString[10], ratioString[10], posString[10], txString[40]; // Faster in BLE mode
 //char scoreString[10]
 
-
 //Timing variables
-unsigned long sampleMicros, currentMicros, LEDMicros, BLEMicros, USBMicros = 0;
+unsigned long sampleMicros;
+unsigned long currentMicros;
+unsigned long LEDMicros;
+unsigned long BLEMicros;
+unsigned long USBMicros;
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -151,7 +170,7 @@ class MyCallbacks : public BLECharacteristicCallbacks
        
       //commandESP32(rxValue.c_str());
 
-      if (rxValue.find("t") != -1)
+     if (rxValue.find("t") != -1)
       { 
         coreProgramEnabled = true;
         Serial.println("Turning ON!");
@@ -199,10 +218,10 @@ class MyCallbacks : public BLECharacteristicCallbacks
   }
 };
 
-void setupBLE()
-{
+void setupBLE(){
+
     // Create the BLE Device
-    BLEDevice::init("HEG"); // Give it a name
+    BLEDevice::init("My_HEG"); // Give it a name
     BLEDevice::setMTU(512);
 
     // Create the BLE Server
@@ -213,13 +232,13 @@ void setupBLE()
     BLEService *pService = pServer->createService(SERVICE_UUID);
 
     // Create a BLE Characteristic
-    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY);
 
     BLE2902 *desc = new BLE2902();
     desc->setNotifications(true);
     pCharacteristic->addDescriptor(desc);
 
-    BLECharacteristic *pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, BLECharacteristic::PROPERTY_WRITE);
+    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
     pCharacteristic->setReadProperty(true);
     pCharacteristic->setCallbacks(new MyCallbacks());
 
@@ -231,31 +250,97 @@ void setupBLE()
     BLE_SETUP = true;
     BLE_ON = true;
     USE_BT = true;
-    Serial.println("BLE service started, scan for HEG.");
+    Serial.println("BLE service started, scan for My_HEG.");
+}
+
+
+void readADC(){
+  //delayMicroseconds(sampleRate); //Delay so you know a sample happened during a given cycle(on continuous mode)
+  lastRead = adc0;
+  if(USE_DIFF == false){
+    if(adcChannel == 0){
+      adc0 = ads.getConversionP0GND();
+    }
+    if(adcChannel == 1){
+      adc0 = ads.getConversionP1GND();
+    }
+    if(adcChannel == 2){
+      adc0 = ads.getConversionP2GND();
+    }
+    if(adcChannel == 3){
+      adc0 = ads.getConversionP3GND();
+    }
+    //adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
+  }
+  else{
+    if(USE_2_3 == false){
+      adc0 = ads.getConversionP0N1();
+    }
+    else {
+      adc0 = ads.getConversionP2N3();
+    }
+  }
+  sampleMicros = esp_timer_get_time();
+}
+
+void setMux() {
+  if(USE_DIFF == false){
+    if(adcChannel == 0){
+      ads.setMultiplexer(ADS1115_MUX_P0_NG);
+    }
+    if(adcChannel == 1){
+      ads.setMultiplexer(ADS1115_MUX_P1_NG);
+    }
+    if(adcChannel == 2){
+      ads.setMultiplexer(ADS1115_MUX_P2_NG);
+    }
+    if(adcChannel == 3){
+      ads.setMultiplexer(ADS1115_MUX_P3_NG);
+    }
+  }
+  else{
+    if(USE_2_3 == false){
+      ads.setMultiplexer(ADS1115_MUX_P0_N1);
+    }
+    else{
+      ads.setMultiplexer(ADS1115_MUX_P2_N3);
+    }
+  }
+    //Voltage = (adc0 * bits2mv);
+  
+
 }
 
 //Start ADC and set gain. Starts timers
 void startADS()
 {
     // Begin ADS
-    ads.begin();
-    ads.setGain(GAIN_SIXTEEN);
+    Serial.println("Testing device connections...");
+    Serial.println(ads.testConnection() ? "ADS1115 connection successful" : "ADS1115 connection failed");
 
-    //ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV (default)
-    //ads.setGain(GAIN_ONE);     // 1x gain   +/- 4.096V  1 bit = 2mV
-    //ads.setGain(GAIN_TWO);     // 2x gain   +/- 2.048V  1 bit = 1mV
-    //ads.setGain(GAIN_FOUR);    // 4x gain   +/- 1.024V  1 bit = 0.5mV
-    //ads.setGain(GAIN_EIGHT);   // 8x gain   +/- 0.512V  1 bit = 0.25mV
-    //ads.setGain(GAIN_SIXTEEN); // 16x gain  +/- 0.256V  1 bit = 0.125mV
+    Serial.println("Initializing I2C devices..."); 
+    ads.initialize(); // initialize ADS1115 16 bit A/D chip
+    
+      
+    // To get output from this method, you'll need to turn on the 
+    //#define ADS1115_SERIAL_DEBUG // in the ADS1115.h file
+    ads.showConfigRegister();
+    
+    // We're going to do continuous sampling
+    ads.setMode(ADS1115_MODE_SINGLESHOT);
+    ads.setComparatorMode(ADS1115_COMP_MODE_WINDOW);
+    setMux();
+    ads.setRate(ADS1115_RATE_475); //Sample Rate (sps)
+    ads.setGain(ADS1115_PGA_0P256); //Step voltage (V)
 
     adcEnabled = true;
-    sampleMicros = currentMicros;
-    LEDMicros = currentMicros;
+    sampleMicros = esp_timer_get_time();
 }
 
 void setupHEG() {
-  
-  Wire.begin();//SDA0_PIN, SCL0_PIN); // Delete SDA0_PIN, SCL0_PIN if using default SDA/SCL on board
+
+  setupStateChanger();
+
   pinMode(IR, OUTPUT);
   pinMode(RED, OUTPUT);
 
@@ -266,6 +351,10 @@ void setupHEG() {
   //pinMode(LED, OUTPUT);
   //digitalWrite(LED, HIGH);
 
+    
+  Wire.begin();//SDA0_PIN, SCL0_PIN); // Delete SDA0_PIN, SCL0_PIN if using default SDA/SCL on board
+
+
   if(USE_BT == true){
     setupBLE();
     //SerialBT.begin();
@@ -275,218 +364,7 @@ void setupHEG() {
   USBMicros = currentMicros;
 }
 
-void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC.
-  bool failed = false;
 
-  if (adcEnabled == false) {
-    startADS();
-  }
-
-  coreProgramEnabled = false;
-  digitalWrite(RED, LOW);
-  digitalWrite(IR, LOW);
-  delay(250);
-
-  for (int j = 0; j < nSensors; j++) {
-    adcChannel = j;
-    for (int i = 0; i < 10; i++) {
-      adc0 = ads.readADC_SingleEnded(adcChannel);
-
-      if (USE_USB == true) {
-        Serial.flush();
-        Serial.print("Testing photodiode ");
-        Serial.print(j);
-        Serial.print(" | ADC value: ");
-        Serial.println(adc0);
-      }
-      if (USE_BT == true) {
-        /*if (SerialBT.hasClient()) {
-          SerialBT.flush();
-          SerialBT.print("Testing photodiode " + String(j) + " | ADC value: " + String(adc0) + "\r\n");
-        }*/
-      }
-      if (adc0 == -1) {
-        if (USE_USB == true) {
-          Serial.println("Error: Check SDA/SCL pin settings and solder connections.");
-          Serial.print("SDA pin assigned: ");
-          Serial.print(SDA0_PIN);
-          Serial.print(" | SCL pin assigned: ");
-          Serial.println(SCL0_PIN);
-        }
-        /*if (USE_BT == true) {
-          if (SerialBT.hasClient() == true) {
-            SerialBT.print("Error, check SDA/SCL pin settings and solder connections. \r\n");
-            SerialBT.print("SDA pin assigned: " + String(SDA0_PIN) + " | SCL pin assigned: " + String(SCL0_PIN) + "\r\n");
-          }
-        }*/
-        failed = true;
-      }
-      else if ((adc0 > 100) && (adc0 < 32760)) {
-        if (USE_USB == true) {
-          Serial.println("Photodiode readings within a range that indicates it is working.");
-        }
-        /*if (USE_BT == true) {
-          if (SerialBT.hasClient()) {
-            SerialBT.print("Photodiode readings within a range that indicates it is working.\r\n");
-          }
-        }*/
-      }
-      else if (adc0 > 32760) {
-        if (USE_USB == true) {
-          Serial.println("Notice: ADC saturated. Isolate from light or check photodiode pin connections.");
-        }
-        /*if (USE_BT == true) {
-          SerialBT.print("Notice: ADC saturated. Isolate from light or check photodiode pin connections.\r\n");
-        }*/
-        failed = true;
-      }
-      delay(100);
-    }
-  }
-
-  if (failed == true) {
-    if (USE_USB == true) {
-      Serial.println("Photodiode final test result: FAIL. Resetting...");
-    }
-    /*if (USE_BT == true) {
-      if (SerialBT.hasClient() == true) {
-        SerialBT.print("Photodiode final test result: FAIL. Resetting... \r\n");
-      }
-    }*/
-    ESP.restart();
-  }
-}
-
-
-
-
-void LEDTest() { // Test LEDs assuming photodiodes are good
-  bool failed = false;
-
-  if (adcEnabled == false) {
-    startADS();
-  }
-
-  coreProgramEnabled = false;
-  digitalWrite(RED, LOW);
-  digitalWrite(IR, LOW);
-  delay(250);
-
-  if (USE_USB == true) {
-    Serial.flush();
-    Serial.println("Testing LEDs...");
-  }
-  /*if (USE_BT == true) {
-    if (SerialBT.hasClient() == true) {
-      SerialBT.flush();
-      SerialBT.print("Testing LEDs... \r\n");
-    }
-  }*/
-
-  for (int i = 0; i < nLEDs; i++) {
-    if (i == 0) {
-      adcChannel = 0;
-      RED = RED0;
-      IR = IR0;
-    }
-    if (i == 1) {
-      adcChannel = 0; RED = RED1; IR = IR1;
-      pinMode(RED, OUTPUT);
-      pinMode(IR, OUTPUT);
-    }
-    if (i == 2) {
-      adcChannel = 1; RED = RED2; IR = IR2;
-      pinMode(RED, OUTPUT);
-      pinMode(IR, OUTPUT);
-    }
-    if (i == 3) {
-      adcChannel = 1; RED = RED3; IR = IR3;
-      pinMode(RED, OUTPUT);
-      pinMode(IR, OUTPUT);
-    }
-
-    for (int j = 0; j < 3; j++) {
-      rawValue = ads.readADC_SingleEnded(adcChannel);
-      delay(200);
-      rawValue = ads.readADC_SingleEnded(adcChannel);
-      digitalWrite(RED, HIGH);
-      delay(200);
-      redValue = ads.readADC_SingleEnded(adcChannel);
-      delay(200);
-      redValue = ads.readADC_SingleEnded(adcChannel);
-      digitalWrite(RED, LOW);
-      digitalWrite(IR, HIGH);
-      delay(200);
-      irValue = ads.readADC_SingleEnded(adcChannel);
-      delay(200);
-      irValue = ads.readADC_SingleEnded(adcChannel);
-      digitalWrite(IR, LOW);
-      if (redValue / rawValue < 2) {
-        if (USE_USB == true) {
-          Serial.flush();
-          Serial.print("Error: RED LED difference from ambient insufficient at site: ");
-        }
-        /*if (USE_BT == true) {
-          if (SerialBT.hasClient()) {
-            SerialBT.flush();
-            SerialBT.print("Error: RED LED difference from ambient insufficient at ");
-          }
-        }*/
-        failed = true;
-      }
-      if (USE_USB == true) {
-        Serial.print("Site: ");
-        Serial.println(i);
-        Serial.print("Ambient reading: ");
-        Serial.print(rawValue);
-        Serial.print(" | RED reading: ");
-        Serial.println(redValue);
-      }
-      /*if (USE_BT == true) {
-        if (SerialBT.hasClient()) {
-          SerialBT.print("Site: " + String(i) + "\r\n" + "Ambient reading: " + String(rawValue) + " | RED reading: " + String(redValue) + "\r\n");
-        }
-      }*/
-      if (irValue / rawValue < 1.1) {
-        if (USE_USB == true) {
-          Serial.flush();
-          Serial.print("Error: IR LED difference from ambience insufficient at ");
-        }
-        /*if (USE_BT == true) {
-          if (SerialBT.hasClient()) {
-            SerialBT.flush();          }
-        }*/
-        failed = true;
-      }
-      if (USE_USB == true) {
-        Serial.print("Site ");
-        Serial.println(i);
-        Serial.print("Ambient reading: ");
-        Serial.print(rawValue);
-        Serial.print(" | IR reading: ");
-        Serial.println(irValue);
-      }
-      /*if (USE_BT == true) {
-        if (SerialBT.hasClient()) {
-          SerialBT.print("Site: " + String(i) + "\r\n" + "Ambient reading: " + String(rawValue) + " | IR reading: " + String(irValue) + "\r\n");
-        }
-      }*/
-      delay(500);
-    }
-  }
-
-  if (failed == true) {
-    if (USE_USB == true) {
-      Serial.println("LED final test results: FAIL. Resetting...");
-    }
-    /*if (USE_BT == true) {
-      if (SerialBT.hasClient()) {
-        SerialBT.print("LED final test results: FAIL. Resetting..  \r\n");
-      }
-    }*/
-    ESP.restart();
-  }
-}
 
 void check_signal() {
   if ((adc0 >= 32768) || (reset == true))
@@ -511,6 +389,8 @@ void check_signal() {
 
 void switch_LEDs(int R, int Ir) {
   // Switch LEDs back and forth.
+  if (currentMicros - LEDMicros >= ledRate)
+  {
     if ((red_led == false) && ((USE_AMBIENT == false) || (no_led == true))) { // Red on
       if (pIR_MODE == false)
       { // no LEDs in pIR mode, just raw IR from body heat emission.
@@ -522,7 +402,7 @@ void switch_LEDs(int R, int Ir) {
         lastLED = 0;
         if (DEBUG_LEDS == true)
         {
-          Serial.println("RED_ON");
+          Serial.print("RED_ON\n");
         }
       }
     }
@@ -538,7 +418,7 @@ void switch_LEDs(int R, int Ir) {
         lastLED = 1;
         if (DEBUG_LEDS == true)
         {
-          Serial.println("IR ON");
+          Serial.print("IR ON\n");
         }
       }
     }
@@ -552,12 +432,12 @@ void switch_LEDs(int R, int Ir) {
       lastLED = 2;
       if (DEBUG_LEDS == true)
       {
-        Serial.println("NO_LED");
+        Serial.print("NO_LED\n");
       }
     }
     LEDMicros = currentMicros;
-    //delayMicroseconds(2000); //Let LEDs warm up
-    //currentMicros += 2000;
+    //delayMicroseconds(1000); //Let LEDs warm up
+  }
 }
 
 void adc_err_catch(){ // Reset a signal reading if it falls outside expected changes compared to previous time.
@@ -710,21 +590,6 @@ void get_ratio() {
   }
 }
 
-void readADC(){
-  lastRead = adc0;
-  if(USE_DIFF == false){
-    adc0 = ads.readADC_SingleEnded(adcChannel); // -1 indicates something wrong with the ADC (usually pin settings or solder)
-  }
-  else{
-    if(USE_2_3 == false){
-      adc0 = ads.readADC_Differential_0_1();
-    }
-    else {
-      adc0 = ads.readADC_Differential_2_3();
-    }
-  }
-}
-
 // Core loop for HEG sampling.
 void core_program(bool doNoiseReduction)
 {
@@ -732,55 +597,57 @@ void core_program(bool doNoiseReduction)
     if (adcEnabled == false)
     {
       startADS();
+      readADC();
+      //Start timers
+      LEDMicros = currentMicros;
     }
     if (SEND_DUMMY_VALUE != true)
     {
-      if (currentMicros - sampleMicros >= sampleRate)
-      {
+        // Switch LEDs back and forth.
+        //delayMicroseconds(1750); // Temp: Signal not stable without fanagling with the delays
+        if(doNoiseReduction == true){
+          switch_LEDs(REDn, IRn);
+        }
+        else {
+          switch_LEDs(RED, IR);
+        }
+        //ads.triggerConversion();
+        delayMicroseconds(300);
         // read the analog in value
         readADC();
         //Voltage = (adc0 * bits2mv);
-
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
-          Serial.print("Last ADC Value: ");
-          Serial.print(lastRead);
-          Serial.print(", New Value: ");
-          Serial.println(adc0);
+        
+          Serial.print("ADC: " + String(adc0) + "\n");
+          //Serial.print(adc0);
           //Serial.println("\tVoltage: ");
           //Serial.println(Voltage,7);
         }
         else
         {
-          //check_signal();
-          if((GET_BASELINE == true)){
-            if (signalDetermined == false)
-            { // GET BASELINE
-              get_baseline();
-            }
-            else
-            { // GET RATIO
-              get_ratio();
-            }
+          check_signal();
+          if (signalDetermined == false)
+          { // GET BASELINE
+            get_baseline();
           }
-          else{ // GET RATIO
-            get_ratio();
+          else
+          { // GET RATIO
+            if(doNoiseReduction == true){
+              get_ratio(true,false);
+            }
+            else{
+              get_ratio(false, true);
+            }
           }
         }
-        sampleMicros = currentMicros;
       }
-      if (currentMicros - LEDMicros >= ledRate)
-      { 
-        switch_LEDs(RED, IR); 
-      }
-      /*
       if(ADC_ERR_CAUGHT == true){
           return;
-      }*/
+      }
       adcAvg += adc0;
       adcTicks++;
-    }
   //DEBUG_ESP32
   if (DEBUG_ESP32 == true)
   {
@@ -796,6 +663,7 @@ void core_program(bool doNoiseReduction)
     }*/
   }
 } // END core_program()
+
 
 
 void updateHEG()
@@ -858,9 +726,23 @@ void HEG_core_loop()//void * param)
 {
   //while(true){
     if(coreProgramEnabled == true){
-      core_program(false);
+      if(ratioTicks == 0) {
+        core_program(false);
+      }
+      else { // Need to make sure the mux changes so the continuous conversions swap channels
+        if(NOISE_REDUCTION == true) {    
+          core_program(true);
+        }
+      }
     }
-    updateHEG();
+    if(NOISE_REDUCTION == true) {
+      if(noiseTicks > 0){
+        updateHEG(); 
+      }
+    }
+    else {
+      updateHEG();
+    }
   //}
  //vTaskDelete(NULL);
 }
