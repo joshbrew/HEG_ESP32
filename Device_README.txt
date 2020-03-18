@@ -1,9 +1,12 @@
 HEG WiFi WIP implementation. Do not follow these instructions unless you are building from scratch or intend to modify 
 the firmware yourself, otherwise use our .bin files provided and flash your respective ESP32 model via the web interface provided.
 
-*****TO FLASH THIS SKETCH*****
+*****TO FLASH THIS SOFTWARE ON YOUR ESP32*****
 
-You need the github version of the Arduino ESP32 libraries (https://github.com/espressif/arduino-esp32), follow steps accordingly for your OS.
+You need Arduino IDE: https://www.arduino.cc/en/Main/Software
+
+You need the github version of the Arduino ESP32 libraries: https://github.com/espressif/arduino-esp32
+Follow steps accordingly for your OS.
 
 You need to select the correct board via the Boards menu and change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
 
