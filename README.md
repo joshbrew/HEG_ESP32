@@ -3,6 +3,11 @@ Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! In
 
 Join our little community at: [HEG Alpha](https://hegalpha.com)
 
+Important HEGduino docs you can find here:
+- [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
+- [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
+- [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
+
 ## What is it?
 Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
 
@@ -26,12 +31,13 @@ You can demo it now via the firmware, it's evolving fast. We will eventually be 
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
-## Modded HEGstudio with this HEG (available [HERE](https://github.com/moothyknight/HEGstudio-Fork-HEGduino))
+## Data Charter (WIP) CSV analyzer for the web app (also found on our [Data page on our website](https://hegalpha.com))
+![HEGCharter](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/datacharter.PNG?raw=true)
+
+## Modded HEGstudio with this HEG (Windows only, very buggy, and available [HERE](https://github.com/moothyknight/HEGstudio-Fork-HEGduino))
 You may use the classic software that shipped with the nIR Peanut HEG (with some fixes), modified for our HEG output via USB (Windows only)
 ![](https://raw.githubusercontent.com/moothyknight/HEG_ESP32/master/Pictures/20190211_201736.PNG)
 
-## Data Charter (WIP) CSV analyzer for the web app (also found on our [Data page on our website](https://hegalpha.com))
-![HEGCharter](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/datacharter.PNG?raw=true)
 
 ## More Links
 Our website: [HEG Alpha](https://hegalpha.com)
