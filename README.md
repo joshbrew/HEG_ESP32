@@ -1,4 +1,4 @@
-# HEG_ESP32 - Open Source
+# HEG ESP32 - Open Source. Home of HEGduino!
 Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's.
 
 Join our little community at: [HEG Alpha](https://hegalpha.com)
