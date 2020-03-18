@@ -3,7 +3,7 @@ Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! In
 
 Join our little community at: [HEG Alpha](https://hegalpha.com)
 
-Important HEGduino docs you can find here:
+Important HEGduino stuff you can find here:
 - [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
