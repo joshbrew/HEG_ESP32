@@ -10,8 +10,7 @@ Follow steps accordingly for your OS.
 
 You need to select the correct board via the Boards menu and change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
 
-Required Libraries: 
-Arduino ESP32 latest dev or official build via git
+Other Required Libraries (found in the Device Drivers folder via AdditionalDependencies.zip): 
 AsyncTCP 
 ESPAsyncWebServer 
 ADS1X15
