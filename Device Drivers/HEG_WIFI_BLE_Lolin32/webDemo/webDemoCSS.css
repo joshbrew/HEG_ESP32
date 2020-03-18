@@ -247,6 +247,22 @@ font-family: 'Ibarra Real Nova', serif;
    left: 10%;
    max-height: 440px;
  }
+ .textreadercss {
+  top: 100px;
+  width: 90%;
+  left: 5%;
+  height: 440px;
+  min-width: 600px;
+  z-index: 0;
+ }
+ .textmenu {
+   position: absolute;
+   top: 110px;
+   width: 20%;
+   min-width: 220px;
+   float: left;
+   z-index: 1;
+ }
 
    /*------ MORE CSS ---------*/
     /**modal styling**/

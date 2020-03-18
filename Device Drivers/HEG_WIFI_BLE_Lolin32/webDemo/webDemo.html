@@ -7,7 +7,7 @@
 <body>
   <title>HEG Interface</title>
   <div class="header">
-      <h1>HEG ALPHA Ver 0.0.6</h1>
+      <h1>HEG ALPHA Ver 0.0.7</h1>
   </div>
   
   <div id="main_body"></div>
@@ -121,6 +121,7 @@ var c = new circleJS(); //Default animation initialize
 var v = null;
 var a = null;
 var h = null;
+var txt = null;
 
 
 var modeHTML = '<div class="menudiv" id="menudiv"> \
@@ -129,9 +130,45 @@ var modeHTML = '<div class="menudiv" id="menudiv"> \
   <button class="button" id="videomode">Video</button> \
   <button class="button" id="audiomode">Audio</button><br> \
   <button class="button" id="hillmode">Hill Climb</button> \
+  <button class="button" id="txtmode">Text Reader</button> \
   </div>';
 
 HEGwebAPI.appendFragment(modeHTML,"visualBox");
+
+document.getElementById("canvasmode").onclick = function() {
+  if(c == null){
+    deInitMode();
+    c = new circleJS();
+  }
+}
+
+document.getElementById("videomode").onclick = function() {
+  if(v == null){
+    deInitMode();
+    v = new videoJS();
+  }
+}
+
+document.getElementById("audiomode").onclick = function() {
+  if(a == null){
+    deInitMode();
+    a = new audioJS();
+  }
+}
+
+document.getElementById("hillmode").onclick = function() {
+  if(h == null){
+    deInitMode();
+    h = new hillJS();
+  }
+}
+
+document.getElementById("txtmode").onclick = function() {
+  if(txt == null){
+    deInitMode();
+    txt = new textReaderJS();
+  }
+}
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -182,6 +219,9 @@ s.handleScore = function() {
     }
     if(h != null) {
       h.onData(score);
+    }
+    if(txt != null) {
+      txt.onData(score);
     }
     if(useAdvanced) { //Score handling for advanced scripts
       if(threeApp != null) {
@@ -242,39 +282,18 @@ function deInitMode(){
     h.menu.parentNode.removeChild(h.menu);
     h = null;
   }
+  if(txt != null){
+    txt.deInit();
+    txt.c.parentNode.parentNode.parentNode.removeChild(txt.c.parentNode.parentNode);
+    var thisNode = document.getElementById(txt.textId+"menu");
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+    txt = null;
+  }
   if(useAdvanced) { //Score handling for advanced scripts
     if(threeApp != null) {
       threeApp.destroyThreeApp();
       threeApp = null;
     }
-  }
-}
-
-document.getElementById("canvasmode").onclick = function() {
-  if(c == null){
-    deInitMode();
-    c = new circleJS();
-  }
-}
-
-document.getElementById("videomode").onclick = function() {
-  if(v == null){
-    deInitMode();
-    v = new videoJS();
-  }
-}
-
-document.getElementById("audiomode").onclick = function() {
-  if(a == null){
-    deInitMode();
-    a = new audioJS();
-  }
-}
-
-document.getElementById("hillmode").onclick = function() {
-  if(h == null){
-    deInitMode();
-    h = new hillJS();
   }
 }
 
@@ -298,6 +317,10 @@ document.getElementById("resetSession").onclick = () => { // Override default fu
   if(h != null) {
     deInitMode();
     h = new hillJS();
+  }
+  if(text != null) {
+    deInitMode();
+    txt = new textReaderJS();
   }
   if(useAdvanced){
     if(threeApp != null) {
