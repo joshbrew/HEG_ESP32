@@ -1,4 +1,5 @@
-HEG WiFi WIP implementation. Do not follow these instructions unless you are building from scratch or intend to modify the firmware yourself, otherwise use our .bin files provided and flash your respective ESP32 model via the web interface provided.
+HEG WiFi WIP implementation. Do not follow these instructions unless you are building from scratch or intend to modify 
+the firmware yourself, otherwise use our .bin files provided and flash your respective ESP32 model via the web interface provided.
 
 *****TO FLASH THIS SKETCH*****
 
