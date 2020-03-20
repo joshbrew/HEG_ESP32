@@ -1,18 +1,19 @@
 //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
-  
+var serialMonitor = new chromeSerial();
+
     //Advanced Client scripts using external packages
     //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
     if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
       var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
     }
-    
+
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
-    
+
     // Modal Code
     var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
-    
+
     var tabHTML = '<div id="tabContainer"> \
       <button class="tablink" id="modal_opener">Data</button> \
       <button class="tablink" id="modal_opener2">Graph</button> \
@@ -46,20 +47,20 @@
           </button> \
         </div> \
       </div>';
-    
+
     HEGwebAPI.appendFragment(switchHTML, "main_body");
     HEGwebAPI.appendFragment(tabHTML, "main_body");
-    
+
     function attachModalListeners(modalElm, closemodal, overlay) {
       document.getElementById(closemodal).onclick = function() {toggleModal(modalElm, closemodal, overlay)};
       document.getElementById(overlay).onclick = function() {toggleModal(modalElm, closemodal, overlay)};
     }
-    
+
     function detachModalListeners(modalElm, closemodal, overlay) {
       document.getElementById(closemodal).onclick = function() {toggleModal(modalElm, closemodal, overlay)};
       document.getElementById(overlay).onclick = function() {toggleModal(modalelm, closemodal, overlay)};
     }
-    
+
     function toggleModal(modalElm, closemodal, overlay) {
       var currentState = modalElm.style.display;
       // If modal is visible, hide it. Else, display it.
@@ -71,15 +72,15 @@
         detachModalListeners(modalElm, closemodal, overlay);
       }
     }
-    
+
     var modal = document.getElementById('modal');
     var modal2 = document.getElementById('modal2');
     var modal3 = document.getElementById('modal3');
-    
+
     document.getElementById('modal_opener').onclick = function() {toggleModal(modal,'close_modal','overlay')};
     document.getElementById('modal_opener2').onclick = function() {toggleModal(modal2,'close_modal2','overlay2')};
     document.getElementById('modal_opener3').onclick = function() {toggleModal(modal3,'close_modal3','overlay3')};
-    
+
     function toggleHEG(switchElement) {
       if (switchElement.checked) {
         document.getElementById('startbutton').click();
@@ -88,28 +89,28 @@
       }
     }
     document.getElementById("togBtn").onchange = function(){toggleHEG(document.getElementById("togBtn"))};
-    
+
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
-    
+
     //Initialize Session
     var s = new HEGwebAPI('',false); 
-    
+
     //Initialize Graph
     var g = new graphJS(1155,[255,100,80,1],1,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
-    
+
     s.createUI("dataBox");
     g.createUI("graphBox")
-    
+
     //Feedback
     var c = new circleJS(); //Default animation initialize
     var v = null;
     var a = null;
     var h = null;
     var txt = null;
-    
-    
+
+
     var modeHTML = '<div class="menudiv" id="menudiv"> \
       Modes:<br> \
       <button class="button" id="canvasmode">Circle</button> \
@@ -118,72 +119,72 @@
       <button class="button" id="hillmode">Hill Climb</button> \
       <button class="button" id="txtmode">Text Reader</button> \
       </div>';
-    
+
     HEGwebAPI.appendFragment(modeHTML,"visualBox");
-    
+
     document.getElementById("canvasmode").onclick = function() {
       if(c == null){
         deInitMode();
         c = new circleJS();
       }
     }
-    
+
     document.getElementById("videomode").onclick = function() {
       if(v == null){
         deInitMode();
         v = new videoJS();
       }
     }
-    
+
     document.getElementById("audiomode").onclick = function() {
       if(a == null){
         deInitMode();
         a = new audioJS();
       }
     }
-    
+
     document.getElementById("hillmode").onclick = function() {
       if(h == null){
         deInitMode();
         h = new hillJS();
       }
     }
-    
+
     document.getElementById("txtmode").onclick = function() {
       if(txt == null){
         deInitMode();
         txt = new textReaderJS();
       }
     }
-    
+
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
-    
+
     if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
       var link2 = document.createElement("script");
       link2.src = "js/threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
       document.head.appendChild(link2); //Append script
-    
+
       var threeApp = null;
-    
+
       var threeModeHTML = '<button class="button" id="threemode">ThreeJS</button>';
       HEGwebAPI.appendFragment(threeModeHTML,"menudiv");
-    
+
       document.getElementById("threemode").onclick = function() {
         if(threeApp == null) {
             deInitMode();
             threeApp = new ThreeGlobe();
         }
       }
-    
+
       //var link3 = document.createElement("script");
       //link3.src = "https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.5.0/viewer.min.js"; // PDF Viewer JS (text scrolling experiment)
       //document.head.appendChild(link3);
     } 
-    
+
     //------------------------------------------------------------------------
     //------------------------------------------------------------------------
-    
+
     //Customize session functions
     s.handleScore = function() {
       g.us = this.us[this.us.length - 1] - this.startTime;
@@ -229,7 +230,7 @@
       }
       this.updateTable();
     }
-    
+
     s.endOfEvent = function() {
       if(g.xoffsetSlider.max < this.scoreArr.length){
         if(this.scoreArr.length % 20 == 0) { 
@@ -237,7 +238,7 @@
         }
       }
     }
-    
+
     function deInitMode(){
       if(v != null){
         var thisNode = document.getElementById(v.vidapiId);
@@ -281,12 +282,12 @@
         }
       }
     }
-    
-    
+
+
     document.getElementById("resetSession").onclick = () => { // Override default function
       s.resetVars();
       g.resetVars();
-    
+
       if(c != null) {
         deInitMode();
         c = new circleJS();
@@ -314,20 +315,20 @@
         }
       }
     }
-    
-    
+
+
     g.xoffsetSlider.onchange = () => {
-       if(g.xoffsetSlider.value > s.scoreArr.length) {
-         g.xoffsetSlider.value = s.scoreArr.length - 1;
-       }
-       g.xoffset = g.xoffsetSlider.value;
-       
-       if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
+        if(g.xoffsetSlider.value > s.scoreArr.length) {
+          g.xoffsetSlider.value = s.scoreArr.length - 1;
+        }
+        g.xoffset = g.xoffsetSlider.value;
+        
+        if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
         var endIndex = s.scoreArr.length - g.xoffset - 1;
         g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex); // FIX 
         g.graphY2 = s.ratio.slice(endIndex -g.graphY2.length, endIndex);
-       }
-       else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
+        }
+        else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
         var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - 1 - g.xoffset);
         var ratioslice = s.ratio.slice(0,s.ratio.length - 1 - g.xoffset);
         if(g.graphY1.length == scoreslice){
@@ -338,9 +339,9 @@
           g.graphY1 = [...Array(g.VERTEX_LENGTH - scoreslice.length).fill(0), ...scoreslice];
           g.graphY2 = [...Array(g.VERTEX_LENGTH - ratioslice.length).fill(0), ...ratioslice];
         }
-       }
+        }
     }
-    
+
     g.xscaleSlider.onchange = () => {
       len = g.graphY1.length;
       if(g.xscaleSlider.value < len) { // Remove from front.
@@ -363,7 +364,7 @@
       }
       g.VERTEX_LENGTH = g.graphY1.length;
     }
-    
+
     document.getElementById("xscalebutton").onclick = () => {
       var len = g.graphY1.length;
       g.xscaleSlider.value = g.nPoints;
