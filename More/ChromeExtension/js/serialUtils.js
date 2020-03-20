@@ -3,7 +3,7 @@ class chromeSerial {
     constructor() {
         this.displayPorts = []
         if (typeof chrome.serial !== 'undefined' && chrome.serial !== null) {
-            setupSerial();
+            this.setupSerial();
         }  
         else {
             console.log("ERROR: Cannot locate chrome.serial.")
