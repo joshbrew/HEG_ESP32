@@ -36,6 +36,16 @@ class HEGwebAPI {
       this.parentId = parentId;
       this.createUI(parentId);
     }
+    /*
+    window.addEventListener('message', e => {
+      if(e.origin.startsWith(window.location.hostname)) {
+        
+      }
+      else {
+        this.handleEventData(e); 
+      }
+    }); //Generic event listener for postMessage events
+    */
     this.createEventListeners(host);
   }
 
@@ -221,6 +231,9 @@ class HEGwebAPI {
     console.log("HEGDUINO", e.data);
     if(document.getElementById("heg").innerHTML != e.data){  //on new output
       document.getElementById("heg").innerHTML = e.data;
+      var onRead = new CustomEvent('on_read', { detail: {data: e.data} });
+      window.parent.dispatchEvent(onRead); 
+      window.parent.postMessage(e.data, "*");
       if(e.data.includes("|")) {
         var dataArray = e.data.split("|");
         var thisRatio = parseFloat(dataArray[3]);
@@ -308,13 +321,15 @@ class HEGwebAPI {
     document.getElementById("dataTable").innerHTML = '<tr><td id="us">'+this.us[this.us.length-1]+'</td><td id="red">'+this.red[this.red.length-1]+'</td><td id="ir">'+this.ir[this.ir.length-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1]+'</td><td id="ambient">'+this.ambient[this.ambient.length-1]+'</td><td id="Vel">'+this.velAvg[this.velAvg.length-1]+'</td><td id="Accel">'+this.accelAvg[this.accelAvg.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
   }
 
+ 
+
   createUI(parentId) {
     var hegapiHTML = '<div id="hegapi" class="hegapi"> \
       <table> \
-      <tr><td><form method="post" action="'+this.host+'/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form></td> \
-        <td><form method="post" action="'+this.host+'/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form></td></tr> \
+      <tr><td><button id="startbutton" class="button startbutton">Start HEG</button></td> \
+        <td><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
-      <tr><td><form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><input type="text" id="command" name="command" placeholder="Command"></td><td><button class="button sendbutton" type="submit">Send</button></form></td></tr> \
+      <tr><td><input type="text" id="command" name="command" placeholder="Command"></td><td><button id="sendbutton" class="button sendbutton">Send</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2"><button class="button" id="resetSession" name="resetSession">Reset Session</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
@@ -345,8 +360,8 @@ class HEGwebAPI {
     var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
     HEGwebAPI.appendFragment(dataDivHTML,parentId);
-    HEGwebAPI.appendFragment(hegapiHTML,parentId);
-    HEGwebAPI.appendFragment(containerHTML,parentId);
+    HEGwebAPI.appendFragment(hegapiHTML, "dataDiv");
+    HEGwebAPI.appendFragment(containerHTML, "dataDiv");
     HEGwebAPI.appendFragment(messageHTML,"container");
     HEGwebAPI.appendFragment(eventHTML,"container");
     HEGwebAPI.appendFragment(tableHeadHTML,"container");
@@ -379,10 +394,71 @@ class HEGwebAPI {
       document.getElementById("sensitivityVal").innerHTML = (this.sensitivity.value * 0.01).toFixed(2);
     }
 
+    document.getElementById("startbutton").onclick = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', this.host+"/startHEG", true);
+      xhr.send();
+      xhr.onerror = function() { xhr.abort(); } //Make sure it doesn't keep the connection open
+      //xhr.abort();
+    }
+
+    document.getElementById("stopbutton").onclick = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', this.host+"/stopHEG", true);
+      xhr.send();
+      xhr.onerror = function() { xhr.abort(); }
+      //xhr.abort();
+    }
+    document.getElementById("sendbutton").onclick = () => {
+      var data = new FormData();
+      data.append('command', document.getElementById('command').value);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', this.host+'/command', true);
+      xhr.send(data);
+      xhr.onerror = function() { xhr.abort(); }
+      //xhr.abort();
+    }
+
     document.getElementById("submithost").onclick = () => {
-      this.removeEventListeners();
-      this.host = document.getElementById("hostname").value;
+      if(window.EventSource){ 
+        this.removeEventListeners();
+      }
+      if(document.getElementById("hostname").value.length > 2) {
+        this.host = document.getElementById("hostname").value;
+      }
+      else{
+        this.host = "http://192.168.4.1";
+      }
+
+      document.getElementById("startbutton").onclick = () => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.host+"/startHEG", true);
+        xhr.send();
+        xhr.onerror = function() { xhr.abort(); } //Make sure it doesn't keep the connection open
+        //xhr.abort();
+      }
+  
+      document.getElementById("stopbutton").onclick = () => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.host+"/stopHEG", true);
+        xhr.send();
+        xhr.onerror = function() { xhr.abort(); }
+        //xhr.abort();
+      }
+      document.getElementById("sendbutton").onclick = () => {
+        var data = new FormData();
+        data.append('command', document.getElementById('command').value);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.host+'/command', true);
+        xhr.send(data);
+        xhr.onerror = function() { xhr.abort(); }
+        //xhr.abort();
+      }
+
       this.createEventListeners(this.host);
+      //var thisNode = document.getElementById("dataDiv").parentNode.parentNode;
+      //thisNode.removeChild(document.getElementById("dataDiv").parentNode);
+      //this.createUI(thisNode.id);
       console.log("Attempting connection at " + this.host);
     }
   }
@@ -825,14 +901,20 @@ class circleJS {
         this.init(defaultUI);
       }
 
+      startVideo = () => {
+        if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
+        else{ this.vidQuery.playbackRate = this.playRate; }
+      }
+
+      stopVideo = () => {
+        this.vidQuery.playbackRate = 0;
+      }
+
       setupButtons() {
 
-        document.getElementById("startbutton").onclick = () => {
-          if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
-          else{ this.vidQuery.playbackRate = this.playRate; }
-        }
+        document.getElementById("startbutton").addEventListener('click', this.startVideo, false);
         
-        document.getElementById("stopbutton").onclick = () => {this.vidQuery.playbackRate = 0;}
+        document.getElementById("stopbutton").addEventListener('click', this.stopVideo, false);
         
         document.getElementById("play").onclick = () => {
           if(this.vidQuery.playbackRate == 0){
@@ -939,8 +1021,8 @@ class circleJS {
       }
 
       deInit(){
-        document.getElementById("startbutton").onclick = function(){return;}
-        document.getElementById("stopbutton").onclick = function(){return;}
+        document.getElementById("startbutton").removeEventListener('click', this.startVideo);
+        document.getElementById("stopbutton").removeEventListener('click', this.stopVideo);
         cancelAnimationFrame(this.animationId);
       }
 
@@ -1446,6 +1528,13 @@ class circleJS {
    this.draw();
   }
 
+  cancelDraw() {
+    if(this.animationId != null){
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
   initUI(parentId){
     var menuHTML = '<div id="'+this.hillsmenuId+'" class="hillapi"> \
     <button class="button" id="hillsRbutton">Reset</button> \
@@ -1456,18 +1545,13 @@ class circleJS {
     document.getElementById("hillsRbutton").onclick = () => {
       this.hillScore = [...Array(this.hillNum).fill(50)];
     }
-    document.getElementById("startbutton").onclick = () => { this.draw(); }
-    document.getElementById("stopbutton").onclick = () => {
-      if(this.animationId != null){
-        cancelAnimationFrame(this.animationId);
-        this.animationId = null;
-      }
-    }
+    document.getElementById("startbutton").addEventListener('click',  this.draw, false);
+    document.getElementById("stopbutton").addEventListener('click',  this.cancelDraw, false);
   }
 
   deInit(){
-    document.getElementById("startbutton").onclick = () => {return;}
-    document.getElementById("stopbutton").onclick = () => {return;}
+    document.getElementById("startbutton").removeEventListener('click', this.draw);
+    document.getElementById("stopbutton").removeEventListener('click', this.cancelDraw);
   }
 
   onData(score){
@@ -1554,6 +1638,14 @@ class circleJS {
     this.draw();
   }
 
+  startpxf = () => {
+    this.pxf = this.lastpxf; 
+  }
+
+  stoppxf = () => {
+    this.lastpxf = this.pxf; this.pxf = 0;
+  }
+
   initUI() {
     var uiHTML = "<div id='"+this.textId+"menu' class='textmenu'> \
     <textarea id='"+this.textId+"Textarea'>Breathe in, Breathe out, Breathe in, Breathe out...</textarea><br> \
@@ -1580,16 +1672,14 @@ class circleJS {
       }
     }
 
-    document.getElementById("startbutton").onclick = () => { this.pxf = this.lastpxf; }
-    document.getElementById("stopbutton").onclick = () => {
-      this.lastpxf = this.pxf; this.pxf = 0;
-    }
+    document.getElementById("startbutton").addEventListener('click', this.startpxf, false);
+    document.getElementById("stopbutton").addEventListener('click', this.stoppxf, false);
 
   }
 
   deInit(){
-    document.getElementById("startbutton").onclick = () => { return; }
-    document.getElementById("stopbutton").onclick = () => { return; }
+    document.getElementById("startbutton").removeEventListener('click', this.startpxf);
+    document.getElementById("stopbutton").removeEventListener('click', this.stoppxf);
   }
 
   onData(score) {

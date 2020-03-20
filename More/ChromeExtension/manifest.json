@@ -1,0 +1,20 @@
+{
+    "name": "HEG Alpha Web Interface",
+    "version": "0.0.7",
+    "description": "HEG Alpha for Web. This enables Serial USB connectivity.",
+    "short_name": "HEG Alpha",
+    "permissions": [
+        "serial", 
+        "webview", 
+        "fullscreen",
+        "storage" 
+    ],
+    "minimum_chrome_version": "46",
+    "app": {
+        "background": {
+            "scripts": [
+                "launch.js"
+            ]
+        }
+    } 
+  }

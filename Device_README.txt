@@ -75,7 +75,7 @@ With extra sensors:
 
 Output data stream:
 
-Current Milliseconds | Red LED Sample Average | IR LED Sample Average |
+Current Microseconds | Red LED Sample Average | IR LED Sample Average |
 Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2)
 
 The following demo pages are available:
@@ -110,6 +110,13 @@ On the /listen or /stream page once the event listener/websocket is connected yo
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+3/20/20
+------
+- Fixed EventSource stream for remote streaming. Updated UI for the changes.
+- Added a TextReader feedback option.
+- Chrome Extension port of webAPI, with Serial USB support coming. Much easier to code bigger apps in this.
+- Microsoft Edge beta supports this UI, and might support the Chrome Extension too.
+
 3/14/20
 ------
 - Added more BLE commands

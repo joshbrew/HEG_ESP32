@@ -1,0 +1,1 @@
+To add this chrome extension, you must find your Extensions page, enable Developer Mode (top right corner slider usually), then select "Load Unpacked" and select this folder. 

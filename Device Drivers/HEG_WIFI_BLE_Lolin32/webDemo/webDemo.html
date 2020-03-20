@@ -200,7 +200,6 @@ if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
 
 //Customize session functions
 s.handleScore = function() {
-  parent.postMessage( this.ratio[this.ratio.length-1], "*"); // Data can be accessed through IFrame
   g.us = this.us[this.us.length - 1] - this.startTime;
   if(this.ratio.length > 40){
     if(g.sampleRate == null) {

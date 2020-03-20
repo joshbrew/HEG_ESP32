@@ -39,10 +39,10 @@ bool SEND_DUMMY_VALUE = false;
 
 bool BLE_ON, BLE_SETUP = false;
 
-const int ledRate = 17000;        // LED flash rate (ms). Can go as fast as 10ms for better heartrate visibility.
-const int sampleRate = 8000;      // ADC read rate (ms). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms. Current lib limits it to 125sps
+const int ledRate = 17000;        // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
+const int sampleRate = 8000;      // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms or 1160 us. Current lib limits it to 125sps
 const int samplesPerRatio = 2; // Minimum number of samples per LED to accumulate before making a measurement. Adjust this with your LED rate so you sample across the whole flash at minimum.
-const int BTRate = 100000;        // Bluetooth notify rate (ms). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
+const int BTRate = 100000;        // Bluetooth notify rate (us). Min rate should be 10ms, however it will hang up if the buffer is not flushing. 100ms is stable.
 const int USBRate = 0;         // No need to delay USB unless on old setups.
 
 const int nSensors = 1; // Number of sensors (for automated testing)
@@ -190,47 +190,99 @@ class MyCallbacks : public BLECharacteristicCallbacks
           ESP.restart();
         }
       }
-      else if (rxValue.find("R") != -1) {
-        delay(300);
-        ESP.restart();
+    else if (rxValue.find("R") != -1) {
+      delay(300);
+      ESP.restart();
+    }
+    else if (rxValue.find("r") != -1)
+    { // Dual Sensor toggle, changes LED pinouts and adcChannel to left or right.
+      digitalWrite(RED, LOW);
+      digitalWrite(IR, LOW);
+      IR = IR2;
+      RED = RED2;
+      IRn = IR3;
+      REDn = RED3;
+      adcChannel = 2;
+      pinMode(IR, OUTPUT);
+      pinMode(RED, OUTPUT);
+      pinMode(IRn, OUTPUT);
+      pinMode(REDn, OUTPUT);
+      reset = true;
+      if(USE_DIFF == true){
+        USE_2_3 = false;
       }
     }
-  }
-};
+    else if (rxValue.find("l") != -1) {
+      digitalWrite(RED, LOW);
+      digitalWrite(IR, LOW);
+      IR = IR0;
+      RED = RED0;
+      IRn = IR1;
+      REDn = RED1;
+      adcChannel = 0;
+      pinMode(IR, OUTPUT);
+      pinMode(RED, OUTPUT);
+      pinMode(IRn, OUTPUT);
+      pinMode(REDn, OUTPUT);
+      reset = true;
+      if(USE_DIFF == true){
+      USE_2_3 = true;
+      }
+    }
+    else if (rxValue.find("c") != -1) { // Toggle center pins
+      digitalWrite(RED, LOW);
+      digitalWrite(IR, LOW);
+      RED = RED2;
+      IR = IR2;
+      REDn = RED1;
+      IRn = IR1;
+      adcChannel = 0; //2
+      pinMode(IR, OUTPUT);
+      pinMode(RED, OUTPUT);
+      pinMode(IRn, OUTPUT);
+      pinMode(REDn, OUTPUT);
+      reset = true;
+      if(USE_DIFF == true){
+        USE_2_3 = true;
+      }
+    }
+      }
+    }
+  };
 
-void setupBLE()
-{
-    // Create the BLE Device
-    BLEDevice::init("HEG"); // Give it a name
-    BLEDevice::setMTU(512);
+  void setupBLE()
+  {
+      // Create the BLE Device
+      BLEDevice::init("HEG"); // Give it a name
+      BLEDevice::setMTU(512);
 
-    // Create the BLE Server
-    BLEServer *pServer = BLEDevice::createServer();
-    pServer->setCallbacks(new MyServerCallbacks());
+      // Create the BLE Server
+      BLEServer *pServer = BLEDevice::createServer();
+      pServer->setCallbacks(new MyServerCallbacks());
 
-    // Create the BLE Service
-    BLEService *pService = pServer->createService(SERVICE_UUID);
+      // Create the BLE Service
+      BLEService *pService = pServer->createService(SERVICE_UUID);
 
-    // Create a BLE Characteristic
-    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+      // Create a BLE Characteristic
+      pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
-    BLE2902 *desc = new BLE2902();
-    desc->setNotifications(true);
-    pCharacteristic->addDescriptor(desc);
+      BLE2902 *desc = new BLE2902();
+      desc->setNotifications(true);
+      pCharacteristic->addDescriptor(desc);
 
-    BLECharacteristic *pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, BLECharacteristic::PROPERTY_WRITE);
-    pCharacteristic->setReadProperty(true);
-    pCharacteristic->setCallbacks(new MyCallbacks());
+      BLECharacteristic *pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, BLECharacteristic::PROPERTY_WRITE);
+      pCharacteristic->setReadProperty(true);
+      pCharacteristic->setCallbacks(new MyCallbacks());
 
-    // Start the service
-    pService->start();
+      // Start the service
+      pService->start();
 
-    // Start advertising
-    pServer->getAdvertising()->start();
-    BLE_SETUP = true;
-    BLE_ON = true;
-    USE_BT = true;
-    Serial.println("BLE service started, scan for HEG.");
+      // Start advertising
+      pServer->getAdvertising()->start();
+      BLE_SETUP = true;
+      BLE_ON = true;
+      USE_BT = true;
+      Serial.println("BLE service started, scan for HEG.");
 }
 
 //Start ADC and set gain. Starts timers

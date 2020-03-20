@@ -37,6 +37,16 @@ class HEGwebAPI {
       this.parentId = parentId;
       this.createUI(parentId);
     }
+    /*
+    window.addEventListener('message', e => {
+      if(e.origin.startsWith(window.location.hostname)) {
+        
+      }
+      else {
+        this.handleEventData(e); 
+      }
+    }); //Generic event listener for postMessage events
+    */
     this.createEventListeners(host);
   }
 
@@ -222,6 +232,9 @@ class HEGwebAPI {
     console.log("HEGDUINO", e.data);
     if(document.getElementById("heg").innerHTML != e.data){  //on new output
       document.getElementById("heg").innerHTML = e.data;
+      var onRead = new CustomEvent('on_read', { detail: {data: e.data} });
+      window.parent.dispatchEvent(onRead); 
+      window.parent.postMessage(e.data, "*");
       if(e.data.includes("|")) {
         var dataArray = e.data.split("|");
         var thisRatio = parseFloat(dataArray[3]);
@@ -309,13 +322,15 @@ class HEGwebAPI {
     document.getElementById("dataTable").innerHTML = '<tr><td id="us">'+this.us[this.us.length-1]+'</td><td id="red">'+this.red[this.red.length-1]+'</td><td id="ir">'+this.ir[this.ir.length-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1]+'</td><td id="ambient">'+this.ambient[this.ambient.length-1]+'</td><td id="Vel">'+this.velAvg[this.velAvg.length-1]+'</td><td id="Accel">'+this.accelAvg[this.accelAvg.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
   }
 
+ 
+
   createUI(parentId) {
     var hegapiHTML = '<div id="hegapi" class="hegapi"> \
       <table> \
-      <tr><td><form method="post" action="'+this.host+'/startHEG" target="dummyframe"><button id="startbutton" class="button startbutton" type="submit">Start HEG</button></form></td> \
-        <td><form method="post" action="'+this.host+'/stopHEG" target="dummyframe"><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></form></td></tr> \
+      <tr><td><button id="startbutton" class="button startbutton">Start HEG</button></td> \
+        <td><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
-      <tr><td><form class="sendcommand" method="post" action="'+this.host+'/command" target="dummyframe"><input type="text" id="command" name="command" placeholder="Command"></td><td><button class="button sendbutton" type="submit">Send</button></form></td></tr> \
+      <tr><td><input type="text" id="command" name="command" placeholder="Command"></td><td><button id="sendbutton" class="button sendbutton">Send</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2"><button class="button" id="resetSession" name="resetSession">Reset Session</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
@@ -346,8 +361,8 @@ class HEGwebAPI {
     var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
     HEGwebAPI.appendFragment(dataDivHTML,parentId);
-    HEGwebAPI.appendFragment(hegapiHTML,parentId);
-    HEGwebAPI.appendFragment(containerHTML,parentId);
+    HEGwebAPI.appendFragment(hegapiHTML, "dataDiv");
+    HEGwebAPI.appendFragment(containerHTML, "dataDiv");
     HEGwebAPI.appendFragment(messageHTML,"container");
     HEGwebAPI.appendFragment(eventHTML,"container");
     HEGwebAPI.appendFragment(tableHeadHTML,"container");
@@ -380,10 +395,71 @@ class HEGwebAPI {
       document.getElementById("sensitivityVal").innerHTML = (this.sensitivity.value * 0.01).toFixed(2);
     }
 
+    document.getElementById("startbutton").onclick = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', this.host+"/startHEG", true);
+      xhr.send();
+      xhr.onerror = function() { xhr.abort(); } //Make sure it doesn't keep the connection open
+      //xhr.abort();
+    }
+
+    document.getElementById("stopbutton").onclick = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', this.host+"/stopHEG", true);
+      xhr.send();
+      xhr.onerror = function() { xhr.abort(); }
+      //xhr.abort();
+    }
+    document.getElementById("sendbutton").onclick = () => {
+      var data = new FormData();
+      data.append('command', document.getElementById('command').value);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', this.host+'/command', true);
+      xhr.send(data);
+      xhr.onerror = function() { xhr.abort(); }
+      //xhr.abort();
+    }
+
     document.getElementById("submithost").onclick = () => {
-      this.removeEventListeners();
-      this.host = document.getElementById("hostname").value;
+      if(window.EventSource){ 
+        this.removeEventListeners();
+      }
+      if(document.getElementById("hostname").value.length > 2) {
+        this.host = document.getElementById("hostname").value;
+      }
+      else{
+        this.host = "http://192.168.4.1";
+      }
+
+      document.getElementById("startbutton").onclick = () => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.host+"/startHEG", true);
+        xhr.send();
+        xhr.onerror = function() { xhr.abort(); } //Make sure it doesn't keep the connection open
+        //xhr.abort();
+      }
+  
+      document.getElementById("stopbutton").onclick = () => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.host+"/stopHEG", true);
+        xhr.send();
+        xhr.onerror = function() { xhr.abort(); }
+        //xhr.abort();
+      }
+      document.getElementById("sendbutton").onclick = () => {
+        var data = new FormData();
+        data.append('command', document.getElementById('command').value);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.host+'/command', true);
+        xhr.send(data);
+        xhr.onerror = function() { xhr.abort(); }
+        //xhr.abort();
+      }
+
       this.createEventListeners(this.host);
+      //var thisNode = document.getElementById("dataDiv").parentNode.parentNode;
+      //thisNode.removeChild(document.getElementById("dataDiv").parentNode);
+      //this.createUI(thisNode.id);
       console.log("Attempting connection at " + this.host);
     }
   }
@@ -723,13 +799,13 @@ class graphJS {
 class circleJS {
   constructor(bgColor="#34baeb", cColor="#ff3a17", res=[window.innerWidth,"440"], parentId="main_body", canvasId="circlecanvas", defaultUI=true){
     
-    this.defaultUI = defaultUI
-    if(defaultUI == true){
-      this.createCanvas(parentId, canvasId, res);
-    }
+    this.createCanvas(parentId, canvasId, res);
     this.c = document.getElementById(canvasId);
     this.ctx = this.c.getContext('2d');
      
+    this.defaultUI = defaultUI
+    //if(defaultUI == true){    }
+ 
     this.c.width = res[0];
     this.c.height = res[1];
 
@@ -811,23 +887,35 @@ class circleJS {
         this.c;
         this.gl;
 
+        var videoHTML = '<div class="vidbox" id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="vidcss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video> \
+        <canvas class="vidglcss" id="'+this.vidContainerId+'canvas"></canvas></div> \
+        <input class="file_wrapper" id="fs" name="fs" type="file" accept="video/*"/>';
+      
+        HEGwebAPI.appendFragment(videoHTML,parentId);
+
         this.defaultUI = defaultUI;
         this.sliderfocus = false;
         this.hidden = false;
         if(defaultUI == true){
-          this.addUI(parentId, res);
+          this.addUI(parentId);
         }
         this.init(defaultUI);
       }
 
+      startVideo = () => {
+        if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
+        else{ this.vidQuery.playbackRate = this.playRate; }
+      }
+
+      stopVideo = () => {
+        this.vidQuery.playbackRate = 0;
+      }
+
       setupButtons() {
 
-        document.getElementById("startbutton").onclick = () => {
-          if(this.playRate < 0.1){ this.vidQuery.playbackRate = 0; }
-          else{ this.vidQuery.playbackRate = this.playRate; }
-        }
+        document.getElementById("startbutton").addEventListener('click', this.startVideo, false);
         
-        document.getElementById("stopbutton").onclick = () => {this.vidQuery.playbackRate = 0;}
+        document.getElementById("stopbutton").addEventListener('click', this.stopVideo, false);
         
         document.getElementById("play").onclick = () => {
           if(this.vidQuery.playbackRate == 0){
@@ -934,15 +1022,13 @@ class circleJS {
       }
 
       deInit(){
-        document.getElementById("startbutton").onclick = function(){return;}
-        document.getElementById("stopbutton").onclick = function(){return;}
+        document.getElementById("startbutton").removeEventListener('click', this.startVideo);
+        document.getElementById("stopbutton").removeEventListener('click', this.stopVideo);
         cancelAnimationFrame(this.animationId);
       }
 
-      addUI(parentId, res=["700","470"]){
-       var videoHTML = '<div class="vidbox" id="'+this.vidContainerId+'"><video id="'+this.vidContainerId+'vid" height="'+res[1]+'px" width="'+res[0]+'px" class="vidcss" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" autoplay loop muted></video><canvas class="vidglcss" id="'+this.vidContainerId+'canvas"></canvas></div>';
+      addUI(parentId){
        var videoapiHTML = '<div id="'+this.vidapiId+'"> \
-       <input class="file_wrapper" id="fs" name="fs" type="file" accept="video/*"/> \
        <button class="showhide" id="showhide" name="showhide">Hide UI</button> \
        <div id="timeDiv" class="timeDiv"><input id="timeSlider" class="slider timeSlider" type="range" min="0" max="1000" value="0"><br><br> \
        <div id="vidbar" class="vidbar"><button id="minus1min" name="minus1min">--</button><button id="minus10sec" name="minus10sec">-</button><button id="play" name="play">||</button><button id="plus10sec" name="plus10sec">+</button><button id="plus1min" name="plus1min">++</button></div></div> \
@@ -953,7 +1039,6 @@ class circleJS {
           <tr><td><button class="button vdvol" id="useVol" name="useVol">Volume</button></td></tr></div> \
           </table> \
         </div>';
-       HEGwebAPI.appendFragment(videoHTML,parentId);
        HEGwebAPI.appendFragment(videoapiHTML, parentId);
 
        this.timeSlider = document.getElementById("timeSlider");
@@ -1076,11 +1161,24 @@ class circleJS {
     this.audioId = audioId;
     this.audmenuId = audmenuId;
     
+    var visualizerHTML = '<div id="'+this.audioId+'" class="visualizerDiv" class-"canvasContainer"> \
+    <canvas class="audiocanvas" id="'+this.audioId+'canvas" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
+      </div> \
+    ';
+
+    HEGwebAPI.appendFragment(visualizerHTML, parentId);
+
+    this.c = document.getElementById(this.audioId+"canvas");
+    this.ctx = this.c.getContext("2d");
+    this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
+    this.gradient.addColorStop(1, 'springgreen');
+    this.gradient.addColorStop(0.75, 'yellow');
+    this.gradient.addColorStop(0, 'red');
+
     this.defaultUI = defaultUI;
     this.hidden = false;
     if(defaultUI==true) {
-      this.initUI(parentId, res);
-      this.c = document.getElementById(this.audioId+"canvas");
+      this.initUI(parentId);
     }
 
     this.maxVol = 1;
@@ -1098,18 +1196,12 @@ class circleJS {
     this.forceStop = false;
     this.allCapsReachBottom = false;
 
-    this.ctx = this.c.getContext("2d");
 
     this.meterWidth = 14; //width of the meters in the spectrum
     this.gap = 2; //gap between meters
     this.capHeight = 2;
     this.capStyle = '#fff';
     this.meterNum = 60; //count of the meters
-    
-    this.gradient = this.ctx.createLinearGradient(0, 0, 0, 300);
-    this.gradient.addColorStop(1, 'springgreen');
-    this.gradient.addColorStop(0.75, 'yellow');
-    this.gradient.addColorStop(0, 'red');
     
     this.init();
   }
@@ -1155,7 +1247,7 @@ class circleJS {
       this.draw(this.analyser);
   }
 
-  initUI(parentId, res=["800","400"]){
+  initUI(parentId){
       var audiomenuHTML = '<div id="'+this.audmenuId+'"> \
         <table id="audtable" class="audtable">\
           <tr><td>Feedback: </td></tr> \
@@ -1170,12 +1262,6 @@ class circleJS {
         <button id="showhide" name="showhide" class="showhide">Hide UI</button> \
       ';
       
-      var visualizerHTML = '<div id="'+this.audioId+'" class="visualizerDiv" class-"canvasContainer"> \
-        <canvas class="audiocanvas" id="'+this.audioId+'canvas" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
-      </div> \
-      ';
-
-      HEGwebAPI.appendFragment(visualizerHTML, parentId);
       HEGwebAPI.appendFragment(audiomenuHTML, parentId);
 
       document.getElementById("useVol").onclick = () => {
@@ -1410,9 +1496,15 @@ class circleJS {
    this.hillsId = hillsId;
    this.hillsmenuId = hillsmenuId;
 
+   var canvasHTML = '<div id="canvasContainer" class="canvasContainer"> \
+      <canvas class="hillcss" id="'+this.hillsId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
+      ';
+
+   HEGwebAPI.appendFragment(canvasHTML,parentId);
+
    this.defaultUI = defaultUI;
    if(defaultUI == true){
-    this.initUI(parentId, res);
+    this.initUI(parentId);
    }
    
    this.c = document.getElementById(this.hillsId);
@@ -1437,32 +1529,30 @@ class circleJS {
    this.draw();
   }
 
-  initUI(parentId, res=["800","350"]){
-    var canvasHTML = '<div id="canvasContainer" class="canvasContainer"> \
-      <canvas class="hillcss" id="'+this.hillsId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
-      ';
+  cancelDraw() {
+    if(this.animationId != null){
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  initUI(parentId){
     var menuHTML = '<div id="'+this.hillsmenuId+'" class="hillapi"> \
     <button class="button" id="hillsRbutton">Reset</button> \
     </div>';
       
-    HEGwebAPI.appendFragment(canvasHTML,parentId);
     HEGwebAPI.appendFragment(menuHTML,parentId);
 
     document.getElementById("hillsRbutton").onclick = () => {
       this.hillScore = [...Array(this.hillNum).fill(50)];
     }
-    document.getElementById("startbutton").onclick = () => { this.draw(); }
-    document.getElementById("stopbutton").onclick = () => {
-      if(this.animationId != null){
-        cancelAnimationFrame(this.animationId);
-        this.animationId = null;
-      }
-    }
+    document.getElementById("startbutton").addEventListener('click',  this.draw, false);
+    document.getElementById("stopbutton").addEventListener('click',  this.cancelDraw, false);
   }
 
   deInit(){
-    document.getElementById("startbutton").onclick = () => {return;}
-    document.getElementById("stopbutton").onclick = () => {return;}
+    document.getElementById("startbutton").removeEventListener('click', this.draw);
+    document.getElementById("stopbutton").removeEventListener('click', this.cancelDraw);
   }
 
   onData(score){
@@ -1513,6 +1603,102 @@ class circleJS {
     this.hillScore.shift();
     this.hillScore.push(this.hillScore[this.hillScore.length - 1]);
     setTimeout(() => {this.animationId = requestAnimationFrame(this.draw)}, this.updateInterval);
+  }
+ }
+
+ class textReaderJS {
+  constructor(text="this is a test", res=["800","400"], textId="textcanvas", parentId="main_body", defaultUI=true) {
+    this.text = text;
+    this.textId = textId;
+    this.parentId = parentId;
+
+    var textReaderHTML = "<div id='"+this.textId+"container' class='canvasContainer'><canvas id='"+this.textId+"' class='textreadercss' width='"+res[0]+"' height='"+res[1]+"'></canvas></div>"
+
+    HEGwebAPI.appendFragment(textReaderHTML, parentId);
+
+    this.defaultUI = defaultUI;
+    this.hidden = false;
+    if(defaultUI == true) {
+      this.text = 'Leap clear of all that is corporeal, and make yourself grown to a like expanse with that greatness which is beyond all measure... rise above all time and become eternal... then you will apprehend God. \
+      Think that for you too nothing is impossible; deem that you too are immortal, and that you are able to grasp all things in your thought, to know every craft and science; find your home in the haunts of every living creature; \
+      make yourself higher than all heights and lower than all depths; bring together in yourself all opposites of quality, heat and cold, dryness and fluidity; \
+      think that you are everywhere at once, on land, at sea, in heaven; think that you are not yet begotten, that you are in the womb, that you are young, that you are old, that you have died, that you are in the world beyond the grave; \
+      grasp in your thought all of this at once, all times and places, all substances and qualities and magnitudes together; then you can apprehend God. \
+      But if you shut up your soul in your body, and abase yourself, and say “I know nothing, I can do nothing; I am afraid of earth and sea, I cannot mount to heaven; I know not what I was, nor what I shall be,” then what have you to do with God?';
+
+      this.initUI();
+    }
+
+    this.c = document.getElementById(this.textId);
+    this.ctx = this.c.getContext("2d");
+    this.pxf = 0.5; //Pixels per frame;
+    this.lastpxf = this.pxf; //Store last pxf when paused or whatever
+    this.textXPos = 0;
+    this.maxXPos = window.innerWidth;
+
+    this.draw();
+  }
+
+  startpxf = () => {
+    this.pxf = this.lastpxf; 
+  }
+
+  stoppxf = () => {
+    this.lastpxf = this.pxf; this.pxf = 0;
+  }
+
+  initUI() {
+    var uiHTML = "<div id='"+this.textId+"menu' class='textmenu'> \
+    <textarea id='"+this.textId+"Textarea'>Breathe in, Breathe out, Breathe in, Breathe out...</textarea><br> \
+    <button id='"+this.textId+"submittext' class='button'>Submit</button> \
+    </div><button id='showhide' name='showhide' class='showhide'>Hide UI</button>";
+
+    HEGwebAPI.appendFragment(uiHTML, this.parentId);
+
+    document.getElementById(this.textId+'submittext').onclick = () => {
+      this.text = document.getElementById(this.textId+'Textarea').value;
+      this.textXPos = 0;
+    }
+
+    document.getElementById("showhide").onclick = () => {
+      if(this.hidden == false) {
+        this.hidden = true;
+        document.getElementById("showhide").innerHTML = "Show UI";
+        document.getElementById(this.textId+'menu').style.display = "none";
+      }
+      else{
+        this.hidden = false;
+        document.getElementById("showhide").innerHTML = "Hide UI";
+        document.getElementById(this.textId+'menu').style.display = "";
+      }
+    }
+
+    document.getElementById("startbutton").addEventListener('click', this.startpxf, false);
+    document.getElementById("stopbutton").addEventListener('click', this.stoppxf, false);
+
+  }
+
+  deInit(){
+    document.getElementById("startbutton").removeEventListener('click', this.startpxf);
+    document.getElementById("stopbutton").removeEventListener('click', this.stoppxf);
+  }
+
+  onData(score) {
+    this.pxf += score;
+  }
+
+  draw = () => {
+    this.maxXPos = this.c.width;
+
+    this.textXPos += this.pxf;
+
+    //draw this.text at correct position, in middle of canvas;
+    this.ctx.clearRect(0, 0, this.c.width, this.c.height);
+
+    this.ctx.font = "2em Arial";
+    this.ctx.fillStyle = "#ffffff";
+    this.ctx.fillText(this.text, this.maxXPos - this.textXPos, this.c.height*0.5);
+    requestAnimationFrame(this.draw);
   }
  }
 )=====";

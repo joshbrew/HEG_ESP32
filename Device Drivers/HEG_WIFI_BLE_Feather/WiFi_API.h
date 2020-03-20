@@ -678,24 +678,40 @@ void setupWiFi(){
 
   WiFi.scanNetworks(true);
   WiFi.scanDelete();
-  
+
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", MAIN_page); //Send web page 
+    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",MAIN_page);
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
   });      //This is the default display page
-  server.on("/sc",HTTP_GET,[](AsyncWebServerRequest *request){
-    request->send_P(200,"text/html", sc_page);
+  //server.on("/events", HTTP_GET, [](AsyncWebServerRequest *request) {
+  //  Serial.println("GET events");
+  //  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
+  //  response->addHeader("Access-Control-Allow-Origin", "*");  
+  //  request->send(response);
+  //});
+  server.on("/sc", HTTP_GET,[](AsyncWebServerRequest *request){
+    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",sc_page);
+    //response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
   });
-  server.on("/help",HTTP_GET,[](AsyncWebServerRequest *request){
-    request->send_P(200,"text/html", help_page);
+  server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request){
+    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",help_page);
+    //response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
   });
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", ws_page);
+    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",ws_page);
+    //response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
     delay(1000);
     deviceConnected = true;
   });
   server.on("/listen",HTTP_GET, [](AsyncWebServerRequest *request){
     //xTaskCreate(evsHEGTask,"evsHEGTask",8196,NULL,2,NULL);
     //commandESP32('t');
+    //AsyncWebServerResponse *response = request->beginResponse(200,"text/html",event_page);
+    //response->addHeader("Access-Control-Allow-Origin", "*");
     request->send_P(200,"text/html", event_page);
   });
   server.on("/connect",HTTP_GET,[](AsyncWebServerRequest *request){
@@ -792,6 +808,9 @@ void setupWiFi(){
   //server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
   //  request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
   //});
+
+  DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Origin"), F("*"));
+  DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Headers"), F("content-type"));
  
   server.begin();                  //Start server
   Serial.println("HTTP server started");

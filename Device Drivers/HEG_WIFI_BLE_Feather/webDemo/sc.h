@@ -58,7 +58,7 @@ const char sc_page[] PROGMEM = R"=====(
         }
       
   </script>
-  <iframe width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
+  <iframe width="0" height="0" border="0" name="dummyframe" id="dummyframe" style="display: none;"></iframe>
    
 </body>
 </html>

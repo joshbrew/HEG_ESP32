@@ -88,7 +88,7 @@
         Check these conditions when you are not receiving a stable, positive ratio and cannot control the games:<br>
         <ul>
         <li> Can you see the Red LED flashing when you hit start?</li>
-        <li> Open up the debug console on your driver and verify if you get "HEGduino Events Connected" on the HTML5 Web Demo page</li>
+        <li> Open up the debug console on your web browser and verify if you get "HEGduino Events Connected" on the HTML5 Web Demo page</li>
         <li>Check your ambient lighting conditions. It is best but not required to be in a dim or indirectly lit environment.</li>
             <ul><li>If the light sensor is not firmly against your forehead and exposed directly to the LEDs or sunlight, it will be saturated and output 0's in the Red and IR output.</li>
             <li> Even a cloudy day can create too much ambient light for the LEDs to be picked up, and you will get a negative or zero ratio, or wild oscillations.</li>
@@ -151,9 +151,9 @@
         <br><br>
         <hr class="hr4"><br>
         Support:<br><br>
-        Please inform us of any positive or adverse reactions you have when using the HEG so we can document it. <br>
+        Please inform us of any positive or adverse reactions you have when using the HEG so we can document it. 
         For technical support please create an issue at https://github.com/moothyknight/HEG_ESP32 so we can publicly resolve it to guide future users.<br>
-        You may also contact us for questions or technical support at: brewster.joshua1@gmail.com<br>
+        You may also contact us for questions or technical support at: brewster.joshua1@gmail.com
         <br><br>
         </div>
         <hr class="hr1">
@@ -293,7 +293,7 @@
         <h3>Data Output Information</h3>
         <p>
         Output String:<br><br>
-        "Current Milliseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2) \r\n" <br><br>
+        "Current Microseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2) \r\n" <br><br>
         WiFi: Subscribe to a Server Sent Event stream (EventSource) at the IP of the device. Its update period is set at 50ms. The data stream comes through on "heg" events.<br><br>
         USB Serial: Via a serial monitor, set baud rate to 115200 on the correct COM port to read the data, debug, and send commands.<br><br>
         Bluetooth: Requires scanning for BLE device and subscribing to the correct UART characteristic, then sending the 't' command to activate the sensor stream.<br><br>
