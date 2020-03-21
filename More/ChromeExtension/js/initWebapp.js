@@ -1,5 +1,15 @@
 //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+
+//Chrome Extension Additions
 var serialMonitor = new chromeSerial();
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
     //Advanced Client scripts using external packages
     //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts

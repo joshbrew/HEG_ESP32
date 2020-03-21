@@ -1,25 +1,61 @@
-//Utils provided by Diego Schmaedech (MIT License), Statechanger Brazil. Modified by Joshua Brewster (MIT License)
+//Utils developed by Diego Schmaedech (MIT License). Modified/Generalized by Joshua Brewster (MIT License)
 class chromeSerial {
-    constructor() {
-        this.displayPorts = []
+    constructor(defaultUI=true, parentId='serialmenu') {
+        this.displayPorts = [];
+        this.defaultUI = defaultUI;
+
+        this.encodedBuffer = "";
+        this.connectionId = -1;
         if (typeof chrome.serial !== 'undefined' && chrome.serial !== null) {
+            if(defaultUI == true) {
+                this.setupSelect(parentId);
+            }
             this.setupSerial();
         }  
         else {
-            console.log("ERROR: Cannot locate chrome.serial.")
+            console.log("ERROR: Cannot locate chrome.serial.");
+        }
+
+        document.getElementById('serialports').onclick = () => {
+            
         }
     }
-    onGetDevices(ports) {
+
+    
+    setupSelect(parentId) {
+        var displayOptions = document.createElement('select'); //Element ready to be appended
+        displayOptions.setAttribute('id','serialports')
+        var frag = document.createDocumentFragment();
+        frag.appendChild(displayOptions);
+        document.getElementById(parentId).innerHTML = '<button id="connectSerial">Set</button>';
+        document.getElementById(parentId).appendChild(frag);
+
+        document.getElementById('connectSerial').onclick = () => {
+            this.connectSelected(false); // Disconnect previous
+            this.connectSelected(true, document.getElementById('serialports').value);
+        }
+    }
+
+
+    onGetDevices = (ports) => {
         var paths = [];
         for (var i = 0; i < ports.length; i++) {
             console.log(ports[i].path);
         }
-        ports.forEach(function (port) {
+        ports.forEach((port) => {
             var displayName = port["displayName"] + "(" + port.path + ")";
             console.log("displayName " + displayName);
             if (!displayName)
                 displayName = port.path;  
-            paths.push({'displayName':displayName, 'path':port.path});
+            paths.push({'option':displayName, 'value':port.path});
+            console.log(this.defaultUI);
+            if(this.defaultUI == true) {
+                var newOption = document.createElement("option");
+                newOption.text = displayName;
+                newOption.value = port.path;
+                console.log('option', newOption);
+                document.getElementById('serialports').appendChild(newOption);
+            }
         });
         this.displayPorts = paths;
     }
@@ -32,13 +68,13 @@ class chromeSerial {
         var bufView = new Uint8Array(receiveInfo.data);
         var encodedString = String.fromCharCode.apply(null, bufView);
 
-        encodedBuffer += decodeURIComponent(escape(encodedString));
+        this.encodedBuffer += decodeURIComponent(escape(encodedString));
 
         var index;
-        while ((index = encodedBuffer.indexOf('\n')) >= 0) {
-            var line = encodedBuffer.substr(0, index + 1);
+        while ((index = this.encodedBuffer.indexOf('\n')) >= 0) {
+            var line = this.encodedBuffer.substr(0, index + 1);
             onReadLine(line);
-            encodedBuffer = encodedBuffer.substr(index + 1);
+            this.encodedBuffer = this.encodedBuffer.substr(index + 1);
         }
     }
 
@@ -52,10 +88,27 @@ class chromeSerial {
 
     onConnectComplete(connectionInfo) {
         console.log("onConnectComplete", connectionInfo.connectionId);
-        connectionId = connectionInfo.connectionId;
+        this.connectionId = connectionInfo.connectionId;
 
         chrome.serial.onReceive.addListener(this.onReceive);
         chrome.serial.onReceiveError.addListener(this.onReceiveError);
+    }
+
+    sendMessage(msg) {
+        if (typeof chrome.serial !== 'undefined' && chrome.serial !== null) {
+            if (this.connectionId > -1) {
+                console.log("Send Message: ", msg);
+                var encodedString = unescape(encodeURIComponent(msg));
+                var bytes = new Uint8Array(encodedString.length);
+                for (var i = 0; i < encodedString.length; ++i) {
+                    bytes[i] = encodedString.charCodeAt(i);
+                }
+                chrome.serial.send(this.connectionId, bytes.buffer, this.onSendCallback);
+                console.log("Send message", msg);
+            } else {
+                console.log("Device is disconnected!");
+            }
+        }
     }
 
     onSendCallback(sendInfo) {
@@ -66,29 +119,26 @@ class chromeSerial {
         console.log(line);
     }
 
-    connectSelected(devicePath, connect=true) {
-        
-        if (connect == true) {
+    connectSelected(connect=true, devicePath=null) { //Set connect to false to disconnect  
+        if ((connect == true) && (devicePath != null)) {
             console.log("Connecting", devicePath);
             chrome.serial.connect(devicePath, {bitrate: 115200}, this.onConnectComplete);
-
         } else {
             console.log("Disconnect" + devicePath);
-            if (connectionId < 0) {
-                console.log("connectionId", connectionId);
+            if (this.connectionId < 0) {
+                console.log("connectionId", this.connectionId);
                 return;
             }
-            encodedBuffer = "";
+            this.encodedBuffer = "";
             chrome.serial.onReceive.removeListener(this.onReceive);
             chrome.serial.onReceiveError.removeListener(this.onReceiveError);
-            chrome.serial.flush(connectionId, function () {
-                console.log("chrome.serial.flush", connectionId);
+            chrome.serial.flush(this.connectionId, function () {
+                console.log("chrome.serial.flush", this.connectionId);
             });
-            chrome.serial.disconnect(connectionId, function () {
-                console.log("chrome.serial.disconnect", connectionId);
+            chrome.serial.disconnect(this.connectionId, function () {
+                console.log("chrome.serial.disconnect", this.connectionId);
             });
         }
-
     }
 
     setupSerial() {

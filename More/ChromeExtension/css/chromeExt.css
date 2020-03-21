@@ -1,0 +1,32 @@
+.serialContainer {
+    position: absolute;
+    width: 300px;
+    height: 30px;
+    right: 0px;
+    top: 0px;
+    opacity: 0.3;
+    z-index: 9999;
+}
+.serialContainer:hover {
+    opacity: 1.0;
+}
+.serialContainer h3 {
+    position: absolute;
+    color: white;
+    height: 30px;
+    transform: translateY(-8px);
+}
+.serialmenu select{
+    position: absolute;
+    width: 150px;
+    left: 100px;
+    height: 30px;
+    cursor: pointer;
+}
+#connectSerial {
+    position: absolute;
+    width: 50px;
+    left: 250px;
+    height: 30px;
+    cursor: pointer;
+}
