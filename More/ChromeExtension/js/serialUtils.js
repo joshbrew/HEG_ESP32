@@ -21,21 +21,22 @@ class chromeSerial {
         }
     }
 
-    
     setupSelect(parentId) {
         var displayOptions = document.createElement('select'); //Element ready to be appended
         displayOptions.setAttribute('id','serialports')
         var frag = document.createDocumentFragment();
         frag.appendChild(displayOptions);
-        document.getElementById(parentId).innerHTML = '<button id="connectSerial">Set</button>';
+        document.getElementById(parentId).innerHTML = '<button id="refreshSerial">Get</button><button id="connectSerial">Set</button>';
         document.getElementById(parentId).appendChild(frag);
 
+        document.getElementById('refreshSerial').onclick = () => {
+            this.setupSerial();
+        }
         document.getElementById('connectSerial').onclick = () => {
-            this.connectSelected(false); // Disconnect previous
+            if(this.connectionId != -1 ) {this.connectSelected(false)}; // Disconnect previous
             this.connectSelected(true, document.getElementById('serialports').value);
         }
     }
-
 
     onGetDevices = (ports) => {
         var paths = [];
@@ -60,20 +61,21 @@ class chromeSerial {
         this.displayPorts = paths;
     }
 
-    onReceive(receiveInfo) {
-        console.log("onReceive");
-        if (receiveInfo.connectionId !== connectionId) {
-            return;
-        }
+    onReceive = (receiveInfo) => {
+        //console.log("onReceive");
+        //if (receiveInfo.connectionId !== this.connectionId) {
+        //    console.log("ERR: Receive ID:", receiveInfo.connectionId);
+        //    return;
+        //}
         var bufView = new Uint8Array(receiveInfo.data);
         var encodedString = String.fromCharCode.apply(null, bufView);
 
         this.encodedBuffer += decodeURIComponent(escape(encodedString));
-
+        //console.log(this.encodedBuffer);
         var index;
         while ((index = this.encodedBuffer.indexOf('\n')) >= 0) {
             var line = this.encodedBuffer.substr(0, index + 1);
-            onReadLine(line);
+            this.onReadLine(line);
             this.encodedBuffer = this.encodedBuffer.substr(index + 1);
         }
     }
@@ -81,17 +83,24 @@ class chromeSerial {
     onReceiveError(errorInfo) {
         console.log("onReceiveError");
         if (errorInfo.connectionId === this.connectionId) {
+            console.log("Error from ID:", errorInfo.connectionId)
             this.onError.dispatch(errorInfo.error);
             console.log("Error: " + errorInfo.error);
         }
     }
 
-    onConnectComplete(connectionInfo) {
-        console.log("onConnectComplete", connectionInfo.connectionId);
+    finalCallback() { //Customize this one for the front end integration after the device is successfully connected.
+        console.log("USB device Ready!")
+    }
+
+    onConnectComplete = (connectionInfo) => {
         this.connectionId = connectionInfo.connectionId;
+        console.log("Connected! ID:", this.connectionId);
 
         chrome.serial.onReceive.addListener(this.onReceive);
         chrome.serial.onReceiveError.addListener(this.onReceiveError);
+
+        this.finalCallback()
     }
 
     sendMessage(msg) {
@@ -119,8 +128,8 @@ class chromeSerial {
         console.log(line);
     }
 
-    connectSelected(connect=true, devicePath=null) { //Set connect to false to disconnect  
-        if ((connect == true) && (devicePath != null)) {
+    connectSelected(connect=true, devicePath='') { //Set connect to false to disconnect  
+        if ((connect == true) && (devicePath != '')) {
             console.log("Connecting", devicePath);
             chrome.serial.connect(devicePath, {bitrate: 115200}, this.onConnectComplete);
         } else {

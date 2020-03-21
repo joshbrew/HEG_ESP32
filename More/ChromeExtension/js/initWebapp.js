@@ -1,16 +1,5 @@
 //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
 
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-
-//Chrome Extension Additions
-var serialMonitor = new chromeSerial();
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-
     //Advanced Client scripts using external packages
     //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
     if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
@@ -398,3 +387,36 @@ var serialMonitor = new chromeSerial();
       }
       g.VERTEX_LENGTH = g.xscaleSlider.value;
     }
+
+
+    
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+
+//Chrome Extension Additions
+var serialMonitor = new chromeSerial();
+serialMonitor.finalCallback = () => { //Set this so USB devices bind to the interface once connected.
+  s.removeEventListeners();
+
+  document.getElementById("startbutton").onclick = () => {
+    serialMonitor.sendMessage('t');
+  }
+  document.getElementById("stopbutton").onclick = () => {
+    serialMonitor.sendMessage('f');
+  }
+  document.getElementById("sendbutton").onclick = () => {
+    serialMonitor.sendMessage(document.getElementById('command').value);
+  }
+
+  serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
+    //pass to data handler
+    if(line.split("|").length > 5 ) {
+      s.handleEventData(line); 
+    }
+  }
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------

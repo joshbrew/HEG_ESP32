@@ -227,15 +227,15 @@ class HEGwebAPI {
     input.click();
   }
 
-  handleEventData(e){
-    console.log("HEGDUINO", e.data);
-    if(document.getElementById("heg").innerHTML != e.data){  //on new output
-      document.getElementById("heg").innerHTML = e.data;
-      var onRead = new CustomEvent('on_read', { detail: {data: e.data} });
+  handleEventData(data){
+    console.log("HEGDUINO", data);
+    if(document.getElementById("heg").innerHTML != data){  //on new output
+      document.getElementById("heg").innerHTML = data;
+      var onRead = new CustomEvent('on_read', { detail: {data: data} });
       window.parent.dispatchEvent(onRead); 
-      window.parent.postMessage(e.data, "*");
-      if(e.data.includes("|")) {
-        var dataArray = e.data.split("|");
+      window.parent.postMessage(data, "*");
+      if(data.includes("|")) {
+        var dataArray = data.split("|");
         var thisRatio = parseFloat(dataArray[3]);
         if((thisRatio > 0)){ //&& (((this.us.length > 2) && ((thisRatio / this.ratio[this.ratio.length - 1] > 0.6) && (thisRatio/this.ratio[this.ratio.length - 1] < 1.4))) || (this.us.length < 2))) { // Add error filtering here.
           if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
@@ -294,7 +294,7 @@ class HEGwebAPI {
   }
 
   hegEvent = (e) => {
-    this.handleEventData(e);
+    this.handleEventData(e.data);
   }
 
   createEventListeners(host='') { //Set custom hostname (e.g. http://192.168.4.1). Leave blank for local hosted sessions (i.e. served from the board)
