@@ -413,6 +413,7 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
     //pass to data handler
     if(line.split("|").length > 5 ) {
       s.handleEventData(line); 
+      console.log("Passing Data...", Date.now())
     }
   }
 }

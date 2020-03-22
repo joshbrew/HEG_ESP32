@@ -789,7 +789,8 @@ class graphJS {
       this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.25)).toFixed(0)+"s", this.graphtext.canvas.width * 0.751, this.graphtext.canvas.height * 0.85);
       this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.75)).toFixed(0)+"s", this.graphtext.canvas.width * 0.251, this.graphtext.canvas.height * 0.85);
     }
-    setTimeout(()=>{this.animationId = requestAnimationFrame(this.draw);},15); 
+    //console.log("Graph updated", Date.now());
+    setTimeout(()=>{this.animationId = requestAnimationFrame(this.draw);},40); 
     
   }
   
