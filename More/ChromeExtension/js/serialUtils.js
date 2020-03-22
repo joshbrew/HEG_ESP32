@@ -71,7 +71,7 @@ class chromeSerial {
         var encodedString = String.fromCharCode.apply(null, bufView);
 
         this.encodedBuffer += decodeURIComponent(escape(encodedString));
-        //console.log(this.encodedBuffer);
+        //console.log(this.encodedBuffer.length);
         var index;
         while ((index = this.encodedBuffer.indexOf('\n')) >= 0) {
             var line = this.encodedBuffer.substr(0, index + 1);
@@ -106,14 +106,13 @@ class chromeSerial {
     sendMessage(msg) {
         if (typeof chrome.serial !== 'undefined' && chrome.serial !== null) {
             if (this.connectionId > -1) {
-                console.log("Send Message: ", msg);
                 var encodedString = unescape(encodeURIComponent(msg));
                 var bytes = new Uint8Array(encodedString.length);
                 for (var i = 0; i < encodedString.length; ++i) {
                     bytes[i] = encodedString.charCodeAt(i);
                 }
                 chrome.serial.send(this.connectionId, bytes.buffer, this.onSendCallback);
-                console.log("Send message", msg);
+                console.log("Send message:", msg);
             } else {
                 console.log("Device is disconnected!");
             }

@@ -789,8 +789,8 @@ class graphJS {
       this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.25)).toFixed(0)+"s", this.graphtext.canvas.width * 0.751, this.graphtext.canvas.height * 0.85);
       this.graphtext.fillText((Math.ceil(this.sampleRate * this.VERTEX_LENGTH * 0.75)).toFixed(0)+"s", this.graphtext.canvas.width * 0.251, this.graphtext.canvas.height * 0.85);
     }
-
-    this.animationId = requestAnimationFrame(this.draw);
+    setTimeout(()=>{this.animationId = requestAnimationFrame(this.draw);},15); 
+    
   }
   
 }
@@ -865,7 +865,7 @@ class circleJS {
       this.ctx.fillStyle = this.cColor;
       this.ctx.fill();
       
-      this.animationId = requestAnimationFrame(this.draw);
+      setTimeout(()=>{this.animationId = requestAnimationFrame(this.draw);},15); 
   }
 }
 
@@ -1127,7 +1127,7 @@ class circleJS {
       }
         this.gl.clearColor(0,0,0.1,this.alpha);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-        this.animationId = requestAnimationFrame(this.animateRect);
+        setTimeout(()=>{this.animationId = requestAnimationFrame(this.animateRect);},15); 
     }
 
     init(defaultUI) {
@@ -1484,9 +1484,9 @@ class circleJS {
               that.ctx.fillStyle = that.gradient; //set the fillStyle to gradient for a better look
               that.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
           }
-          that.animationId = requestAnimationFrame(drawMeter);
+          setTimeout(()=>{that.animationId = requestAnimationFrame(drawMeter);},15); 
       }
-      this.animationId = requestAnimationFrame(drawMeter);
+      setTimeout(()=>{this.animationId = requestAnimationFrame(drawMeter);},15); 
     }
  }
 
@@ -1634,6 +1634,7 @@ class circleJS {
     this.lastpxf = this.pxf; //Store last pxf when paused or whatever
     this.textXPos = 0;
     this.maxXPos = window.innerWidth;
+    this.animationId;
 
     this.draw();
   }
@@ -1697,6 +1698,6 @@ class circleJS {
     this.ctx.font = "2em Arial";
     this.ctx.fillStyle = "#ffffff";
     this.ctx.fillText(this.text, this.maxXPos - this.textXPos, this.c.height*0.5);
-    requestAnimationFrame(this.draw);
+    setTimeout(()=>{this.animationId = requestAnimationFrame(this.draw);},15); 
   }
  }
