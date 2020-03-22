@@ -39,6 +39,7 @@ class chromeSerial {
     }
 
     onGetDevices = (ports) => {
+        document.getElementById('serialports').innerHTML = '';
         var paths = [];
         for (var i = 0; i < ports.length; i++) {
             console.log(ports[i].path);
