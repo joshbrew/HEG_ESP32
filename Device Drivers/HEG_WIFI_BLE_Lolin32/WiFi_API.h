@@ -385,7 +385,7 @@ void commandESP32(char received)
       USE_2_3 = true;
     }
   }
-  delay(500);
+  delay(100);
 }
 
 // HTTP server GET/POST handles.

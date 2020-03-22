@@ -100,20 +100,34 @@ class ThreeGlobe {
 
         this.scene.add( this.sunMesh );
 
-        //var myUrl = 'https://i.imgur.com/1RXQSUL.jpg'
+        console.log(window.location.pathname);
+        var texUrl = 'assets/textures/8k_earth_daymap.jpg'
 
-        //var textureLoader = new THREE.TextureLoader()
+        var textureLoader = new THREE.TextureLoader()
         //textureLoader.crossOrigin = "Anonymous"
-        //var myTexture = textureLoader.load(myUrl);
+        var globetex = textureLoader.load(texUrl);
+        globetex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+
+        //var globebump = textureLoader.load('assets/textures/8k_earth_bump_map.tif');
+
+        var globeemissive = textureLoader.load('assets/textures/8k_earth_nightmap.jpg')
+        globeemissive.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
         //material
-        var globemat = new THREE.MeshPhysicalMaterial( {
+        var globemat = new THREE.MeshStandardMaterial( {
             wireframe: false,
             color: 0x2a5aff,
-            reflectivity: 1,
-            roughness: 0.8
+            roughness: 0.8,
+            metalness: 0.5
         } );
-        //globemat.map = myTexture;
+        globemat.map = globetex;
+        globemat.emissiveMap = globeemissive;
+        globemat.emissive = color.set('yellow');
+        globemat.emissiveIntensity = 0.5;
+
+        //globemat.bumpMap = globebump;
+        //globemat.normalMap = globenormals;
+        globemat.map.minFilter = THREE.LinearFilter;
         
         //sphere
         var sphere = new THREE.SphereBufferGeometry(2,50,50);
@@ -174,11 +188,14 @@ class ThreeGlobe {
         this.godraypass.renderToScreen = false;
         this.bloompass.renderToScreen = true;
 
-        this.sphereMesh.rotation.z += 1;
+        this.sphereMesh.rotation.z -= 0.3;
+        this.sphereMesh.rotation.y += 2;
+        this.sphereMesh.rotation.x += Math.random()*1.5 - 1;
+
         this.points.rotation.z += 1;
         this.camera.position.x = -2.3;
         this.camera.position.y = -0.2;
-        this.camera.position.z = -0.4;
+        this.camera.position.z = -0.5;
 
         this.camera.rotation.x = 0.13;
         this.camera.rotation.y = -0.4;
@@ -223,7 +240,8 @@ class ThreeGlobe {
         }
 
         this.ticks += this.change*1000;
-        //this.sphereMesh.rotation.y += this.change;
+
+        this.sphereMesh.rotation.y += this.change*0.25;
         this.points.rotation.y += this.change;
 
         var theta = (this.ticks + 2500) * 0.001;
