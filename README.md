@@ -27,11 +27,15 @@ Use the HEG_WIFI_BLE sketch in the arduino IDE on your respective ESP32. Pin def
 These builds are tested on the Lolin32 and Huzzah32 Feather respectively but should work on any board after modifying the pinouts in HEG.h
 
 ### All Open Source Games, Tools, & APIs.
+![Platforms](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/platforms)
+
 On the firmware you will find a WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
-You can demo it now via the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
+You can demo it now via our Chrome Extension (via the More folder) or right on board the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
+
+![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/ChromeApp.PNG)
 
 ## Data Charter (WIP) CSV analyzer for the web app (also found on our [Data page on our website](https://hegalpha.com))
 ![HEGCharter](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/datacharter.PNG?raw=true)
