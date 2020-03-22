@@ -96,7 +96,7 @@ class ThreeGlobe {
         var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
         this.sunMesh = new THREE.Mesh( sphere, sunmat );
 
-        this.sunMesh.position.set(-5, 0, -10);
+        this.sunMesh.position.set(5, 0, -10);
 
         this.scene.add( this.sunMesh );
 
@@ -113,17 +113,22 @@ class ThreeGlobe {
         var globeemissive = textureLoader.load('assets/textures/8k_earth_nightmap.jpg')
         globeemissive.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
+        var globemetal = textureLoader.load('assets/textures/8k_earth_specular_map.tif');
+        globemetal.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+
+
         //material
         var globemat = new THREE.MeshStandardMaterial( {
             wireframe: false,
             color: 0x2a5aff,
-            roughness: 0.8,
-            metalness: 0.5
+            roughness: 0.7,
+            metalness: 1.0
         } );
         globemat.map = globetex;
         globemat.emissiveMap = globeemissive;
         globemat.emissive = color.set('yellow');
         globemat.emissiveIntensity = 0.5;
+        //globemat.metalnessMap = globemetal;
 
         //globemat.bumpMap = globebump;
         //globemat.normalMap = globenormals;
@@ -139,15 +144,15 @@ class ThreeGlobe {
         this.pointLight.position.set( 0, 0, -10 );
 
         this.pointLight.castShadow = true;
-        this.pointLight.intensity = 3;
+        this.pointLight.intensity = 5;
 
         this.pointLight.shadow.mapSize.width = 1024;
         this.pointLight.shadow.mapSize.height = 1024;
 
-        this.pointLight.shadow.camera.fov = 90;
+        this.pointLight.shadow.camera.fov = 80;
 
-        //var sphere = new THREE.SphereBufferGeometry( 0.1, 20, 20 );
-        //this.pointLight.add(new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ));
+        var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
+        this.pointLight.add(new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ));
 
         this.scene.add( this.pointLight );
 
@@ -176,7 +181,7 @@ class ThreeGlobe {
             blendFunction: POSTPROCESSING.BlendFunction.SCREEN,
             kernelSize: POSTPROCESSING.KernelSize.SMALL,
             luminanceThreshold: 0.1,
-            luminanceSmoothing: 0.8,
+            luminanceSmoothing: 0.5,
             opacity: 2,
             height: 480
         })
@@ -189,17 +194,16 @@ class ThreeGlobe {
         this.bloompass.renderToScreen = true;
 
         this.sphereMesh.rotation.z -= 0.3;
-        this.sphereMesh.rotation.y += 2;
-        this.sphereMesh.rotation.x += Math.random()*1.5 - 1;
-
+        this.sphereMesh.rotation.y += 0.5;
+        this.sphereMesh.rotation.x = 0.3
         this.points.rotation.z += 1;
-        this.camera.position.x = -2.3;
-        this.camera.position.y = -0.2;
-        this.camera.position.z = -0.5;
+        this.camera.position.x = 1.8;
+        this.camera.position.y = 1;
+        this.camera.position.z = 1.5;
 
-        this.camera.rotation.x = 0.13;
-        this.camera.rotation.y = -0.4;
-        this.camera.rotation.z = 0.32;
+        this.camera.rotation.x = -0.3;
+        this.camera.rotation.y = -0.1;
+        this.camera.rotation.z = -0.1;
 
         this.begin = 0;
         this.ticks = 0;
@@ -239,17 +243,17 @@ class ThreeGlobe {
             this.camera.updateProjectionMatrix();
         }
 
-        this.ticks += this.change*1000;
+        this.ticks -= this.change*1000;
 
         this.sphereMesh.rotation.y += this.change*0.25;
-        this.points.rotation.y += this.change;
+        this.points.rotation.y -= this.change;
 
-        var theta = (this.ticks + 2500) * 0.001;
+        var theta = (this.ticks + 3100) * 0.001;
         this.pointLight.position.x = Math.sin(theta) * 40;
         //this.pointLight.position.y = Math.cos( time * 7 ) * 3;
         this.pointLight.position.z = Math.cos(theta) * 40;
-        this.sunMesh.position.x = Math.sin(theta - 0.1) * 40;
-        this.sunMesh.position.z = Math.cos(theta - 0.1) * 40;
+        this.sunMesh.position.x = Math.sin(theta + 0.1) * 40;
+        this.sunMesh.position.z = Math.cos(theta + 0.1) * 40;
         
         this.composer.render();
         this.threeAnim = requestAnimationFrame(this.render);
