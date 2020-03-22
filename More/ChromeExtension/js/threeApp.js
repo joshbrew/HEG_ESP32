@@ -151,8 +151,8 @@ class ThreeGlobe {
 
         this.pointLight.shadow.camera.fov = 80;
 
-        var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
-        this.pointLight.add(new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ));
+        //var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
+        //this.pointLight.add(new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ));
 
         this.scene.add( this.pointLight );
 
@@ -195,15 +195,16 @@ class ThreeGlobe {
 
         this.sphereMesh.rotation.z -= 0.3;
         this.sphereMesh.rotation.y += 0.5;
-        this.sphereMesh.rotation.x = 0.3
+        this.sphereMesh.rotation.x = Math.random();
+
         this.points.rotation.z += 1;
-        this.camera.position.x = 1.8;
+        this.camera.position.x = 1.5;
         this.camera.position.y = 1;
-        this.camera.position.z = 1.5;
+        this.camera.position.z = 2;
 
         this.camera.rotation.x = -0.3;
-        this.camera.rotation.y = -0.1;
-        this.camera.rotation.z = -0.1;
+        this.camera.rotation.y = -0.2;
+        this.camera.rotation.z = -0.2;
 
         this.begin = 0;
         this.ticks = 0;
@@ -248,7 +249,7 @@ class ThreeGlobe {
         this.sphereMesh.rotation.y += this.change*0.25;
         this.points.rotation.y -= this.change;
 
-        var theta = (this.ticks + 3100) * 0.001;
+        var theta = (this.ticks + 2900) * 0.001;
         this.pointLight.position.x = Math.sin(theta) * 40;
         //this.pointLight.position.y = Math.cos( time * 7 ) * 3;
         this.pointLight.position.z = Math.cos(theta) * 40;
