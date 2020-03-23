@@ -199,7 +199,7 @@ class ThreeGlobe {
 
         this.points.rotation.z += 1;
         this.camera.position.x = 1.5;
-        this.camera.position.y = 1;
+        this.camera.position.y = 0.5;
         this.camera.position.z = 2;
 
         this.camera.rotation.x = -0.3;
