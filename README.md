@@ -5,9 +5,9 @@ Join our little community at: [HEG Alpha](https://hegalpha.com)
 
 Important HEGduino stuff you can find here:
 - [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
-- [Setting up Arduino to flash the ESP32 with our software, plus notes](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
+- [Setting up Arduino to flash the ESP32 with our biofeedback software, plus notes & changelog](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
-- [Chrome Extension version with USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/More/ChromeExtension)
+- [Chrome Extension version of our biofeedback software with WiFi & USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/More/ChromeExtension)
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
 - [Lolin32 Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Lolin32)
 - [Huzzah32 Feather Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Feather)
@@ -15,7 +15,7 @@ Important HEGduino stuff you can find here:
 ## What is it?
 Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
 
-It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the theory and resources section of the [Whitepaper](https://github.com/moothyknight/HEG_ESP32/blob/master/HEG%20Whitepaper.pdf) to educate yourself more deeply on this subject.
+It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the resources section of the [About Page] on our website (https://hegalpha.com/about) to educate yourself more deeply on this subject.
 
 ![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_Arduino/master/Pics/HEGExplained.png)
 
