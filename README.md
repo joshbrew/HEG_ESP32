@@ -5,9 +5,9 @@ Join our little community at: [HEG Alpha](https://hegalpha.com)
 
 Important HEGduino stuff you can find here:
 - [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
-- [Setting up Arduino to flash the ESP32 with our software, plus notes](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
+- [Setting up Arduino to flash the ESP32 with our biofeedback software, plus notes](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
-- [Chrome Extension version with USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/More/ChromeExtension)
+- [Chrome Extension version of biofeedback software with WiFi & USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/More/ChromeExtension)
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
 - [Lolin32 Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Lolin32)
 - [Huzzah32 Feather Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Feather)
