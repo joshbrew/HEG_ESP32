@@ -11,6 +11,7 @@ Important HEGduino stuff you can find here:
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
 - [Lolin32 Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Lolin32)
 - [Huzzah32 Feather Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Feather)
+
 ## What is it?
 Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
 
@@ -28,7 +29,8 @@ Use the HEG_WIFI_BLE sketch in the arduino IDE on your respective ESP32. Pin def
 These builds are tested on the Lolin32 and Huzzah32 Feather respectively but should work on any board after modifying the pinouts in HEG.h
 
 ### All Open Source Games, Tools, & APIs.
-![Platforms](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/platforms.PNG)
+
+<img src="https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/platforms.PNG" alt="platforms" width="252" height="354">
 
 On the firmware you will find a WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
