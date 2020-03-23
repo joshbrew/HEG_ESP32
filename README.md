@@ -22,7 +22,7 @@ It is implicated for much more, but there's not a whole lot of data (which this 
 ## Software
 
 ### Arduino Setup
-See the [Device_Readme.txt](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt) in the [Arduino](https://www.arduino.cc/en/Main/Software) sketch folder for flashing instructions, including which dependencies are required for the Arduino IDE.
+See the [Device_Readme.txt](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)  for flashing instructions as well as available USB commands and the changelog, including which dependencies are required for the Arduino IDE. We packaged the more minor dependencies in the Device_Drivers folder so you don't have to chase all of them down, just get Arduino and the ESP32 addon (github version) working.
 
 Use the HEG_WIFI_BLE sketch in the arduino IDE on your respective ESP32. Pin definitions in HEG.h for the SDA/SCL and LEDs need to be adjusted according to your setup. 
 
