@@ -17,7 +17,6 @@
 
 #include "BLE_API.h"
 
-
 //#include <SavLayFilter.h>
 //SavLayFilter smallFilter(&filteredRatio, 0, 5);  //Cubic smoothing with windowsize of 5
 //SavLayFilter largeFilter(&filteredRatio, 0, 25); //Cubic smoothing with windowsize of 25
@@ -38,8 +37,6 @@ bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
 bool DEBUG_LEDS = false;
 bool SEND_DUMMY_VALUE = false;
-
-bool BLE_ON, BLE_SETUP = false;
 
 const int ledRate = 17000;        // LED flash rate (us). Can go as fast as 10ms for better heartrate visibility.
 const int sampleRate = 8000;      // ADC read rate (us). ADS1115 has a max of 860sps or 1/860 * 1000 ms or 1.16ms or 1160 us. Current lib limits it to 125sps
@@ -77,7 +74,6 @@ const int PWR = 14;//21; // GPIO power to ADC and OPT101 - NOT RECOMMENDED
 bool coreProgramEnabled = false;
 bool adcEnabled = false;
 bool reset = false;
-bool deviceConnected = false;
 
 String output = "";
 
@@ -119,22 +115,8 @@ float ratioAvg = 0, adcAvg = 0, velAvg = 0, accelAvg = 0;
 //Timing variables
 unsigned long sampleMicros, currentMicros, LEDMicros, BLEMicros, USBMicros = 0;
 
-class MyServerCallbacks : public BLEServerCallbacks
-{
-  void onConnect(BLEServer *pServer)
-  {
-    Serial.println("Device connected to BLE");
-    deviceConnected = true;
-  }
 
-  void onDisconnect(BLEServer *pServer)
-  {
-    Serial.println("Device disconnected from BLE");
-    deviceConnected = false;
-  }
-};
-
-class MyCallbacks : public BLECharacteristicCallbacks
+class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BLE callback commands here.
 {
   void onWrite(BLECharacteristic *pCharacteristic)
   {
@@ -272,7 +254,8 @@ class MyCallbacks : public BLECharacteristicCallbacks
     }
   };
 
-  void setupBLE()
+  
+void setupBLE()
   {
       // Create the BLE Device
       BLEDevice::init("HEG"); // Give it a name
@@ -307,6 +290,8 @@ class MyCallbacks : public BLECharacteristicCallbacks
       Serial.println("BLE service started, scan for HEG.");
 }
 
+
+
 //Start ADC and set gain. Starts timers
 void startADS()
 {
@@ -339,7 +324,7 @@ void setupHEG() {
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
 
-  if(USE_BT == true){
+  if(USE_BLE == true){
     setupBLE();
     //SerialBT.begin();
   }

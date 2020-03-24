@@ -15,6 +15,23 @@ BLECharacteristic *pCharacteristic;
 
 bool USE_BT = false;          // WRITE 'B' TO TOGGLE.
 bool USE_BLE = false;         // WRITE 'b' TO TOGGLE.
+bool BLE_ON, BLE_SETUP = false;
+bool deviceConnected = false;
+
+class MyServerCallbacks : public BLEServerCallbacks
+{
+  void onConnect(BLEServer *pServer)
+  {
+    Serial.println("Device connected to BLE");
+    deviceConnected = true;
+  }
+
+  void onDisconnect(BLEServer *pServer)
+  {
+    Serial.println("Device disconnected from BLE");
+    deviceConnected = false;
+  }
+};
 
 void setupBTSerial() {
   SerialBT.begin("HEGduino BT");
