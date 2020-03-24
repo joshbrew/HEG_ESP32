@@ -151,7 +151,6 @@ class ThreeGlobe {
 
         var cloudmat = new THREE.MeshLambertMaterial( {
             transparent: true,
-            color: 0x1F1F1F,
             map: cloudtex,
             alphaMap: cloudtex
         });
@@ -168,20 +167,49 @@ class ThreeGlobe {
         this.scene.add(this.cloudMesh);
 
         this.pointLight = new THREE.PointLight(0xFFFFFF);
-        this.pointLight.position.set( 0, 0, -10 );
+        this.pointLight.position.set( 0, 0, -8 );
 
         this.pointLight.castShadow = true;
-        this.pointLight.intensity = 5;
+        this.pointLight.intensity = 4;
 
         this.pointLight.shadow.mapSize.width = 1024;
         this.pointLight.shadow.mapSize.height = 1024;
 
-        this.pointLight.shadow.camera.fov = 80;
+        //this.pointLight.shadow.camera.fov = 360;
 
         //var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
         //this.pointLight.add(new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ));
 
         this.scene.add( this.pointLight );
+
+        this.redpointLight = new THREE.PointLight(0xff2c35);
+        this.redpointLight.position.set( 0, 0, -8 );
+
+        this.redpointLight.castShadow = true;
+        this.redpointLight.intensity = 1;
+
+        this.redpointLight.shadow.mapSize.width = 1024;
+        this.redpointLight.shadow.mapSize.height = 1024;
+
+        //this.redpointLight.shadow.camera.fov = 360;
+
+        //var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
+        //this.pointLight.add(new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ));
+
+        this.scene.add( this.redpointLight );
+
+        this.redpointLight2 = new THREE.PointLight(0xff2c35);
+        this.redpointLight2.position.set( 0, 0, -8 );
+
+        this.redpointLight2.castShadow = true;
+        this.redpointLight2.intensity = 2;
+
+        this.redpointLight2.shadow.mapSize.width = 1024;
+        this.redpointLight.shadow.mapSize.height = 1024;
+
+        //this.redpointLight2.shadow.camera.fov = 360;
+
+        this.scene.add( this.redpointLight2 );
 
         this.composer = new POSTPROCESSING.EffectComposer(this.renderer);
         this.renderPass = new POSTPROCESSING.RenderPass( this.scene, this.camera )
@@ -283,6 +311,10 @@ class ThreeGlobe {
         this.pointLight.position.x = Math.sin(theta) * 40;
         //this.pointLight.position.y = Math.cos( time * 7 ) * 3;
         this.pointLight.position.z = Math.cos(theta) * 40;
+        this.redpointLight.position.x = Math.sin(theta - 0.15) * 40;
+        this.redpointLight.position.z = Math.cos(theta - 0.15) * 40;
+        this.redpointLight2.position.x = Math.sin(theta + 0.15) * 40;
+        this.redpointLight2.position.z = Math.cos(theta + 0.15) * 40;
         this.sunMesh.position.x = Math.sin(theta + 0.1) * 40;
         this.sunMesh.position.z = Math.cos(theta + 0.1) * 40;
         
