@@ -18,9 +18,11 @@ class ThreeGlobe {
 
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 435, 0.1, 1000 );
+        
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth - 20, 435);
+     
         document.getElementById("threeContainer").appendChild(this.renderer.domElement);
 
         var nStars = 5000;
@@ -93,8 +95,8 @@ class ThreeGlobe {
             color: 0xffe8c6
         } );
         
-        var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
-        this.sunMesh = new THREE.Mesh( sphere, sunmat );
+        var sunsphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
+        this.sunMesh = new THREE.Mesh( sunsphere, sunmat );
 
         this.sunMesh.position.set(5, 0, -10);
 
@@ -135,10 +137,35 @@ class ThreeGlobe {
         globemat.map.minFilter = THREE.LinearFilter;
         
         //sphere
-        var sphere = new THREE.SphereBufferGeometry(2,50,50);
-        this.sphereMesh = new THREE.Mesh( sphere, globemat );
+        var earthsphere = new THREE.SphereBufferGeometry(2,50,50);
+        this.sphereMesh = new THREE.Mesh( earthsphere, globemat );
+
+        this.sphereMesh.castShadow = true;
+        this.sphereMesh.receiveShadow = true;
 
         this.scene.add( this.sphereMesh );
+
+        var cloudtexUrl = "assets/textures/clouds_8k.jpg";
+        var cloudtex = textureLoader.load(cloudtexUrl);
+        cloudtex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+
+        var cloudmat = new THREE.MeshLambertMaterial( {
+            transparent: true,
+            color: 0x1F1F1F,
+            map: cloudtex,
+            alphaMap: cloudtex
+        });
+        //cloudmat.map.minFilter = THREE.LinearFilter;
+
+        var cloudsphere = new THREE.SphereBufferGeometry(2.03,50,50);
+        this.cloudMesh = new THREE.Mesh( cloudsphere, cloudmat );
+        this.cloudMesh.castShadow = true;
+        this.cloudMesh.customDepthMaterial = new THREE.MeshDepthMaterial({
+            depthPacking: THREE.RGBADepthPacking,
+            map: cloudtex
+        });
+
+        this.scene.add(this.cloudMesh);
 
         this.pointLight = new THREE.PointLight(0xFFFFFF);
         this.pointLight.position.set( 0, 0, -10 );
@@ -197,6 +224,8 @@ class ThreeGlobe {
         this.sphereMesh.rotation.y += 0.5;
         this.sphereMesh.rotation.x = Math.random();
 
+        this.cloudMesh.rotation.y = Math.random() * 2;
+
         this.points.rotation.z += 1;
         this.camera.position.x = 1.5;
         this.camera.position.y = 0.5;
@@ -247,6 +276,7 @@ class ThreeGlobe {
         this.ticks -= this.change*1000;
 
         this.sphereMesh.rotation.y += this.change*0.25;
+        this.cloudMesh.rotation.y = this.sphereMesh.rotation.y;
         this.points.rotation.y -= this.change;
 
         var theta = (this.ticks + 2900) * 0.001;

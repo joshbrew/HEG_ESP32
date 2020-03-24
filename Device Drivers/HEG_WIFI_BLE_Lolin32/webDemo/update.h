@@ -61,7 +61,7 @@ progress {
 
         source.addEventListener('message', function(e) {
             document.getElementById("message").innerHTML = e.data;
-            document.getElementById("progressbar").value = e.data;
+            document.getElementById("progressbar").value = parseInt(e.data.split(" ")[3]);
             console.log("HEGDUINO", e.data);
         }, false);
       }
