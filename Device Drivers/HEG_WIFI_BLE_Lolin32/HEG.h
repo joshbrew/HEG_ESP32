@@ -17,12 +17,14 @@
 
 #include "BLE_API.h"
 
+
 //#include <SavLayFilter.h>
 //SavLayFilter smallFilter(&filteredRatio, 0, 5);  //Cubic smoothing with windowsize of 5
 //SavLayFilter largeFilter(&filteredRatio, 0, 25); //Cubic smoothing with windowsize of 25
 
 bool USE_USB = true;          // WRITE 'u' TO TOGGLE, CHANGE HERE TO SET DEFAULT ON POWERING THE DEVICE
-bool USE_BT = false;          // WRITE 'b' TO TOGGLE.
+
+
 bool pIR_MODE = false;        // SET TO TRUE OR WRITE 'p' TO DO PASSIVE INFRARED ONLY (NO RED LIGHT FOR BLOOD-OXYGEN DETECTION). RATIO IS USELESS HERE, USE ADC CHANGES AS MEASUREMENT.
 bool NOISE_REDUCTION = false; // WRITE 'n' TO TOGGLE USING 4 LEDS FOR NOISE CANCELLING *EXPERIMENTAL*
 bool USE_DIFF = false;        // Use differential read mode, can reduce noise.
@@ -170,6 +172,26 @@ class MyCallbacks : public BLECharacteristicCallbacks
         ir_led = false;
         reset = true;
       }
+      else if (rxValue.find("B"))
+      { //Bluetooth Serial Toggle
+        EEPROM.begin(512);
+        if (EEPROM.read(0) == 1)
+        {
+          EEPROM.write(0,2);
+          EEPROM.commit();
+          EEPROM.end();
+          delay(100);
+          ESP.restart();
+        }
+        else
+        {
+          EEPROM.write(0,1);
+          EEPROM.commit();
+          EEPROM.end();
+          delay(100);
+          ESP.restart();
+        }
+      }
       else if (rxValue.find("b") != -1)
       {
         EEPROM.begin(512);
@@ -281,7 +303,7 @@ class MyCallbacks : public BLECharacteristicCallbacks
       pServer->getAdvertising()->start();
       BLE_SETUP = true;
       BLE_ON = true;
-      USE_BT = true;
+      USE_BLE = true;
       Serial.println("BLE service started, scan for HEG.");
 }
 
@@ -351,10 +373,10 @@ void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC
         Serial.println(adc0);
       }
       if (USE_BT == true) {
-        /*if (SerialBT.hasClient()) {
+        if (SerialBT.hasClient()) {
           SerialBT.flush();
           SerialBT.print("Testing photodiode " + String(j) + " | ADC value: " + String(adc0) + "\r\n");
-        }*/
+        }
       }
       if (adc0 == -1) {
         if (USE_USB == true) {
@@ -364,31 +386,31 @@ void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC
           Serial.print(" | SCL pin assigned: ");
           Serial.println(SCL0_PIN);
         }
-        /*if (USE_BT == true) {
+        if (USE_BT == true) {
           if (SerialBT.hasClient() == true) {
             SerialBT.print("Error, check SDA/SCL pin settings and solder connections. \r\n");
             SerialBT.print("SDA pin assigned: " + String(SDA0_PIN) + " | SCL pin assigned: " + String(SCL0_PIN) + "\r\n");
           }
-        }*/
+        }
         failed = true;
       }
       else if ((adc0 > 100) && (adc0 < 32760)) {
         if (USE_USB == true) {
           Serial.println("Photodiode readings within a range that indicates it is working.");
         }
-        /*if (USE_BT == true) {
+        if (USE_BT == true) {
           if (SerialBT.hasClient()) {
             SerialBT.print("Photodiode readings within a range that indicates it is working.\r\n");
           }
-        }*/
+        }
       }
       else if (adc0 > 32760) {
         if (USE_USB == true) {
           Serial.println("Notice: ADC saturated. Isolate from light or check photodiode pin connections.");
         }
-        /*if (USE_BT == true) {
+        if (USE_BT == true) {
           SerialBT.print("Notice: ADC saturated. Isolate from light or check photodiode pin connections.\r\n");
-        }*/
+        }
         failed = true;
       }
       delay(100);
@@ -399,11 +421,11 @@ void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC
     if (USE_USB == true) {
       Serial.println("Photodiode final test result: FAIL. Resetting...");
     }
-    /*if (USE_BT == true) {
+    if (USE_BT == true) {
       if (SerialBT.hasClient() == true) {
         SerialBT.print("Photodiode final test result: FAIL. Resetting... \r\n");
       }
-    }*/
+    }
     ESP.restart();
   }
 }
@@ -427,12 +449,12 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
     Serial.flush();
     Serial.println("Testing LEDs...");
   }
-  /*if (USE_BT == true) {
+  if (USE_BT == true) {
     if (SerialBT.hasClient() == true) {
       SerialBT.flush();
       SerialBT.print("Testing LEDs... \r\n");
     }
-  }*/
+  }
 
   for (int i = 0; i < nLEDs; i++) {
     if (i == 0) {
@@ -477,12 +499,12 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
           Serial.flush();
           Serial.print("Error: RED LED difference from ambient insufficient at site: ");
         }
-        /*if (USE_BT == true) {
+        if (USE_BT == true) {
           if (SerialBT.hasClient()) {
             SerialBT.flush();
             SerialBT.print("Error: RED LED difference from ambient insufficient at ");
           }
-        }*/
+        }
         failed = true;
       }
       if (USE_USB == true) {
@@ -493,20 +515,20 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
         Serial.print(" | RED reading: ");
         Serial.println(redValue);
       }
-      /*if (USE_BT == true) {
+      if (USE_BT == true) {
         if (SerialBT.hasClient()) {
           SerialBT.print("Site: " + String(i) + "\r\n" + "Ambient reading: " + String(rawValue) + " | RED reading: " + String(redValue) + "\r\n");
         }
-      }*/
+      }
       if (irValue / rawValue < 1.1) {
         if (USE_USB == true) {
           Serial.flush();
           Serial.print("Error: IR LED difference from ambience insufficient at ");
         }
-        /*if (USE_BT == true) {
+        if (USE_BT == true) {
           if (SerialBT.hasClient()) {
             SerialBT.flush();          }
-        }*/
+        }
         failed = true;
       }
       if (USE_USB == true) {
@@ -517,11 +539,11 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
         Serial.print(" | IR reading: ");
         Serial.println(irValue);
       }
-      /*if (USE_BT == true) {
+      if (USE_BT == true) {
         if (SerialBT.hasClient()) {
           SerialBT.print("Site: " + String(i) + "\r\n" + "Ambient reading: " + String(rawValue) + " | IR reading: " + String(irValue) + "\r\n");
         }
-      }*/
+      }
       delay(500);
     }
   }
@@ -530,11 +552,11 @@ void LEDTest() { // Test LEDs assuming photodiodes are good
     if (USE_USB == true) {
       Serial.println("LED final test results: FAIL. Resetting...");
     }
-    /*if (USE_BT == true) {
+    if (USE_BT == true) {
       if (SerialBT.hasClient()) {
         SerialBT.print("LED final test results: FAIL. Resetting..  \r\n");
       }
-    }*/
+    }
     ESP.restart();
   }
 }
@@ -611,7 +633,7 @@ void switch_LEDs(int R, int Ir) {
     //currentMicros += 2000;
 }
 
-void adc_err_catch(){ // Reset a signal reading if it falls outside expected changes compared to previous time.
+void adc_err_catch(){ // BIGGERReset a signal reading if it falls outside expected changes compared to previous time.
   ADC_ERR_CAUGHT = false;
   if((lastRed != 0)&&((redGet < (lastRed + lastRed * -0.3)) || (redGet > (lastRed + lastRed * 0.3)))){
     redValue = 0;
@@ -840,11 +862,11 @@ void core_program(bool doNoiseReduction)
       Serial.println("Heap after core_program cycle: ");
       Serial.println(ESP.getFreeHeap());
     }
-    /*if (USE_BT == true)
+    if (USE_BT == true)
     {
       SerialBT.println("Heap after core_program cycle: ");
       SerialBT.println(ESP.getFreeHeap());
-    }*/
+    }
   }
 } // END core_program()
 
@@ -867,6 +889,15 @@ void updateHEG()
           //Serial.flush();
           Serial.print(output);
         }
+        if (USE_BT == true) //BTSerial
+        {
+          if (SerialBT.hasClient() == true)
+          {
+            SerialBT.flush();
+            SerialBT.print(output);
+            delay(10); // 10ms delay min required for BT output only due to bottleneck in library.
+          }
+        }
         if (deviceConnected == true)
         { // could just use output.c_str(); // Need to clean this up
           pCharacteristic->setValue(String(currentMicros).c_str());
@@ -887,16 +918,6 @@ void updateHEG()
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent
         }
-        /*if (USE_BT == true) //BTSerial
-        {
-          if (SerialBT.hasClient() == true)
-          {
-            SerialBT.flush();
-            SerialBT.print(String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(smallFilter.Compute(), 4) + "|" + String(largeFilter.Compute(), 4) + "|" + String(adcAvg, 0) + "|" + String(posAvg, 4) + "\r\n");
-            delay(10); // 10ms delay min required for BT output only due to bottleneck in library.
-          }
-        }*/
-      
       }
       adcAvg = 0, redAvg = 0, irAvg = 0, ratioAvg = 0, velAvg = 0, accelAvg = 0, ratioTicks = 0, adcTicks = 0;
       //rawAvg = 0;

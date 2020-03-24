@@ -882,7 +882,9 @@ class circleJS {
         this.useAmplify = false;
 
         this.ampScore = 0;
+        this.ampThreshold = 0;
         this.diff = 0;
+        
 
         this.enableControls = false;
         this.vidapiId = vidapiId
@@ -988,6 +990,7 @@ class circleJS {
             this.playRate = 1;
             document.getElementById("useAmplify").style.opacity = "0.3";
             this.ampScore = 0;
+            this.ampThreshold = 0;
           }
           else {
             this.useRate = false;
@@ -995,6 +998,7 @@ class circleJS {
             this.playRate = 1;
             document.getElementById("useAmplify").style.opacity = "1.0";
             this.ampScore = 0;
+            this.ampThreshold = 0;
           }
         }
 
@@ -1152,6 +1156,10 @@ class circleJS {
       if(this.useAmplify == true){
         this.diff = this.score - this.lastScore;
         this.lastScore = this.score;
+        this.ampScore += score;
+        if(this.diff > 0.01) {
+          this.ampThreshold = ampScore; //Sets the score threshold at which the large increase was detected. 
+        }
         console.log(diff); // Do something with the different (e.g. if diff > X, slow video)
         if(((this.vidQuery.playbackRate < 3) || (score < 0)) && ((this.vidQuery.playbackRate > 0) || (score > 0)))
         { 

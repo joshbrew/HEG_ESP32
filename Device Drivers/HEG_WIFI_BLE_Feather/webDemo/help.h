@@ -279,7 +279,8 @@ const char help_page[] PROGMEM= R"=====(
         't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light. <br>
         'f' - Sensor off. <br>
         'W' - Reset WiFi to default access point mode (wipes saved credentials). <br>
-        'b' - Toggle BLE mode, this resets the device to start in BLE mode, so you have to enter 'b' again through the serial or BLE connection to switch back to WiFi.<br>
+        'B' - Toggle Bluetooth Serial mode, resets devices to be in BTSerial (classic) mode. Access like standard USB serial after pairing.
+        'b' - Toggle BLE mode, resets the device to start in BLE mode, so you have to enter 'b' again through the serial or BLE connection to switch back to WiFi.<br>
         'R' - hard resets the ESP32.<br>
         's' - soft resets the sensor data.<br>
         'u' - toggles USB data stream. <br>

@@ -50,8 +50,9 @@ input[type=submit]{
   <h2>Connection Settings</h4>
     <!-- For remote form POSTing, add host IP to front of action path (e.g. <form method='post' action='http://192.168.4.1/doConnect'...) -->
   <form method ='post' action='/doConnect' enctype='multipart/form-data'>
-    <input type='radio' id='AP_ONLY' name='choices' value='1'>Reset to Default (Can also toggle with "W" via USB Serial or BT)<br>
-    <input type='radio' id='btSwitch' name='choices' value='2'>Bluetooth LE (Can also toggle with "b" via USB Serial or BT)<br>
+    <input type='radio' id='AP_ONLY' name='choices' value='1'>Reset to Default (OR toggle with "W" via USB Serial or BT)<br>
+    <input type='radio' id='btSwitch' name='choices' value='2'>Bluetooth LE (OR toggle with "b" via USB Serial or BT)<br>
+    <input type='radio' id='btserSwitch' name='choices' value='5'>Bluetooth Serial (OR toggle with "B" via USB Serial or BT) <br>
     <br>
     Connect to Network (WiFi scan results at bottom of page): <br>
     SSID:<br>
@@ -85,10 +86,23 @@ input[type=submit]{
     <input type='submit' id='Connect' value='Connect'>
    </div>
   </form>
-  <div id="scanResults">
+  <script>
+    document.getElementById("use_static").onclick = function() {
+      document.getElementById("staticoptions").style.opacity = 1.0;
+    }
+    document.getElementById("use_dns").onclick = function() {
+      document.getElementById("staticoptions").style.opacity = 1.0;
+      document.getElementById("staticextoptions").style.opacity = 1.0;
+    }
+    document.getElementById("defaultC").onclick = function() {
+      document.getElementById("staticoptions").style.opacity = 0.3;
+      document.getElementById("staticextoptions").style.opacity = 0.3;
+    }
+  </script>
 )=====";
 
 const char connect_page2[] PROGMEM = R"=====(
+  <div id="scanResults">
   </div>
 </body>
 </html>

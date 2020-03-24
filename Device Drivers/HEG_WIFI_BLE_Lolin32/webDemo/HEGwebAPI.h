@@ -876,9 +876,17 @@ class circleJS {
         this.playRate = 1;
         this.alpha = 0;
         this.volume = 0.5;
+
         this.useAlpha = true;
         this.useRate = true;
         this.useVolume = true;
+        this.useAmplify = false;
+
+        this.ampScore = 0;
+        this.ampThreshold = 0;
+        this.diff = 0;
+        
+
         this.enableControls = false;
         this.vidapiId = vidapiId
         this.vidContainerId = vidContainerId;
@@ -951,7 +959,13 @@ class circleJS {
            this.vidQuery.playbackRate = 1;
            document.getElementById("useRate").style.opacity = "0.3";
          }
-         else{ this.useRate = true; this.playRate = 1; document.getElementById("useRate").style.opacity = "1.0";}
+         else{ 
+           this.useAmplify = false; 
+           this.useRate = true; 
+           this.playRate = 1; 
+           document.getElementById("useRate").style.opacity = "1.0";
+           document.getElementById("useAmplify").style.opacity = "0.3";
+          }
         }
 
         document.getElementById("useVol").onclick = () => {
@@ -968,6 +982,24 @@ class circleJS {
           this.volume = 0.5; 
           this.vidQuery.volume = 0.5;
           document.getElementById("useVol").style.opacity = "1.0";
+          }
+        }
+
+        document.getElementById("useAmplify").onclick = () => {
+          if(this.useAmplify == true){
+            this.useAmplify = false;
+            this.playRate = 1;
+            document.getElementById("useAmplify").style.opacity = "0.3";
+            this.ampScore = 0;
+            this.ampThreshold = 0;
+          }
+          else {
+            this.useRate = false;
+            this.useAmplify = true;
+            this.playRate = 1;
+            document.getElementById("useAmplify").style.opacity = "1.0";
+            this.ampScore = 0;
+            this.ampThreshold = 0;
           }
         }
 
@@ -1037,8 +1069,9 @@ class circleJS {
           <tr><td>Feedback:</td></tr> \
           <tr><td><button class="button vdfade" id="useAlpha" name="useAlpha">Fade</button></td></tr> \
           <tr><td><button class="button vdspeed" id="useRate" name="useRate">Speed</button></td></tr> \
-          <tr><td><button class="button vdvol" id="useVol" name="useVol">Volume</button></td></tr></div> \
-          </table> \
+          <tr><td><button class="button vdvol" id="useVol" name="useVol">Volume</button></td></tr> \
+          <tr><td><button class="button" id="useAmplify" name="useAmplify">Amplify</button></td></tr> \
+          </table></div> \
         </div>';
        HEGwebAPI.appendFragment(videoapiHTML, parentId);
 
@@ -1118,6 +1151,31 @@ class circleJS {
           }
           else {
             this.vidQuery.volume = this.volume;
+          }
+        }
+      }
+      if(this.useAmplify == true){
+        this.diff = this.score - this.lastScore;
+        this.lastScore = this.score;
+        this.ampScore += score;
+        if(this.diff > 0.01) {
+          this.ampThreshold = ampScore; //Sets the score threshold at which the large increase was detected. 
+        }
+        console.log(diff); // Do something with the different (e.g. if diff > X, slow video)
+        if(((this.vidQuery.playbackRate < 3) || (score < 0)) && ((this.vidQuery.playbackRate > 0) || (score > 0)))
+        { 
+          this.playRate = this.vidQuery.playbackRate - score*0.5;
+          if((this.playRate < 0.05) && (this.playRate > 0)){
+            this.vidQuery.playbackRate = 0;
+          }
+          else if(this.playRate < 0) {
+            this.vidQuery.currentTime += score;
+          }
+          else if((this.playRate > 0.05) && (this.playRate < 0.1)){
+            this.vidQuery.playbackRate = 0.1;
+          }
+          else{
+            this.vidQuery.playbackRate = this.playRate;
           }
         }
       }

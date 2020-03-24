@@ -202,8 +202,8 @@ void commandESP32(char received)
   { //Disable sensor, reset.
     coreProgramEnabled = false;
     delay(300);
-    //digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
-    digitalWrite(RED, LOW);
+    digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+    //digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
     no_led = true;
     red_led = false;
@@ -240,24 +240,15 @@ void commandESP32(char received)
   { //Reset baseline and readings
     reset = true;
   }
-  /*if (received == 'A')
-  { // Toggle ADC_ERR_CATCH mode
-    if(ADC_ERR_CATCH == false){
-      ADC_ERR_CATCH = true;
-    }
-    else {
-      ADC_ERR_CATCH = false;
-    }
-  }*/
   if (received == 'R') {
     if (USE_USB == true) {
       Serial.println("Restarting ESP32...");
     }
-    /*if (USE_BT == true) {
+    if (USE_BT == true) {
       if (SerialBT.hasClient() == true) {
         SerialBT.println("Restarting ESP32...");
       }
-    }*/
+    }
     delay(300);
     ESP.restart();
   }
@@ -280,10 +271,31 @@ void commandESP32(char received)
       USE_USB = false; // Serial.end() or Serial.hasClient() type function to suppress serial output?
     }
   }
-  if (received == 'b')
-  { //Bluetooth Toggle
+  if (received == 'B')
+  { //Bluetooth Serial Toggle
     EEPROM.begin(512);
-    if (EEPROM.read(0) == 0)
+    int ComMode = EEPROM.read(0);
+    if (ComMode != 2)
+    {
+      EEPROM.write(0,2);
+      EEPROM.commit();
+      EEPROM.end();
+      delay(100);
+      ESP.restart();
+    }
+    else //Default back to WiFi mode
+    {
+      EEPROM.write(0,0);
+      EEPROM.commit();
+      EEPROM.end();
+      delay(100);
+      ESP.restart();
+    }
+  }
+  if (received == 'b')
+  { //Bluetooth LE Toggle
+    EEPROM.begin(512);
+    if (EEPROM.read(0) != 1)
     {
       EEPROM.write(0,1);
       EEPROM.commit();
@@ -291,7 +303,7 @@ void commandESP32(char received)
       delay(100);
       ESP.restart();
     }
-    else
+    else //Default back to WiFi mode
     {
       EEPROM.write(0,0);
       EEPROM.commit();
@@ -439,7 +451,8 @@ void handleDoConnect(AsyncWebServerRequest *request) {
   bool ap_only = false;
   bool use_static = false;
   bool use_dns = false;
-  bool btSwitch = false;
+  bool bleSwitch = false;
+  bool btserSwitch = false;
   bool suggestIP = false;
   
   for(uint8_t i = 0; i < request->args(); i++){
@@ -451,16 +464,18 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     if(request->argName(i) == "primary"){ primaryDNS = String(request->arg(i)); Serial.print("Primary DNS: "); Serial.println(primaryDNS); }
     if(request->argName(i) == "secondary"){ secondaryDNS = String(request->arg(i)); Serial.print("Secondary DNS: "); Serial.println(secondaryDNS); }
     if(request->argName(i) == "choices"){ 
-      if      (String(request->arg(i)) == "0"){use_static = true; Serial.println("Use Static IP: true");}
+      if      (String(request->arg(i)) == "0") {use_static = true; Serial.println("Use Static IP: true");}
       else if (String(request->arg(i)) == "1") {ap_only = true; Serial.println("AP Only: true");}
-      else if (String(request->arg(i)) == "2"){btSwitch = true; Serial.println("Use Bluetooth: true");}
+      else if (String(request->arg(i)) == "2") {bleSwitch = true; Serial.println("Use Bluetooth LE: true");}
       else if (String(request->arg(i)) == "3") {use_dns = true; Serial.println("Use Static IP with DNS: true"); }
       else if (String(request->arg(i)) == "4") {suggestIP = true; Serial.println("Suggesting IP...");}
+      else if (String(request->arg(i)) == "5") {btserSwitch = true; Serial.println("Use Bluetooth Serial: true");};
+      
     }
     //if(request->argName(i) == "save"){save = bool(request->arg(i)); Serial.println(save);}
   }
   delay(100);
-  if (btSwitch == false) {
+  if ((bleSwitch == false) && (btserSwitch == false)) {
     AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the device connects.");
     response->addHeader("Refresh", "20");  
     response->addHeader("Location", "/");
@@ -499,8 +514,11 @@ void handleDoConnect(AsyncWebServerRequest *request) {
       }
     }
   }
-  else {
+  else if (bleSwitch == true) {
     commandESP32('b');
+  }
+  else if (btserSwitch == true){
+    commandESP32('B');
   }
   delay(100);
 }
@@ -551,7 +569,7 @@ void printProgress(size_t prg, size_t sz) {
 
 void checkInput()
 {
-  /*if (USE_BT == true)
+  if (USE_BT == true)
   {
     while (SerialBT.available())
     {
@@ -560,7 +578,7 @@ void checkInput()
       commandESP32(received);
       SerialBT.read(); //Flush endline for single char response
     }
-  }*/
+  }
   if (USE_USB == true)
   {
     while (Serial.available())

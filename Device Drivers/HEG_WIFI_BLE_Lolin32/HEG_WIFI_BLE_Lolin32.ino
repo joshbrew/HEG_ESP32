@@ -20,13 +20,19 @@ void setup(void){
   startADS();
   delay(100);
   EEPROM.begin(512);
-  if(EEPROM.read(0) != 1){
+
+  int ComMode = EEPROM.read(0);
+  if(ComMode == 0){
     EEPROM.end();
     setupWiFi();
   }
-  else {
+  else if(ComMode == 1) {
     EEPROM.end();
     setupBLE();
+  }
+  else if(ComMode == 2) {
+    EEPROM.end();
+    setupBTSerial();
   }
   //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);
 }
