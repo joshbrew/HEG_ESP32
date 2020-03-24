@@ -415,6 +415,9 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
       s.handleEventData(line); 
       //console.log("Passing Data...", Date.now())
     }
+    else{
+      console.log("RECEIVED: ", line);
+    }
   }
 }
 
