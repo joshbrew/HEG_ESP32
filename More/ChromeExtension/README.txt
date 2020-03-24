@@ -17,7 +17,7 @@ is connected to your main), then open up the Data menu and click 'Connect' or ty
 first then click.
 
 To use Bluetooth, you must have your device in Bluetooth Serial mode ('B' command or toggled via the 
-Connect page) then pair with it. Then two new Bluetooth COM ports should be available in the top right
-port list, the first one should work.
+WiFi Server's Connection Settings page) then pair with it. Then two new Bluetooth COM ports should be
+available in the top right port list, the first one should work.
 
 Saved Sessions show up in your default internet Downloads folder.
