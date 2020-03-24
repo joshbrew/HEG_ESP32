@@ -122,7 +122,7 @@ class ThreeGlobe {
         //material
         var globemat = new THREE.MeshStandardMaterial( {
             wireframe: false,
-            color: 0x2a5aff,
+            color: 0xa1e3fe,
             roughness: 0.7,
             metalness: 1.0
         } );
