@@ -202,8 +202,8 @@ void commandESP32(char received)
   { //Disable sensor, reset.
     coreProgramEnabled = false;
     delay(300);
-    digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
-    //digitalWrite(RED, LOW);
+    //digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+    digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
     no_led = true;
     red_led = false;

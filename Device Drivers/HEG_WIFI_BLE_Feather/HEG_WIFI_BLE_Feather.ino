@@ -19,8 +19,8 @@ void setup(void){
   delay(100);
   startADS();
   delay(100);
+  
   EEPROM.begin(512);
-
   int ComMode = EEPROM.read(0);
   if(ComMode == 0){
     EEPROM.end();
