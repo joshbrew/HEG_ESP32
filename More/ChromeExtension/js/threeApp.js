@@ -22,6 +22,8 @@ class ThreeGlobe {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth - 20, 435);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
      
         document.getElementById("threeContainer").appendChild(this.renderer.domElement);
 
@@ -137,7 +139,7 @@ class ThreeGlobe {
         globemat.map.minFilter = THREE.LinearFilter;
         
         //sphere
-        var earthsphere = new THREE.SphereBufferGeometry(2,50,50);
+        var earthsphere = new THREE.SphereBufferGeometry(2,500,500);
         this.sphereMesh = new THREE.Mesh( earthsphere, globemat );
 
         this.sphereMesh.castShadow = true;
@@ -149,22 +151,39 @@ class ThreeGlobe {
         var cloudtex = textureLoader.load(cloudtexUrl);
         cloudtex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
-        var cloudmat = new THREE.MeshLambertMaterial( {
+        var cloudmat = new THREE.MeshStandardMaterial( {
             transparent: true,
             map: cloudtex,
             alphaMap: cloudtex
         });
         //cloudmat.map.minFilter = THREE.LinearFilter;
 
-        var cloudsphere = new THREE.SphereBufferGeometry(2.03,50,50);
+        var cloudsphere = new THREE.SphereBufferGeometry(2.01,500,500);
         this.cloudMesh = new THREE.Mesh( cloudsphere, cloudmat );
-        this.cloudMesh.castShadow = true;
-        this.cloudMesh.customDepthMaterial = new THREE.MeshDepthMaterial({
-            depthPacking: THREE.RGBADepthPacking,
-            map: cloudtex
-        });
+        //this.cloudMesh.castShadow = true;
+        this.cloudMesh.receiveShadow = true;
 
         this.scene.add(this.cloudMesh);
+
+        var moontexUrl = "assets/textures/moon_4k.jpg";
+        var moondispUrl = "assets/textures/moon_displace_4k.jpg"
+
+        var moontex = textureLoader.load(moontexUrl);
+
+        var moonmat = new THREE.MeshStandardMaterial({
+            map: moontex,
+            roughness: 1.0,
+            metalness: 1.2
+        });
+
+
+        var moonSphere = new THREE.SphereBufferGeometry(1.0, 50, 50);
+        this.moonMesh = new THREE.Mesh( moonSphere, moonmat );
+        this.moonMesh.position.set(0, 0, -5);
+        this.moonMesh.castShadow = true;
+        this.moonMesh.receiveShadow = true;
+
+        this.scene.add(this.moonMesh);
 
         this.pointLight = new THREE.PointLight(0xFFFFFF);
         this.pointLight.position.set( 0, 0, -8 );
@@ -172,8 +191,8 @@ class ThreeGlobe {
         this.pointLight.castShadow = true;
         this.pointLight.intensity = 4;
 
-        this.pointLight.shadow.mapSize.width = 1024;
-        this.pointLight.shadow.mapSize.height = 1024;
+        this.pointLight.shadow.mapSize.width = 4096;
+        this.pointLight.shadow.mapSize.height = 4096;
 
         //this.pointLight.shadow.camera.fov = 360;
 
@@ -185,12 +204,9 @@ class ThreeGlobe {
         this.redpointLight = new THREE.PointLight(0xff2c35);
         this.redpointLight.position.set( 0, 0, -8 );
 
-        this.redpointLight.castShadow = true;
         this.redpointLight.intensity = 1;
 
-        this.redpointLight.shadow.mapSize.width = 1024;
-        this.redpointLight.shadow.mapSize.height = 1024;
-
+      
         //this.redpointLight.shadow.camera.fov = 360;
 
         //var sphere = new THREE.SphereBufferGeometry( 0.5, 20, 20 );
@@ -201,11 +217,8 @@ class ThreeGlobe {
         this.redpointLight2 = new THREE.PointLight(0xff2c35);
         this.redpointLight2.position.set( 0, 0, -8 );
 
-        this.redpointLight2.castShadow = true;
         this.redpointLight2.intensity = 2;
 
-        this.redpointLight2.shadow.mapSize.width = 1024;
-        this.redpointLight.shadow.mapSize.height = 1024;
 
         //this.redpointLight2.shadow.camera.fov = 360;
 
@@ -315,8 +328,12 @@ class ThreeGlobe {
         this.redpointLight.position.z = Math.cos(theta - 0.15) * 40;
         this.redpointLight2.position.x = Math.sin(theta + 0.15) * 40;
         this.redpointLight2.position.z = Math.cos(theta + 0.15) * 40;
-        this.sunMesh.position.x = Math.sin(theta + 0.1) * 40;
-        this.sunMesh.position.z = Math.cos(theta + 0.1) * 40;
+        
+        this.sunMesh.position.x = Math.sin(theta) * 40;
+        this.sunMesh.position.z = Math.cos(theta) * 40;
+
+        this.moonMesh.position.x = Math.sin(theta*1.05 + 0.83) * 30;
+        this.moonMesh.position.z = Math.cos(theta*1.05 + 0.83) * 30;
         
         this.composer.render();
         this.threeAnim = requestAnimationFrame(this.render);
