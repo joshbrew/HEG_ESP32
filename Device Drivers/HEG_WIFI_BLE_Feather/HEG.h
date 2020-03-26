@@ -31,6 +31,7 @@ bool USE_AMBIENT = true;     // Subtract the value of an intermediate no-led rea
 bool ADC_ERR_CATCH = false;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
 bool ADC_ERR_CAUGHT = false;
 bool GET_BASELINE = false;
+bool DEEP_SLEEP_EN = false; //Set to trigger deep sleep mode after 10 min of inactivity.
 
 bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
@@ -110,10 +111,8 @@ float ratioAvg = 0, adcAvg = 0, velAvg = 0, accelAvg = 0;
 //char adcString[10], ratioString[10], posString[10], txString[40]; // Faster in BLE mode
 //char scoreString[10]
 
-
 //Timing variables
-unsigned long sampleMicros, currentMicros, LEDMicros, BLEMicros, USBMicros = 0;
-
+unsigned long sampleMicros = 0, currentMicros = 0, LEDMicros = 0, BLEMicros = 0, USBMicros = 0, coreNotEnabledMicros = 0;
 
 class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BLE callback commands here.
 {
@@ -330,6 +329,7 @@ void setupHEG() {
 
   BLEMicros = currentMicros;
   USBMicros = currentMicros;
+  coreNotEnabledMicros = currentMicros;
 }
 
 void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC.
@@ -901,6 +901,7 @@ void updateHEG()
           pCharacteristic->setValue(String("|").c_str());
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent
+          BLEMicros = currentMicros;
         }
       }
       adcAvg = 0, redAvg = 0, irAvg = 0, ratioAvg = 0, velAvg = 0, accelAvg = 0, ratioTicks = 0, adcTicks = 0;
@@ -913,10 +914,18 @@ void updateHEG()
 void HEG_core_loop()//void * param)
 {
   //while(true){
+  if(currentMicros - coreNotEnabledMicros < 600000000){ //Enter sleep mode after 10 min of inactivity (in microseconds).
     if(coreProgramEnabled == true){
       core_program(false);
+      coreNotEnabledMicros = currentMicros; // Core is enabled, sleep timer resets;
     }
     updateHEG();
+  }
+  else if (DEEP_SLEEP_EN == true){
+    Serial.println("HEG going to sleep now... Reset the power to turn device back on!");
+    delay(1000);
+    esp_deep_sleep_start(); //Ends the loop() until device is reset.
+  }
   //}
  //vTaskDelete(NULL);
 }

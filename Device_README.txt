@@ -100,7 +100,7 @@ mDNS should allow the ESP32 to be accessed via http://esp32.local. It requires B
 
 -------
 Serial Port notes:
-Chrome app serial monitor (alternative to Arduino): https://chrome.google.com/webstore/detail/serial-monitor/ohncdkkhephpakbbecnkclhjkmbjnmlo/related?hl=en
+Chrome app serial monitor (alternative to Arduino): https://chrome.google.com/webstore/detail/arduino-chrome-serial-mon/opgcocnebgmkhcafcclmgfldjhlnacjd?hl=en
 Arduino IDE has a debugger that comes with the ESP32 libs if there are some weird crashes happening.
 -------
 

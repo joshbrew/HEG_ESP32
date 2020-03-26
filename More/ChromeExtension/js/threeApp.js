@@ -23,7 +23,7 @@ class ThreeGlobe {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth - 20, 435);
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        //this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
      
         document.getElementById("threeContainer").appendChild(this.renderer.domElement);
 

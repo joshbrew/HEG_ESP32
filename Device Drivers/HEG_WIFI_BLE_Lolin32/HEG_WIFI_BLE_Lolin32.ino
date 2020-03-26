@@ -21,18 +21,16 @@ void setup(void){
   delay(100);
   
   EEPROM.begin(512);
-  int ComMode = EEPROM.read(0);
-  
+  int ComMode = EEPROM.read(0); //Communication mode (WiFi, BLE, or BT Serial)
+  //int LPMode = EEPROM.read(2); //Low Power Mode setting
+  EEPROM.end();
   if(ComMode == 1) {
-    EEPROM.end();
     setupBLE();
   }
   if(ComMode == 2) {
-    EEPROM.end();
     setupBTSerial();
   }
   else {
-    EEPROM.end();
     setupWiFi();
   }
   //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);

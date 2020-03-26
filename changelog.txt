@@ -2,6 +2,11 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+3/26/20
+------
+- Fixed the HTML5 page code (didn't paste it correctly)
+- Added sleep mode, now the device shuts off after 10 minutes of inactivity. It won't shut off if you are accessing web pages or running the core program, or updating. To turn it back on simply press the reset button or re-plug the power in. This will get more sophisticated to allow remote waking-up.
+
 3/24/20
 ------
 - Reintroduced Bluetooth Serial (surprisingly low footprint on top of BLE). Works like standard USB but requires pairing first. 2 Com ports show up for me when enabled, you want the first one. The one that lets you send commands is the one you want.

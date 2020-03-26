@@ -1,5 +1,19 @@
 const char event_page[] PROGMEM = R"=====(
-//Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="webDemoCSS.css">
+<script src="HEGwebAPI.js"></script>
+</head>
+<body>
+  <title>HEG Interface</title>
+  <div class="header">
+      <h1>HEG ALPHA Ver 0.0.7</h1>
+  </div>
+  
+  <div id="main_body"></div>
+
+<script> //Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily)
 
     //Advanced Client scripts using external packages
     //Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
@@ -162,7 +176,7 @@ const char event_page[] PROGMEM = R"=====(
 
     if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
       var link2 = document.createElement("script");
-      link2.src = "js/threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+      link2.src = "threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
       document.head.appendChild(link2); //Append script
 
       var threeApp = null;
@@ -388,6 +402,7 @@ const char event_page[] PROGMEM = R"=====(
       }
       g.VERTEX_LENGTH = g.xscaleSlider.value;
     }
-
-
+</script>
+</body>
+</html>
 )=====";

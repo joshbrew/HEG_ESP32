@@ -31,6 +31,7 @@ bool USE_AMBIENT = true;     // Subtract the value of an intermediate no-led rea
 bool ADC_ERR_CATCH = false;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
 bool ADC_ERR_CAUGHT = false;
 bool GET_BASELINE = false;
+bool DEEP_SLEEP_EN = true; //Enable deep_sleep mode to be triggered after 10 min of inactivity.
 
 bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
@@ -112,7 +113,7 @@ float ratioAvg = 0, adcAvg = 0, velAvg = 0, accelAvg = 0;
 
 
 //Timing variables
-unsigned long sampleMicros, currentMicros, LEDMicros, BLEMicros, USBMicros = 0;
+unsigned long sampleMicros = 0, currentMicros = 0, LEDMicros = 0, BLEMicros = 0, USBMicros = 0, coreNotEnabledMicros = 0;
 
 
 class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BLE callback commands here.
@@ -327,9 +328,9 @@ void setupHEG() {
     setupBLE();
     //SerialBT.begin();
   }
-
   BLEMicros = currentMicros;
   USBMicros = currentMicros;
+  coreNotEnabledMicros = currentMicros;
 }
 
 void sensorTest() { // Test currently selected photodiode and LEDS on 16-bit ADC.
@@ -801,10 +802,14 @@ void core_program(bool doNoiseReduction)
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
-          Serial.print("Last ADC Value: ");
-          Serial.print(lastRead);
-          Serial.print(", New Value: ");
+          Serial.print("ADC Value: ");
           Serial.println(adc0);
+          if(USE_BT == true) {
+            if (SerialBT.hasClient()) {
+              SerialBT.print("ADC Value: ");
+              SerialBT.println(adc0);
+            }
+          }
           //Serial.println("\tVoltage: ");
           //Serial.println(Voltage,7);
         }
@@ -848,8 +853,10 @@ void core_program(bool doNoiseReduction)
     }
     if (USE_BT == true)
     {
-      SerialBT.println("Heap after core_program cycle: ");
-      SerialBT.println(ESP.getFreeHeap());
+      if(SerialBT.hasClient()){
+        SerialBT.println("Heap after core_program cycle: ");
+        SerialBT.println(ESP.getFreeHeap());
+      }
     }
   }
 } // END core_program()
@@ -910,13 +917,22 @@ void updateHEG()
   }
 }
 
+
 void HEG_core_loop()//void * param)
 {
   //while(true){
+  if(currentMicros - coreNotEnabledMicros < 600000000){ //Enter sleep mode after 10 min of inactivity (in microseconds).
     if(coreProgramEnabled == true){
       core_program(false);
+      coreNotEnabledMicros = currentMicros; // Core is enabled, sleep timer resets;
     }
     updateHEG();
+  }
+  else if (DEEP_SLEEP_EN == true){
+    Serial.println("HEG going to sleep now... Reset the power to turn device back on!");
+    delay(1000);
+    esp_deep_sleep_start(); //Ends the loop() until device is reset.
+  }
   //}
  //vTaskDelete(NULL);
 }

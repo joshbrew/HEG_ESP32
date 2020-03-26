@@ -698,6 +698,7 @@ void setupWiFi(){
   WiFi.scanDelete();
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    coreNotEnabledMicros = currentMicros; //Resetting the timer on page access.
     AsyncWebServerResponse *response = request->beginResponse(200,"text/html",MAIN_page);
     response->addHeader("Access-Control-Allow-Origin", "*");
     request->send(response);
@@ -709,23 +710,27 @@ void setupWiFi(){
   //  request->send(response);
   //});
   server.on("/sc", HTTP_GET,[](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     AsyncWebServerResponse *response = request->beginResponse(200,"text/html",sc_page);
     //response->addHeader("Access-Control-Allow-Origin", "*");
     request->send(response);
   });
   server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     AsyncWebServerResponse *response = request->beginResponse(200,"text/html",help_page);
     //response->addHeader("Access-Control-Allow-Origin", "*");
     request->send(response);
   });
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
-    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",ws_page);
+    coreNotEnabledMicros = currentMicros;
+    //AsyncWebServerResponse *response = request->beginResponse(200,"text/html",ws_page);
     //response->addHeader("Access-Control-Allow-Origin", "*");
-    request->send(response);
+    request->send_P(200,"text/html",ws_page);
     delay(1000);
     deviceConnected = true;
   });
   server.on("/listen",HTTP_GET, [](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     //xTaskCreate(evsHEGTask,"evsHEGTask",8196,NULL,2,NULL);
     //commandESP32('t');
     //AsyncWebServerResponse *response = request->beginResponse(200,"text/html",event_page);
@@ -733,9 +738,11 @@ void setupWiFi(){
     request->send_P(200,"text/html", event_page);
   });
   server.on("/connect",HTTP_GET,[](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     handleWiFiSetup(request);
   });
   server.on("/doConnect",HTTP_POST, [](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     handleDoConnect(request);
   });
   //First request will return 0 results unless you start scan from somewhere else (loop/setup)
@@ -744,13 +751,16 @@ void setupWiFi(){
     String temp = scanWiFi();
   });
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     request->send(200,"text/html",scanWiFi());
   });
   server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     handleUpdate(request);
   });
   server.on("/doUpdate", HTTP_POST,
     [&](AsyncWebServerRequest *request) {
+      DEEP_SLEEP_EN = false; //Disable Deep Sleep mode
       // the request handler is triggered after the upload has finished... 
       // create the response, add header, and send response
       AsyncWebServerResponse *response = request->beginResponse((Update.hasError())?500:200, "text/plain", (Update.hasError())?"FAIL":"OK");
@@ -766,6 +776,7 @@ void setupWiFi(){
   server.onNotFound([](AsyncWebServerRequest *request){request->send(404);});
   
   server.on("/discovery", HTTP_GET, [](AsyncWebServerRequest *request) {
+    coreNotEnabledMicros = currentMicros;
     StaticJsonDocument<1000> sjd; 
     sjd["name"] =  String(softAPName) ; 
     sjd["ipAddress"] = WiFi.localIP().toString();   
@@ -809,8 +820,21 @@ void setupWiFi(){
   server.on("/n",HTTP_POST, [](AsyncWebServerRequest *request){
     commandESP32('n');
   });
+  server.on("/b",HTTP_POST, [](AsyncWebServerRequest *request){ //BLE trigger
+    commandESP32('b');
+  });
+  server.on("/B",HTTP_POST, [](AsyncWebServerRequest *request){ //BT Serial trigger
+    commandESP32('B');
+  });
+  server.on("/sleep",HTTP_GET, [](AsyncWebServerRequest *request){ //BT Serial trigger
+    request->send(200, "text/html", "GOING TO SLEEP, RESET POWER TO REGAIN FUNCTIONALITY");
+    Serial.println("HEG going to sleep now... Reset the power to turn device back on!");
+    delay(1000);
+    esp_deep_sleep_start();
+  });
 
   server.on("/api", HTTP_GET, [](AsyncWebServerRequest *request){
+    coreNotEnabledMicros = currentMicros;
     request->send_P(200, "text/html", api);
   });
   server.on("/HEGwebAPI.js", HTTP_GET, [](AsyncWebServerRequest *request){
