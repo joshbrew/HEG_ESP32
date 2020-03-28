@@ -21,10 +21,9 @@ if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "
 }
 
 //------------------------------------------------------------------------
-//------------------------------------------------------------------------
+//------------------------------Tab Modal Code----------------------------
 //------------------------------------------------------------------------
 
-// Modal Code
 var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
 
 var tabHTML = '<div id="tabContainer"> \
@@ -111,7 +110,7 @@ document.getElementById("togBtn").onchange = function(){toggleHEG(document.getEl
 var s = new HEGwebAPI('',false); 
 
 //Initialize Graph
-var g = new graphJS(1155,[255,100,80,1],1,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
+var g = new graphJS(1155,[255,100,80,1],1.0,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
 
 s.createUI("dataBox");
 g.createUI("graphBox")
@@ -402,7 +401,72 @@ document.getElementById("xscalebutton").onclick = () => {
   g.VERTEX_LENGTH = g.xscaleSlider.value;
 }
 
+document.getElementById("xscaletd").style.display = "none"; //Gonna leave this out for now.
+document.getElementById("xscalebutton").style.display = "none"; //Gonna leave this out for now.
 
+//------------------------------------------------------------------------
+//----------------------------ToolTips------------------------------------
+//------------------------------------------------------------------------
+
+function makeTooltip(parentId, position=[100,100], text="Tooltip text") {
+  var tooltipHTML = "<div id='"+parentId+"_tooltip' class='tooltip'></div>";
+
+  HEGwebAPI.appendFragment(tooltipHTML, parentId);
+  var tooltip = document.getElementById(parentId+"_tooltip");
+  tooltip.innerHTML = text;
+
+  var thisParent = document.getElementById(parentId);
+
+  console.log(tooltip);
+  
+  tooltip.style.left = position[0] + "px";
+  tooltip.style.top = position[1] + "px";
+
+  console.log(tooltip.style.left);
+  console.log(tooltip.style.top);
+
+  tooltip.style.display = "none";
+
+  thisParent.onmouseover = () => {
+    tooltip.style.display = "";
+  }
+  thisParent.onmouseleave = () => {
+    tooltip.style.display = "none";
+  }
+
+
+}
+
+//Menu tabs
+makeTooltip("modal_opener",[10,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
+makeTooltip("modal_opener2",[10,70],"Graph perspective controls");
+makeTooltip("modal_opener3",[10,90],"Various feedback modes. Change the scoring sensitivity settings in the Data menu to change the reactiveness.");
+
+//Data options
+makeTooltip("commandrow",[10,100],"See documentation for a command list, not all work over WiFi.");
+makeTooltip("sensitivityrow",[300,290],"Controls how reactive the feedback is to ratio changes.");
+makeTooltip("timerow",[10,340],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
+makeTooltip("csvrow",[10,520],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
+makeTooltip("replaycsv",[10,575],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
+makeTooltip("hostrow",[10,600],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB and Bluetooth connectivity require our free Chrome Extension.")
+
+//Graph options
+makeTooltip("xoffsettd",[10,40],"Scroll back and forth through your data if it is longer than the graph.");
+makeTooltip("xscaletd",[10,80],"Shrink or grow the graph on the x-axis");
+makeTooltip("yoffsettd",[10,110],"Scroll up or down on the y-axis of the graph.");
+makeTooltip("yscaletd",[10,160],"Shrink or grow the graph on the y-axis.");
+makeTooltip("autoscaletd",[10,220],"Uncheck to manually scale the graph on the y-axis.");
+
+//Feedback options
+makeTooltip("canvasmode",[10,10],"Grow the circle and keep it big!");
+makeTooltip("audiomode",[10,10],"Keep the song volume up or at a sweet spot! Use MP3 files.");
+makeTooltip("txtmode",[10,10],"Scroll the text to the right to keep reading!");
+makeTooltip("videomode",[300,10],"Control a video through various means! Use MP4 files.");
+makeTooltip("hillmode",[300,10],"Climb the mountain!");
+
+if(useAdvanced == true){
+  makeTooltip("threemode",[300,10],"Turn the Earth! More coming!");
+}
 
 </script>
 </body>

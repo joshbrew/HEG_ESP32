@@ -330,24 +330,24 @@ class HEGwebAPI {
       <tr><td><button id="startbutton" class="button startbutton">Start HEG</button></td> \
         <td><button id="stopbutton" class="button stopbutton" type="submit">Stop HEG</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
-      <tr><td><input type="text" id="command" name="command" placeholder="Command"></td><td><button id="sendbutton" class="button sendbutton">Send</button></td></tr> \
+      <tr id="commandrow"><td><input type="text" id="command" name="command" placeholder="Command"></td><td><button id="sendbutton" class="button sendbutton">Send</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2"><button class="button" id="resetSession" name="resetSession">Reset Session</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2" id="sensitivityLabel">Scoring Sensitivity</td></tr> \
-      <tr><td><button class="button" id="reset_s">Default</button></td> \
+      <tr id="sensitivityrow"><td><button class="button" id="reset_s">Default</button></td> \
         <td>Sensitivity: <span id="sensitivityVal">1.00</span><br><input type="range" class="slider" id="sensitivity" min="1" max="1000" value="100"></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
-      <tr><td><div id="timestamp">Get Current Time</div></td><td><button id="getTime" class="button">Get Time</button></td></tr> \
-      <tr><td colspan="2"><textarea id="noteText" placeholder="Point of Interest"></textarea></td></tr>\
-      <tr><td colspan="2"><button id="saveNote" class="button">Annotate</button></td></tr> \
+      <tr id="timerow"><td><div id="timestamp">Get Current Time</div></td><td><button id="getTime" class="button">Get Time</button></td></tr> \
+      <tr id="noterow"><td colspan="2"><textarea id="noteText" placeholder="Point of Interest"></textarea></td></tr>\
+      <tr id-"savenoterow"><td colspan="2"><button id="saveNote" class="button">Annotate</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr>\
-      <tr><td><input type="text" id="csvname" name="csvname" placeholder="session_data"></input></td> \
+      <tr id="csvrow"><td ><input type="text" id="csvname" name="csvname" placeholder="session_data"></input></td> \
         <td><button class="button saveLoadButtons" id="savecsv">Save CSV</button></td></tr> \
       <tr><td colspan="2"><button class="button saveLoadButtons" id="replaycsv">Replay CSV</button></td></tr> \
       <tr><td colspan="2"><hr></td></tr> \
       <tr><td colspan="2" id="hostlabel">Host</td></tr> \
-      <tr><td><input type="text" id="hostname" name="hostname" placeholder="http://192.168.4.1"></input></td><td><button id="submithost" class="button">Connect</button></td></tr>  \
+      <tr id="hostrow"><td><input type="text" id="hostname" name="hostname" placeholder="http://192.168.4.1"></input></td><td><button id="submithost" class="button">Connect</button></td></tr>  \
       <tr><td colspan="2"><hr></td></tr> \
       </table></div> \
       <iframe name="dummyframe" id="dummyframe" class="dummy"></iframe> \
@@ -484,6 +484,7 @@ class graphJS {
     this.ratio = 0;
     this.score = 0;
     this.viewing = 0;
+    this.autoscale = true;
 
     this.nPoints = nPoints;
     this.VERTEX_LENGTH = nPoints;
@@ -580,12 +581,12 @@ class graphJS {
   createUI(parentId){
     var graphOptions = '<div class="scale"> \
       <table id="graphSliderTable"> \
-      <tr><td>X Offset:<br><input type="range" class="slider" id="xoffset" min=0 max=1000 value=0></td><td><button id="xoffsetbutton" class="button">Reset</button></td></tr> \
-      <tr><td>X Scale:<br><input type="range" class="slider" id="xscale" min=10 max='+(this.VERTEX_LENGTH * 5).toFixed(0)+' value='+this.VERTEX_LENGTH.toFixed(0)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
-      <tr><td>Y Offset:<br><input type="range" class="slider" id="yoffset" min=0 max=10000 value=5000></td><td><button id="yoffsetbutton" class="button">Reset</button></td></tr> \
-      <tr><td>Y Scale:<br><input type="range" class="slider" id="yscale" min=1 max=400 value=200></td><td><button id="yscalebutton" class="button">Reset</button></td></tr> \
+      <tr><td id="xoffsettd">X Offset:<br><input type="range" class="slider" id="xoffset" min=0 max=1000 value=0></td><td><button id="xoffsetbutton" class="button">Reset</button></td></tr> \
+      <tr><td id="xscaletd">X Scale:<br><input type="range" class="slider" id="xscale" min=10 max='+(this.VERTEX_LENGTH * 5).toFixed(0)+' value='+this.VERTEX_LENGTH.toFixed(0)+'></td><td><button id="xscalebutton" class="button">Reset</button></td></tr> \
+      <tr><td id="yoffsettd">Y Offset:<br><input type="range" class="slider" id="yoffset" min=0 max=10000 value=5000></td><td><button id="yoffsetbutton" class="button">Reset</button></td></tr> \
+      <tr><td id="yscaletd">Y Scale:<br><input type="range" class="slider" id="yscale" min=1 max=400 value='+this.yscale*200+'></td><td><button id="yscalebutton" class="button">Reset</button></td></tr> \
       </table><br> \
-      <table id="graphViewTable"><tr><td>View:</td><td><form name="graphform">Score<input type="radio" name="graphview" value="0" checked>Ratio<input type="radio" name="graphview" value="1"></form></td></tr></table> \
+      <table id="graphViewTable"><tr><td id="autoscaletd">Autoscale:<input type="checkbox" id="autoscale" checked></td><td>View:</td><td><form name="graphform">Score<input type="radio" name="graphview" value="0" checked>Ratio<input type="radio" name="graphview" value="1"></form></td></tr></table> \
       </div> \
     ';
 
@@ -615,6 +616,9 @@ class graphJS {
       this.invScale = 1;
     }
 
+    document.getElementById("autoscale").onclick = () => {
+      this.autoscale = document.getElementById("autoscale").checked;
+    }
     var radios = document.graphform.graphview;
     for (var i = 0; i < radios.length; i++) {
       radios[i].addEventListener('change', () => {
@@ -647,6 +651,13 @@ class graphJS {
       const pointId = i / 2 | 0;
       const lerp0To1 = pointId / highestPointNdx;
       const isY = i % 2;
+      if(this.autoscale == true){
+        if(yArr[i] > this.invScale){
+          this.invScale = yArr[i];
+          this.yscale = 1/this.invScale;
+          this.yscaleSlider.value = this.yscale * 200;
+        }
+      }
       return isY
         ? (yArr[i]*this.yscale + this.yoffset) // Y
         : (lerp0To1 * 4 - 1); // X

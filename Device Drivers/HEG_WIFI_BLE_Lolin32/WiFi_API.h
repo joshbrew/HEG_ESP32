@@ -252,6 +252,11 @@ void commandESP32(char received)
     delay(300);
     ESP.restart();
   }
+  if (received == 'S') {
+      Serial.println("HEG going to sleep now... Reset the power to turn device back on!");
+      delay(1000);
+      esp_deep_sleep_start(); //Ends the loop() until device is reset.
+  }
   if (received == 'p')
   { //pIR Toggle (not a fully implemented idea)
     pIR_MODE = true;

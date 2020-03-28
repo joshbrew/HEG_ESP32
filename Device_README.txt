@@ -59,6 +59,7 @@ HEG serial commands:
 'B' - Toggle Bluetooth Serial mode. Resets device to be in BTSerial mode. Enter 'B' again to swap back. Can connect to this via standard serial monitors.
 'b' - Toggle BLE mode, this resets the device to start in BLE mode, so you have to enter 'b' again through the serial or BLE connection to switch back to WiFi.
 'R' - hard resets the ESP32.
+'S' - places ESP32 in deep sleep mode, reset power (press the reset button on the device) to re-activate
 's' - soft resets the sensor data.
 'u' - toggles USB data stream. 
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.

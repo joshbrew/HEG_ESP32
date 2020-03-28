@@ -194,6 +194,11 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
           ESP.restart();
         }
       }
+    else if (rxValue.find("S") != -1) {
+      Serial.println("HEG going to sleep now... Reset the power to turn device back on!");
+      delay(1000);
+      esp_deep_sleep_start(); //Ends the loop() until device is reset.
+    }
     else if (rxValue.find("R") != -1) {
       delay(300);
       ESP.restart();

@@ -586,3 +586,20 @@ background: rgba(0, 141, 255, 0.3);
 input[type=range].slider:focus::-ms-fill-upper {
 background: rgba(71, 173, 255, 0.3);
 }
+
+.tooltip {
+  position: absolute;
+  max-width: 200px;
+  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: normal;
+  text-align: left;
+  padding: 4px;
+  border-style: 1px solid;
+  border-color: rgb(29, 29, 29);
+  border-radius: 4px;
+  background-color: ghostwhite;
+  color: black;
+  opacity: 0.9;
+  z-index: 999;
+}
