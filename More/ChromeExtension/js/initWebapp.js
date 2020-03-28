@@ -301,7 +301,7 @@ document.getElementById("resetSession").onclick = () => { // Override default fu
     deInitMode();
     h = new hillJS();
   }
-  if(text != null) {
+  if(txt != null) {
     deInitMode();
     txt = new textReaderJS();
   }

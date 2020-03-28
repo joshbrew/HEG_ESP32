@@ -15,10 +15,6 @@ class chromeSerial {
         else {
             console.log("ERROR: Cannot locate chrome.serial.");
         }
-
-        document.getElementById('serialports').onclick = () => {
-            
-        }
     }
 
     setupSelect(parentId) {
