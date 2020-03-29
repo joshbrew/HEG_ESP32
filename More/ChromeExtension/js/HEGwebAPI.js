@@ -890,7 +890,7 @@ class circleJS {
         this.useAlpha = true;
         this.useRate = true;
         this.useVolume = true;
-        this.useAmplify = false;
+        this.useTime = false;
 
         this.ampScore = 0;
         this.ampThreshold = 0;
@@ -970,11 +970,12 @@ class circleJS {
            document.getElementById("useRate").style.opacity = "0.3";
          }
          else{ 
-           this.useAmplify = false; 
+           this.useTime = false; 
            this.useRate = true; 
            this.playRate = 1; 
+           this.vidQuery.playbackRate = 1;
            document.getElementById("useRate").style.opacity = "1.0";
-           document.getElementById("useAmplify").style.opacity = "0.3";
+           document.getElementById("useTime").style.opacity = "0.3";
           }
         }
 
@@ -995,21 +996,20 @@ class circleJS {
           }
         }
 
-        document.getElementById("useAmplify").onclick = () => {
-          if(this.useAmplify == true){
-            this.useAmplify = false;
+        document.getElementById("useTime").onclick = () => {
+          if(this.useTime == true){
+            this.useTime = false;
             this.playRate = 1;
-            document.getElementById("useAmplify").style.opacity = "0.3";
-            this.ampScore = 0;
-            this.ampThreshold = 0;
+            this.vidQuery.playbackRate = 1;
+            document.getElementById("useTime").style.opacity = "0.3";
           }
           else {
             this.useRate = false;
-            this.useAmplify = true;
-            this.playRate = 1;
-            document.getElementById("useAmplify").style.opacity = "1.0";
-            this.ampScore = 0;
-            this.ampThreshold = 0;
+            this.useTime = true;
+            this.playRate = 0;
+            this.vidQuery.playbackRate = 0;
+            document.getElementById("useRate").style.opacity = "0.3";
+            document.getElementById("useTime").style.opacity = "1.0";
           }
         }
 
@@ -1080,11 +1080,12 @@ class circleJS {
           <tr><td><button class="button vdfade" id="useAlpha" name="useAlpha">Fade</button></td></tr> \
           <tr><td><button class="button vdspeed" id="useRate" name="useRate">Speed</button></td></tr> \
           <tr><td><button class="button vdvol" id="useVol" name="useVol">Volume</button></td></tr> \
-          <tr><td><button class="button" id="useAmplify" name="useAmplify">Amplify</button></td></tr> \
+          <tr><td><button class="button" id="useTime" name="useTime">Time</button></td></tr> \
           </table></div> \
         </div>';
        HEGwebAPI.appendFragment(videoapiHTML, parentId);
 
+       document.getElementById("useTime").style.opacity = "0.3";
        this.timeSlider = document.getElementById("timeSlider");
 
        this.localFileVideoPlayer();
@@ -1164,30 +1165,8 @@ class circleJS {
           }
         }
       }
-      if(this.useAmplify == true){
-        this.diff = this.score - this.lastScore;
-        this.lastScore = this.score;
-        this.ampScore += score;
-        if(this.diff > 0.01) {
-          this.ampThreshold = ampScore; //Sets the score threshold at which the large increase was detected. 
-        }
-        console.log(diff); // Do something with the different (e.g. if diff > X, slow video)
-        if(((this.vidQuery.playbackRate < 3) || (score < 0)) && ((this.vidQuery.playbackRate > 0) || (score > 0)))
-        { 
-          this.playRate = this.vidQuery.playbackRate - score*0.5;
-          if((this.playRate < 0.05) && (this.playRate > 0)){
-            this.vidQuery.playbackRate = 0;
-          }
-          else if(this.playRate < 0) {
-            this.vidQuery.currentTime += score;
-          }
-          else if((this.playRate > 0.05) && (this.playRate < 0.1)){
-            this.vidQuery.playbackRate = 0.1;
-          }
-          else{
-            this.vidQuery.playbackRate = this.playRate;
-          }
-        }
+      if(this.useTime == true){
+        this.vidQuery.currentTime += score*10;
       }
     }
     
