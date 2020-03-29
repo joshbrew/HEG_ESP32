@@ -31,7 +31,7 @@ void setup(void){
     EEPROM.end();
     setupBTSerial();
   }
-  else {
+  else if(ComMode == 0) {
     EEPROM.end();
     setupWiFi();
   }
