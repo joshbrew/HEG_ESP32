@@ -2,6 +2,12 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+3/28/20
+------
+- Tooltips!
+- New Video mode, control the current time of the video just like HEGstudio! No sound in this mode, but it would probably sound pretty bad.
+
+
 3/26/20
 ------
 - Fixed the HTML5 page code (didn't paste it correctly)

@@ -401,15 +401,11 @@ function makeTooltip(parentId, position=[100,100], text="Tooltip text") {
   tooltip.innerHTML = text;
 
   var thisParent = document.getElementById(parentId);
-
-  console.log(tooltip);
-  
+  //console.log(tooltip);
   tooltip.style.left = position[0] + "px";
   tooltip.style.top = position[1] + "px";
-
-  console.log(tooltip.style.left);
-  console.log(tooltip.style.top);
-
+  //console.log(tooltip.style.left);
+  //console.log(tooltip.style.top);
   tooltip.style.display = "none";
 
   thisParent.onmouseover = () => {

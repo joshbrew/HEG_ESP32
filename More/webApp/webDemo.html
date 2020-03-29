@@ -410,31 +410,24 @@ document.getElementById("xscalebutton").style.display = "none"; //Gonna leave th
 
 function makeTooltip(parentId, position=[100,100], text="Tooltip text") {
   var tooltipHTML = "<div id='"+parentId+"_tooltip' class='tooltip'></div>";
-
   HEGwebAPI.appendFragment(tooltipHTML, parentId);
   var tooltip = document.getElementById(parentId+"_tooltip");
   tooltip.innerHTML = text;
-
   var thisParent = document.getElementById(parentId);
-
-  console.log(tooltip);
   
+  //console.log(tooltip);
   tooltip.style.left = position[0] + "px";
   tooltip.style.top = position[1] + "px";
-
-  console.log(tooltip.style.left);
-  console.log(tooltip.style.top);
-
+  //console.log(tooltip.style.left);
+  //console.log(tooltip.style.top);
   tooltip.style.display = "none";
-
+  
   thisParent.onmouseover = () => {
     tooltip.style.display = "";
   }
   thisParent.onmouseleave = () => {
     tooltip.style.display = "none";
   }
-
-
 }
 
 //Menu tabs
