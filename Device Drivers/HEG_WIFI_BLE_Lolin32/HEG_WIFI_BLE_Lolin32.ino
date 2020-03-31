@@ -30,7 +30,7 @@ void setup(void){
   else if(ComMode == 2) {
     setupBTSerial();
   }
-  else if(ComMode == 0) {
+  else {
     setupWiFi();
   }
   //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);
