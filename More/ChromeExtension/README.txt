@@ -1,4 +1,4 @@
-To add this chrome extension, you must find your Extensions page, enable Developer Mode (top right
+To add this chrome extension, you must find your Extensions page (chrome://extensions/), enable Developer Mode (top right
 corner slider usually), then select "Load Unpacked" and select this folder. To find the extensions after
 they're loaded, type in chrome://apps in your address bar. You can then right click the icon and create
 desktop shortcuts. I recommend this plugin to make a nice button to find the menu: 
