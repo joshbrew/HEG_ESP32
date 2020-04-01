@@ -38,6 +38,8 @@ You can demo it now via our Chrome Extension (via the More folder) or right on b
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
+## Chrome Extension with Serial support and ThreeJS
+Find it in the More folder of this repository.
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/ChromeApp.PNG)
 
 ## Data Charter (WIP) CSV analyzer for the web app (also found on our [Data page on our website](https://hegalpha.com))
