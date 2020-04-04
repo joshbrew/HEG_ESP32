@@ -656,6 +656,11 @@ class graphJS {
           this.yscale = 1/this.invScale;
           this.yscaleSlider.value = this.yscale * 200;
         }
+        else if(yArr[i] < 0-this.invScale) {
+          this.invScale = 0-yArr[i];
+          this.yscale = 1/this.invScale;
+          this.yscaleSlider.value = this.yscale * 200;
+        }
       }
       return isY
         ? (yArr[i]*this.yscale + this.yoffset) // Y

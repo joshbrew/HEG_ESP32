@@ -657,6 +657,11 @@ class graphJS {
           this.yscale = 1/this.invScale;
           this.yscaleSlider.value = this.yscale * 200;
         }
+        else if(yArr[i] < 0-this.invScale) {
+          this.invScale = 0-yArr[i];
+          this.yscale = 1/this.invScale;
+          this.yscaleSlider.value = this.yscale * 200;
+        }
       }
       return isY
         ? (yArr[i]*this.yscale + this.yoffset) // Y
@@ -774,15 +779,15 @@ class graphJS {
     if(seconds < 10){seconds = "0"+seconds}
     if(this.viewing == 0) {
       this.graphtext.fillStyle = "#00ff00";
-      this.graphtext.fillText("|  Time: " + minutes + ":" + seconds,this.graphtext.canvas.width - 300,50);
-      this.graphtext.fillText("|  Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
+      this.graphtext.fillText("  Time: " + minutes + ":" + seconds,this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("  Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
       this.graphtext.fillStyle = "#99ffbb";
       this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2),this.graphtext.canvas.width - 720,50);
     }
     if(this.viewing == 1) {
       this.graphtext.fillStyle = "#00ff00";
-      this.graphtext.fillText("|  Time: " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
-      this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2) + "  |",this.graphtext.canvas.width - 720,50);
+      this.graphtext.fillText("  Time: " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2) + "  ",this.graphtext.canvas.width - 720,50);
       this.graphtext.fillStyle = "#99ffbb";
       this.graphtext.fillText("   Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
     }

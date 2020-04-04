@@ -104,7 +104,7 @@ const char help_page[] PROGMEM= R"=====(
         <li> If you are receiving repeating low values like 64, 84, etc, that don't produce a stable ratio that means the photodiode output is not being read and may be damaged or not soldered correctly.</li>
         <li> Check that no solder points or leads are contacting your skin as this will ground out those voltages. Electrical tape is an easy way to cover this up.	</li>
         </ul>
-        If you cannot get any data through, debug using a serial monitor (like Arduino or use Inspect via our chrome extension: https://github.com/moothyknight/HEG_ESP32/tree/master/More/ChromeExtension) <br>
+        If you cannot get any data through, use a serial monitor (like Arduino or this chrome app: https://chrome.google.com/webstore/detail/arduino-chrome-serial-mon/opgcocnebgmkhcafcclmgfldjhlnacjd?hl=en) <br>
         Follow the instructions in the readme in our github repository (https://github.com/moothyknight/HEG_ESP32) <br><br>
     </p>
         </div>
@@ -295,7 +295,7 @@ const char help_page[] PROGMEM= R"=====(
         <h3>Data Output Information</h3>
         <p>
         Output String:<br><br>
-        "Current Microseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2) \r\n" <br><br>
+        "Current Microseconds | Red LED Sample Average | IR LED Sample Average | Red/IR Ratio Average | Ambient Sample | Velocity (ratio change/ms)| Acceleration (ratio change/ms^2) \r\n" <br><br>
         WiFi: Subscribe to a Server Sent Event stream (EventSource) at the IP of the device. Its update period is set at 50ms. The data stream comes through on "heg" events.<br><br>
         USB Serial: Via a serial monitor, set baud rate to 115200 on the correct COM port to read the data, debug, and send commands.<br><br>
         Bluetooth: Requires scanning for BLE device and subscribing to the correct UART characteristic, then sending the 't' command to activate the sensor stream.<br><br>

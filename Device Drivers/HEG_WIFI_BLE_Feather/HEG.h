@@ -31,7 +31,7 @@ bool USE_AMBIENT = true;     // Subtract the value of an intermediate no-led rea
 bool ADC_ERR_CATCH = false;    // Resets an LED reading if it does not fall within realistic margins. Prevents errors in the filters.
 bool ADC_ERR_CAUGHT = false;
 bool GET_BASELINE = false;
-bool DEEP_SLEEP_EN = false; //Set to trigger deep sleep mode after 10 min of inactivity.
+bool DEEP_SLEEP_EN = true; //Enable deep_sleep mode to be triggered after 10 min of inactivity.
 
 bool DEBUG_ESP32 = false;
 bool DEBUG_ADC = false;       // FOR USE IN A SERIAL MONITOR
@@ -111,8 +111,10 @@ float ratioAvg = 0, adcAvg = 0, velAvg = 0, accelAvg = 0;
 //char adcString[10], ratioString[10], posString[10], txString[40]; // Faster in BLE mode
 //char scoreString[10]
 
+
 //Timing variables
 unsigned long sampleMicros = 0, currentMicros = 0, LEDMicros = 0, BLEMicros = 0, USBMicros = 0, coreNotEnabledMicros = 0;
+
 
 class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BLE callback commands here.
 {
@@ -137,14 +139,14 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
         coreProgramEnabled = true;
         Serial.println("Turning ON!");
         reset=true;
-        //digitalWrite(LED, LOW); // LOLIN32 Indicator LED
+        digitalWrite(LED, LOW); // LOLIN32 Indicator LED
       }
       else if (rxValue.find("f") != -1)
       {
         Serial.println("Turning OFF!");
         coreProgramEnabled = false;
         delay(300);
-        //digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+        digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
         digitalWrite(RED, LOW);
         digitalWrite(IR, LOW);
         no_led = true;
@@ -155,17 +157,9 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
       else if (rxValue.find("B"))
       { //Bluetooth Serial Toggle
         EEPROM.begin(512);
-        if (EEPROM.read(0) == 1)
+        if (EEPROM.read(0) != 2)
         {
           EEPROM.write(0,2);
-          EEPROM.commit();
-          EEPROM.end();
-          delay(100);
-          ESP.restart();
-        }
-        else
-        {
-          EEPROM.write(0,1);
           EEPROM.commit();
           EEPROM.end();
           delay(100);
@@ -175,7 +169,7 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
       else if (rxValue.find("b") != -1)
       {
         EEPROM.begin(512);
-        if (EEPROM.read(0) == 0)
+        if (EEPROM.read(0) != 1)
         {
           EEPROM.write(0,1);
           EEPROM.commit();
@@ -192,6 +186,23 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
           ESP.restart();
         }
       }
+      else if (rxValue.find("u"))
+      { //Bluetooth Serial Toggle
+        EEPROM.begin(512);
+        if (EEPROM.read(0) != 3)
+        {
+          EEPROM.write(0,3);
+          EEPROM.commit();
+          EEPROM.end();
+          delay(100);
+          ESP.restart();
+        }
+      }
+    else if (rxValue.find("S") != -1) {
+      Serial.println("HEG going to sleep now... Reset the power to turn device back on!");
+      delay(1000);
+      esp_deep_sleep_start(); //Ends the loop() until device is reset.
+    }
     else if (rxValue.find("R") != -1) {
       delay(300);
       ESP.restart();
@@ -319,14 +330,13 @@ void setupHEG() {
   digitalWrite(PWR, HIGH);
 
   //LOLIN32 ONLY
-  //pinMode(LED, OUTPUT);
-  //digitalWrite(LED, HIGH);
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, HIGH);
 
   if(USE_BLE == true){
     setupBLE();
     //SerialBT.begin();
   }
-
   BLEMicros = currentMicros;
   USBMicros = currentMicros;
   coreNotEnabledMicros = currentMicros;
@@ -747,10 +757,10 @@ void get_ratio() {
     float t = (currentMicros - sampleMicros) * 0.001;
     if(t > 0){
       v1 = v2;
-      v2 = (ratio - lastRatio) / t; // Velocity in adc units/ms
+      v2 = (ratio - lastRatio) / t; // Velocity in ratio change/ms
       velAvg += v2;
   
-      accel = (v2 - v1) / t; // Acceleration in adc units/ms^2
+      accel = (v2 - v1) / t; // Acceleration in ratio change/ms^2
       accelAvg += accel;
     }
     //score += ratio-baseline; // Simple scoring method. Better is to compare current and last SMA
@@ -801,10 +811,14 @@ void core_program(bool doNoiseReduction)
         // print the results to the Serial Monitor:
         if (DEBUG_ADC == true)
         {
-          Serial.print("Last ADC Value: ");
-          Serial.print(lastRead);
-          Serial.print(", New Value: ");
+          Serial.print("ADC Value: ");
           Serial.println(adc0);
+          if(USE_BT == true) {
+            if (SerialBT.hasClient()) {
+              SerialBT.print("ADC Value: ");
+              SerialBT.println(adc0);
+            }
+          }
           //Serial.println("\tVoltage: ");
           //Serial.println(Voltage,7);
         }
@@ -848,8 +862,10 @@ void core_program(bool doNoiseReduction)
     }
     if (USE_BT == true)
     {
-      SerialBT.println("Heap after core_program cycle: ");
-      SerialBT.println(ESP.getFreeHeap());
+      if(SerialBT.hasClient()){
+        SerialBT.println("Heap after core_program cycle: ");
+        SerialBT.println(ESP.getFreeHeap());
+      }
     }
   }
 } // END core_program()
@@ -901,7 +917,6 @@ void updateHEG()
           pCharacteristic->setValue(String("|").c_str());
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent
-          BLEMicros = currentMicros;
         }
       }
       adcAvg = 0, redAvg = 0, irAvg = 0, ratioAvg = 0, velAvg = 0, accelAvg = 0, ratioTicks = 0, adcTicks = 0;
@@ -910,6 +925,7 @@ void updateHEG()
     USBMicros = currentMicros;
   }
 }
+
 
 void HEG_core_loop()//void * param)
 {

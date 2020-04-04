@@ -22,7 +22,6 @@ void setup(void){
   
   EEPROM.begin(512);
   int ComMode = EEPROM.read(0); //Communication mode (WiFi, BLE, or BT Serial)
-  //int LPMode = EEPROM.read(2); //Low Power Mode setting
   EEPROM.end();
   if(ComMode == 1) {
     setupBLE();
@@ -30,9 +29,14 @@ void setup(void){
   else if(ComMode == 2) {
     setupBTSerial();
   }
+  else if(ComMode == 3) {
+    Serial.println("USB Only configuration.");
+    Serial.println("Sample commands: 't': Toggle HEG program ON, 'f': Toggle HEG program OFF, 'u': Toggle WiFi mode, 'b': Toggle BLE mode, 'B': Toggle Bluetooth Serial mode");
+  }
   else {
     setupWiFi();
   }
+  
   //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);
 }
 

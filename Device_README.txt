@@ -78,7 +78,7 @@ With extra sensors:
 Output data stream:
 
 Current Microseconds | Red LED Sample Average | IR LED Sample Average |
-Red/IR Ratio Average | Ambient Sample | Velocity (1=0.256mV/ms)| Acceleration (1 = 0.256mV/ms^2)
+Red/IR Ratio Average | Ambient Sample | Velocity (ratio change/ms)| Acceleration (1 = ratio change/ms^2)
 
 The following demo pages are available:
 /       - Index page, basic site navigation.

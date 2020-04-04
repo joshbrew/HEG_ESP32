@@ -157,17 +157,9 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
       else if (rxValue.find("B"))
       { //Bluetooth Serial Toggle
         EEPROM.begin(512);
-        if (EEPROM.read(0) == 1)
+        if (EEPROM.read(0) != 2)
         {
           EEPROM.write(0,2);
-          EEPROM.commit();
-          EEPROM.end();
-          delay(100);
-          ESP.restart();
-        }
-        else
-        {
-          EEPROM.write(0,1);
           EEPROM.commit();
           EEPROM.end();
           delay(100);
@@ -177,7 +169,7 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
       else if (rxValue.find("b") != -1)
       {
         EEPROM.begin(512);
-        if (EEPROM.read(0) == 0)
+        if (EEPROM.read(0) != 1)
         {
           EEPROM.write(0,1);
           EEPROM.commit();
@@ -188,6 +180,18 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
         else
         {
           EEPROM.write(0,0);
+          EEPROM.commit();
+          EEPROM.end();
+          delay(100);
+          ESP.restart();
+        }
+      }
+      else if (rxValue.find("u"))
+      { //Bluetooth Serial Toggle
+        EEPROM.begin(512);
+        if (EEPROM.read(0) != 3)
+        {
+          EEPROM.write(0,3);
           EEPROM.commit();
           EEPROM.end();
           delay(100);
@@ -753,10 +757,10 @@ void get_ratio() {
     float t = (currentMicros - sampleMicros) * 0.001;
     if(t > 0){
       v1 = v2;
-      v2 = (ratio - lastRatio) / t; // Velocity in adc units/ms
+      v2 = (ratio - lastRatio) / t; // Velocity in ratio change/ms
       velAvg += v2;
   
-      accel = (v2 - v1) / t; // Acceleration in adc units/ms^2
+      accel = (v2 - v1) / t; // Acceleration in ratio change/ms^2
       accelAvg += accel;
     }
     //score += ratio-baseline; // Simple scoring method. Better is to compare current and last SMA

@@ -52,7 +52,8 @@ input[type=submit]{
   <form method ='post' action='/doConnect' enctype='multipart/form-data'>
     <input type='radio' id='AP_ONLY' name='choices' value='1'>Reset to Default (OR toggle with "W" via USB Serial or BT)<br>
     <input type='radio' id='btSwitch' name='choices' value='2'>Bluetooth LE (OR toggle with "b" via USB Serial or BT)<br>
-    <input type='radio' id='btserSwitch' name='choices' value='5'>Bluetooth Serial (OR toggle with "B" via USB Serial or BT) <br>
+    <input type='radio' id='btserSwitch' name='choices' value='5'>Bluetooth Serial (OR toggle with "B" via USB Serial or BT)<br>
+    <input type='radio' id='usbonlyswitch' name='choices' value='6'>USB Serial only (OR toggle with "u" via USB Serial or BT)<br>
     <br>
     Connect to Network (WiFi scan results at bottom of page): <br>
     SSID:<br>
@@ -86,6 +87,9 @@ input[type=submit]{
     <input type='submit' id='Connect' value='Connect'>
    </div>
   </form>
+  <div id="scanResults">
+  </div>
+
   <script>
     document.getElementById("use_static").onclick = function() {
       document.getElementById("staticoptions").style.opacity = 1.0;

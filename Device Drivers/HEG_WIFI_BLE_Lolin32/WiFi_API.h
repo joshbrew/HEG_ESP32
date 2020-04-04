@@ -266,14 +266,22 @@ void commandESP32(char received)
   }
   if (received == 'u')
   { //USB Toggle
-    if (USE_USB == false)
-    {
-      USE_USB = true;
-      Serial.begin(115200);
+    EEPROM.begin(512);
+    int ComMode = EEPROM.read(0);
+    if(ComMode != 3){
+      EEPROM.write(0,3);
+      EEPROM.commit();
+      EEPROM.end();
+      delay(100);
+      ESP.restart();
     }
-    else
+    else //Default back to WiFi mode
     {
-      USE_USB = false; // Serial.end() or Serial.hasClient() type function to suppress serial output?
+      EEPROM.write(0,0);
+      EEPROM.commit();
+      EEPROM.end();
+      delay(100);
+      ESP.restart();
     }
   }
   if (received == 'B')
@@ -458,6 +466,7 @@ void handleDoConnect(AsyncWebServerRequest *request) {
   bool use_dns = false;
   bool bleSwitch = false;
   bool btserSwitch = false;
+  bool usbonlySwitch = false;
   bool suggestIP = false;
   
   for(uint8_t i = 0; i < request->args(); i++){
@@ -468,19 +477,19 @@ void handleDoConnect(AsyncWebServerRequest *request) {
     if(request->argName(i) == "subnet"){ subnetM = String(request->arg(i)); Serial.print("Subnet Mask: "); Serial.println(subnetM);  }
     if(request->argName(i) == "primary"){ primaryDNS = String(request->arg(i)); Serial.print("Primary DNS: "); Serial.println(primaryDNS); }
     if(request->argName(i) == "secondary"){ secondaryDNS = String(request->arg(i)); Serial.print("Secondary DNS: "); Serial.println(secondaryDNS); }
-    if(request->argName(i) == "choices"){ 
+    if(request->argName(i) == "choices") { 
       if      (String(request->arg(i)) == "0") {use_static = true; Serial.println("Use Static IP: true");}
       else if (String(request->arg(i)) == "1") {ap_only = true; Serial.println("AP Only: true");}
       else if (String(request->arg(i)) == "2") {bleSwitch = true; Serial.println("Use Bluetooth LE: true");}
       else if (String(request->arg(i)) == "3") {use_dns = true; Serial.println("Use Static IP with DNS: true"); }
       else if (String(request->arg(i)) == "4") {suggestIP = true; Serial.println("Suggesting IP...");}
-      else if (String(request->arg(i)) == "5") {btserSwitch = true; Serial.println("Use Bluetooth Serial: true");};
-      
+      else if (String(request->arg(i)) == "5") {btserSwitch = true; Serial.println("Use Bluetooth Serial: true");}
+      else if (String(request->arg(i)) == "6") {usbonlySwitch = true; Serial.println("Use USB Only: true");}
     }
     //if(request->argName(i) == "save"){save = bool(request->arg(i)); Serial.println(save);}
   }
   delay(100);
-  if ((bleSwitch == false) && (btserSwitch == false)) {
+  if ((bleSwitch == false) && (btserSwitch == false) && (usbonlySwitch == false)) {
     AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the device connects.");
     response->addHeader("Refresh", "20");  
     response->addHeader("Location", "/");
@@ -524,6 +533,9 @@ void handleDoConnect(AsyncWebServerRequest *request) {
   }
   else if (btserSwitch == true){
     commandESP32('B');
+  }
+  else if (usbonlySwitch == true){
+    commandESP32('u');
   }
   delay(100);
 }

@@ -2,6 +2,12 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+4/3/20
+------
+- USB only mode introduced via command 'u' or toggling on the Connections Settings page at 192.168.4.1/connect or esp32.local/connect
+- Fixed the autoscaling on negative graph values (there was none, oops)
+- General stability testing, everything seems OK, get your device up to date!
+
 3/28/20
 ------
 - Tooltips!
