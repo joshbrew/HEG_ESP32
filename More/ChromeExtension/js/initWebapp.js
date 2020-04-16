@@ -470,7 +470,7 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
 
   serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
     //pass to data handler
-    if(line.split("|").length > 5 ) {
+    if(line.split("|").length > 2 ) {
       s.handleEventData(line); 
       //console.log("Passing Data...", Date.now())
     }

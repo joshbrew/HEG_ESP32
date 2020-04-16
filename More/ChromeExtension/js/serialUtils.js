@@ -101,6 +101,7 @@ class chromeSerial {
     }
 
     sendMessage(msg) {
+        msg+="\n";
         if (typeof chrome.serial !== 'undefined' && chrome.serial !== null) {
             if (this.connectionId > -1) {
                 var encodedString = unescape(encodeURIComponent(msg));
