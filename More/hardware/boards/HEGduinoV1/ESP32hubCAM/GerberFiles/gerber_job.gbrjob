@@ -1,0 +1,24 @@
+{
+    "Header": {
+        "Comment": "All values are metric (mm)",
+        "CreationDate": "2020-04-09T22:53:03Z",
+        "GenerationSoftware": {
+            "Application": "EAGLE",
+            "Vendor": "Autodesk",
+            "Version": "9.5.1"
+        },
+        "Part": "Single"
+    },
+    "Overall": {
+        "BoardThickness": 1.57,
+        "LayerNumber": 2,
+        "Name": {
+            "ProjectId": "ESP32_ADC_HUB"
+        },
+        "Owner": "Joshua Brewster <brewster.joshua1@gmail.com>",
+        "Size": {
+            "X": 71.91375,
+            "Y": 30.00375
+        }
+    }
+}
