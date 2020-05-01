@@ -2,6 +2,10 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+5/1/20
+------
+- Fixed BLE output format, optimized general output method
+
 4/3/20
 ------
 - USB only mode introduced via command 'u' or toggling on the Connections Settings page at 192.168.4.1/connect or esp32.local/connect
