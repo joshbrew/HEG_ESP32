@@ -62,14 +62,12 @@ String secondaryDNS = "";
 void saveWiFiLogin(bool ap_only, bool use_static, bool use_dns, bool reset){
   //512 usable address bytes [default values: 0x00], each char uses a byte.
   EEPROM.begin(512);
-  //Store SSID at address 1
   int address = 2;
   //Serial.print("Previous saved ssid: ");
   //Serial.println(EEPROM.readString(address));
   Serial.print("New saved SSID: ");
   Serial.println(setSSID);
   EEPROM.writeString(address, setSSID);
-  //Store password at address 64
   address = 128;
   //Serial.print("Previous saved password: ");
   //Serial.println(EEPROM.readString(address));
@@ -189,6 +187,7 @@ void setupStation(bool use_static, bool use_dns){
 }
 
 //ESP32 COMMAND MODULE
+
 void commandESP32(char received)
 {
   if (received == 't')
@@ -538,6 +537,9 @@ void handleDoConnect(AsyncWebServerRequest *request) {
   }
   delay(100);
 }
+
+
+
  
 void handleUpdate(AsyncWebServerRequest *request) {
   //char* html = "<h4>Upload compiled sketch .bin file</h4><form method='POST' action='/doUpdate' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
@@ -583,36 +585,12 @@ void printProgress(size_t prg, size_t sz) {
   events.send(progress.c_str(),"message",esp_timer_get_time());
 }
 
-void checkInput()
-{
-  if (USE_BT == true)
-  {
-    while (SerialBT.available())
-    {
-      received = SerialBT.read();
-      SerialBT.println(received);
-      commandESP32(received);
-      SerialBT.read(); //Flush endline for single char response
-    }
-  }
-  if (USE_USB == true)
-  {
-    while (Serial.available())
-    {
-      received = Serial.read();
-      Serial.println(received);
-      commandESP32(received);
-      Serial.read();
-    }
-  }
-}
-
 void eventTask(void * param) {
   while(true) {
     eventMicros = currentMicros;
-    if(output != ""){
-      events.send(output.c_str(),"heg",esp_timer_get_time());
-      output = ""; // Clear output
+    if(outputarr[0] != 'n') { //Prevents sending the same thing twice if the output is not updated
+      events.send(outputarr,"heg",esp_timer_get_time());
+      outputarr[0] = 'n'; // Clear output
     }
     //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
     vTaskDelay(50 / portTICK_PERIOD_MS);
@@ -622,7 +600,7 @@ void eventTask(void * param) {
 
 void wsHEGTask(void *p){
   while(globalWSClient != NULL && globalWSClient->status() == WS_CONNECTED){
-    globalWSClient->text(output);
+    globalWSClient->text(outputarr);
     vTaskDelay(75 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
@@ -647,6 +625,30 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     //commandESP32('f');
     globalWSClient = NULL;
  
+  }
+}
+
+void checkInput()
+{
+  if (USE_BT == true)
+  {
+    while (SerialBT.available())
+    {
+      received = SerialBT.read();
+      SerialBT.println(received);
+      commandESP32(received);
+      SerialBT.read(); //Flush endline for single char response
+    }
+  }
+  if (USE_USB == true)
+  {
+    while (Serial.available())
+    {
+      received = Serial.read();
+      Serial.println(received);
+      commandESP32(received);
+      Serial.read();
+    }
   }
 }
 

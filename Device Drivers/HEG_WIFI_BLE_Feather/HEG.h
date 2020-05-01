@@ -76,6 +76,7 @@ bool adcEnabled = false;
 bool reset = false;
 
 String output = "";
+char outputarr[64];
 
 int16_t adc0 = 0; // Resulting 15 bit integer.
 int16_t lastRead = 0;
@@ -139,14 +140,14 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
         coreProgramEnabled = true;
         Serial.println("Turning ON!");
         reset=true;
-        digitalWrite(LED, LOW); // LOLIN32 Indicator LED
+        //digitalWrite(LED, LOW); // LOLIN32 Indicator LED
       }
       else if (rxValue.find("f") != -1)
       {
         Serial.println("Turning OFF!");
         coreProgramEnabled = false;
         delay(300);
-        digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+        //digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
         digitalWrite(RED, LOW);
         digitalWrite(IR, LOW);
         no_led = true;
@@ -330,8 +331,8 @@ void setupHEG() {
   digitalWrite(PWR, HIGH);
 
   //LOLIN32 ONLY
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, HIGH);
+  //pinMode(LED, OUTPUT);
+  //digitalWrite(LED, HIGH);
 
   if(USE_BLE == true){
     setupBLE();
@@ -883,38 +884,26 @@ void updateHEG()
         ratioAvg = ratioAvg / ratioTicks;
         //outputValue = ratioAvg;
         //output = "NO DATA";
-        output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(rawAvg) + "|" + String(velAvg, 4) + "|" + String(accelAvg, 4) + "\r\n";
+        //output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(rawAvg) + "|" + String(velAvg, 4) + "|" + String(accelAvg, 4) + "\r\n";
+        sprintf(outputarr, "%lu|%0.1f|%0.1f|%0.4f|%0.1f|%0.4f|%0.4f\r\n",
+                currentMicros, redAvg, irAvg, ratioAvg, rawAvg, velAvg, accelAvg);
         if (USE_USB == true)
         {
           //Serial.flush();
-          Serial.print(output);
+          Serial.print(outputarr);
         }
         if (USE_BT == true) //BTSerial
         {
           if (SerialBT.hasClient() == true)
           {
             SerialBT.flush();
-            SerialBT.print(output);
+            SerialBT.print(outputarr);
             delay(10); // 10ms delay min required for BT output only due to bottleneck in library.
           }
         }
-        if (deviceConnected == true)
+        if (deviceConnected == true) // BLE
         { // could just use output.c_str(); // Need to clean this up
-          pCharacteristic->setValue(String(currentMicros).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(redAvg).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(irAvg).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(ratioAvg, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(rawAvg, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(velAvg, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String(accelAvg, 4).c_str());
-          pCharacteristic->notify();
-          pCharacteristic->setValue(String("|").c_str());
+          pCharacteristic->setValue(outputarr);
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent
         }

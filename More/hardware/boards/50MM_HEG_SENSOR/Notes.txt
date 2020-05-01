@@ -1,0 +1,2 @@
+Photodiodes need an amplifier circuit or an ADC that's tailored for these (e.g. the MAX30112 or MAX8614X). 
+For general purpose ADCs use OPT101 or similar with built in amps.

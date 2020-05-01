@@ -1,0 +1,3 @@
+AD7771 Breakout board (WIP)
+Joshua Brewster
+MIT License

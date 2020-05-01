@@ -388,6 +388,8 @@ document.getElementById("xscalebutton").onclick = () => {
 
 document.getElementById("xscaletd").style.display = "none"; //Gonna leave this out for now.
 document.getElementById("xscalebutton").style.display = "none"; //Gonna leave this out for now.
+document.getElementById("xoffsettd").style.display = "none"; //Gonna leave this out for now.
+document.getElementById("xoffsetbutton").style.display = "none"; //Gonna leave this out for now.
 
 //------------------------------------------------------------------------
 //----------------------------ToolTips------------------------------------
