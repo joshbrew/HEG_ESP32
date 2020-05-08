@@ -1,0 +1,4 @@
+Didn't work when I tested it, I think the vias on the MAX86141 are a problem (they're soooooo small).
+WIP Arduino drivers (likely missing something): https://github.com/moothyknight/MAX86141_Arduino
+
+Other notes: The LDO and Logic level shifter could be lower noise. MAX86141 has 1.8v logic
