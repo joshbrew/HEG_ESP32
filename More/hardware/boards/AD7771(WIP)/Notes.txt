@@ -1,0 +1,7 @@
+Modular design model:
+
+Microcontroller module (rigid)
+ADC module (rigid)
+Sensor mount module (flexible)
+
+This means the ADC and uC are reusable. We can design noise control indepedently to deal with low intensity signals (EEG/ELF), and have the essential components be individual and easier to propagate for more people to use for their own applications. Boom, progress. Open source fo lyfe
