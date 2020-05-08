@@ -8402,6 +8402,8 @@ Standard SMD solder jumper. Used to automate production. Two varients : Normally
 <sheet>
 <plain>
 <text x="97.79" y="93.98" size="1.778" layer="95">OPTIONAL NOISE-CANCELLING LDO, CONNECT JUMPER IF NOT IN USE</text>
+<text x="87.63" y="52.07" size="1.778" layer="95">FEATHER</text>
+<text x="175.26" y="53.34" size="1.778" layer="95">LOLIN32</text>
 </plain>
 <instances>
 <instance part="JP1" gate="G$1" x="82.55" y="20.32" smashed="yes">
