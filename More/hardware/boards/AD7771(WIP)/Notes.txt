@@ -1,3 +1,7 @@
+AD7771 breakout board for general use. Some of the additional are purposefully scaled back a little bit for cost-effectiveness, from what was recommended in the docs.
+
+.brd file incoming! Still validating the layout!
+
 Modular design model:
 
 Microcontroller module (rigid)
