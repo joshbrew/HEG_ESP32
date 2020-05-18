@@ -1,4 +1,4 @@
-AD7771 breakout board for general use. Some of the additional are purposefully scaled back a little bit for cost-effectiveness, from what was recommended in the docs.
+AD7771 breakout board for general use. Some of the additional parts are purposefully scaled back a little bit for cost-effectiveness, from what was recommended in the docs.
 
 .brd file incoming! Still validating the layout!
 
@@ -9,3 +9,11 @@ ADC module (rigid)
 Sensor mount module (flexible)
 
 This means the ADC and uC are reusable. We can design noise control indepedently to deal with low intensity signals (EEG/ELF), and have the essential components be individual and easier to propagate for more people to use for their own applications. Boom, progress. Open source fo lyfe
+
+
+Notes on noise reduction options:
+	Better LDO and VRef
+	Digital Isolation (not always necessary)
+	Bipolar supply
+	4 layer board with better wiring
+
