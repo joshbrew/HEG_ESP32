@@ -1720,8 +1720,9 @@ class circleJS {
   }
 
   onData(score){
-    if(score < this.c.height){
-      this.hillScore[this.hillScore.length - 1] += score*20;
+    var newscore = this.hillScore[this.hillScore.length - 1]+score*20
+    //if(newscore > this.c.height){
+      this.hillScore[this.hillScore.length - 1] = newscore;
       if(this.hillScore[this.hillScore.length - 1] < 10) { // minimum score (prevents rendering outside viewport)
         this.hillScore[this.hillScore.length - 1] = 10;
       }
@@ -1731,10 +1732,10 @@ class circleJS {
       if(score < 0) {
         this.hillScore[this.hillScore.length - 1] -= 0.5;
       }
-    }
-    else {
-      this.hillScore[this.hillScore.length - 1] = this.c.height;
-    }
+    //}
+    //else {
+    //  this.hillScore[this.hillScore.length - 1] = this.c.height;
+    //}
   }
 
   draw = () => {
@@ -1754,10 +1755,12 @@ class circleJS {
     var cwidth = this.c.width;
     var cheight = this.c.height - 2;
     var capYPositionArray = [];
+    var hscale = 1; //Height scalar
+    if(this.hillScore[this.hillScore.length-1] > cheight) {hscale = cheight / this.hillScore[this.hillScore.length-1];}
     this.ctx.clearRect(0, 0, cwidth, cheight);
     if(this.hillMode == 0){ // bars
       for (var i = 0; i < this.hillNum; i++) {
-          var value = this.hillScore[i];
+          var value = this.hillScore[i]*hscale;
           if(value < 0){ value = 0;}
           if (capYPositionArray.length < Math.round(this.hillNum)) {
               capYPositionArray.push(value);
@@ -1766,13 +1769,13 @@ class circleJS {
           //draw the cap, with transition effect
           var xoffset = this.meterWidth + this.gap;
           if (value < capYPositionArray[i]) {
-              this.ctx.fillRect(i * xoffset, cheight - (--capYPositionArray[i]), this.meterWidth, this.capHeight);
+              this.ctx.fillRect(i * xoffset, (cheight - (--capYPositionArray[i])), this.meterWidth, this.capHeight);
           } else {
-              this.ctx.fillRect(i * xoffset, cheight - value, this.meterWidth, this.capHeight);
+              this.ctx.fillRect(i * xoffset, (cheight - value), this.meterWidth, this.capHeight);
               capYPositionArray[i] = value;
           }
           this.ctx.fillStyle = this.gradient; 
-          this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + this.capHeight, this.meterWidth, cheight);
+          this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , (cheight - value + this.capHeight), this.meterWidth, cheight);
       }
     }
     if(this.hillMode == 1){ //gradient
@@ -1780,12 +1783,12 @@ class circleJS {
       this.ctx.beginPath();
       this.ctx.moveTo(0,cheight - this.hillScore[0])
       for (var i = 0; i < this.hillNum; i++) {
-        var value = this.hillScore[i];
+        var value = this.hillScore[i]*hscale;
         if(value < 0){ value = 0; }
         var xoffset = this.meterWidth + this.gap;
-        this.ctx.lineTo(i*xoffset, cheight - value)
+        this.ctx.lineTo(i*xoffset, (cheight - value))
         if (i == this.hillNum - 1){      
-          this.ctx.lineTo(cwidth,cheight - value);
+          this.ctx.lineTo(cwidth,(cheight - value));
         }
       }
       this.ctx.lineTo(cwidth,cheight);
