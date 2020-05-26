@@ -8,7 +8,7 @@ const char event_page[] PROGMEM = R"=====(
 <body>
   <title>HEG Interface</title>
   <div class="header">
-      <h1>HEG ALPHA Ver 0.0.8</h1>
+      <h1>HEG ALPHA Ver 0.0.9</h1>
   </div>
   
   <div id="main_body"></div>
@@ -273,12 +273,14 @@ function deInitMode(){
   if(c != null){
     c.deInit();
     c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
+    var thisNode = document.getElementById(c.parentId+"menu");
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
     c = null;
   }
   if(h != null){
     h.deInit();
     h.c.parentNode.parentNode.parentNode.removeChild(h.c.parentNode.parentNode);
-    h.menu.parentNode.removeChild(h.menu);
+    h.menu.parentNode.parentNode.removeChild(h.menu.parentNode);
     h = null;
   }
   if(txt != null){
@@ -404,6 +406,8 @@ document.getElementById("xscalebutton").onclick = () => {
 
 document.getElementById("xscaletd").style.display = "none"; //Gonna leave this out for now.
 document.getElementById("xscalebutton").style.display = "none"; //Gonna leave this out for now.
+document.getElementById("xoffsettd").style.display = "none"; //Gonna leave this out for now.
+document.getElementById("xoffsetbutton").style.display = "none"; //Gonna leave this out for now.
 
 //------------------------------------------------------------------------
 //----------------------------ToolTips------------------------------------
@@ -411,35 +415,28 @@ document.getElementById("xscalebutton").style.display = "none"; //Gonna leave th
 
 function makeTooltip(parentId, position=[100,100], text="Tooltip text") {
   var tooltipHTML = "<div id='"+parentId+"_tooltip' class='tooltip'></div>";
-
   HEGwebAPI.appendFragment(tooltipHTML, parentId);
   var tooltip = document.getElementById(parentId+"_tooltip");
   tooltip.innerHTML = text;
-
   var thisParent = document.getElementById(parentId);
-
-  console.log(tooltip);
   
+  //console.log(tooltip);
   tooltip.style.left = position[0] + "px";
   tooltip.style.top = position[1] + "px";
-
-  console.log(tooltip.style.left);
-  console.log(tooltip.style.top);
-
+  //console.log(tooltip.style.left);
+  //console.log(tooltip.style.top);
   tooltip.style.display = "none";
-
+  
   thisParent.onmouseover = () => {
     tooltip.style.display = "";
   }
   thisParent.onmouseleave = () => {
     tooltip.style.display = "none";
   }
-
-
 }
 
 //Menu tabs
-makeTooltip("modal_opener",[10,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
+makeTooltip("modal_opener",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
 makeTooltip("modal_opener2",[10,70],"Graph perspective controls");
 makeTooltip("modal_opener3",[10,90],"Various feedback modes. Change the scoring sensitivity settings in the Data menu to change the reactiveness.");
 

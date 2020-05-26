@@ -4,6 +4,7 @@ the firmware yourself, otherwise use our .bin files provided and flash your resp
 *****TO FLASH THIS SOFTWARE ON YOUR ESP32*****
 
 You need Arduino IDE: https://www.arduino.cc/en/Main/Software
+You may need the CP210x Drivers from Silicon Labs: https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
 
 You need the github version of the Arduino ESP32 libraries: https://github.com/espressif/arduino-esp32
 Follow steps accordingly for your OS.

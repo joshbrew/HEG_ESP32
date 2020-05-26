@@ -2,6 +2,13 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+5/26/29
+------
+- Added a Sound scripting system, allows arrays of frequencies and sound files to be buffered and used individually.
+- Added sound options to HillJS and CircleJS, just simple tones to help indicate the feedback.
+- Added a new mode to HillJS, it looks a lot nicer now.
+- Some minor fixes
+
 5/1/20
 ------
 - Fixed BLE output format, optimized general output method

@@ -45,6 +45,7 @@ const char* softAPName = "My_HEG";
 char received;
 unsigned long eventMicros = 0;
 unsigned long inputMicros = 0;
+char eventarr[64];
 
 size_t content_len;
 unsigned long t_start,t_stop;
@@ -588,9 +589,9 @@ void printProgress(size_t prg, size_t sz) {
 void eventTask(void * param) {
   while(true) {
     eventMicros = currentMicros;
-    if(outputarr[0] != 'n') { //Prevents sending the same thing twice if the output is not updated
+    if(eventarr != outputarr) { //Prevents sending the same thing twice if the output is not updated
       events.send(outputarr,"heg",esp_timer_get_time());
-      outputarr[0] = 'n'; // Clear output
+      memcpy(eventarr,outputarr,64);
     }
     //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
     vTaskDelay(50 / portTICK_PERIOD_MS);

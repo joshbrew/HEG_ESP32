@@ -236,6 +236,7 @@ s.endOfEvent = function() {
   }
 }
 
+
 function deInitMode(){
   if(v != null){
     var thisNode = document.getElementById(v.vidapiId);
@@ -257,12 +258,14 @@ function deInitMode(){
   if(c != null){
     c.deInit();
     c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
+    var thisNode = document.getElementById(c.parentId+"menu");
+    thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
     c = null;
   }
   if(h != null){
     h.deInit();
     h.c.parentNode.parentNode.parentNode.removeChild(h.c.parentNode.parentNode);
-    h.menu.parentNode.removeChild(h.menu);
+    h.menu.parentNode.parentNode.removeChild(h.menu.parentNode);
     h = null;
   }
   if(txt != null){
@@ -279,6 +282,7 @@ function deInitMode(){
     }
   }
 }
+
 
 
 document.getElementById("resetSession").onclick = () => { // Override default function
@@ -421,7 +425,7 @@ function makeTooltip(parentId, position=[100,100], text="Tooltip text") {
 }
 
 //Menu tabs
-makeTooltip("modal_opener",[10,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
+makeTooltip("modal_opener",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
 makeTooltip("modal_opener2",[10,70],"Graph perspective controls");
 makeTooltip("modal_opener3",[10,90],"Various feedback modes. Change the scoring sensitivity settings in the Data menu to change the reactiveness.");
 

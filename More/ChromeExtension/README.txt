@@ -1,5 +1,5 @@
 To add this chrome extension, you must find your Extensions page (chrome://extensions/), enable Developer Mode (top right
-corner slider usually), then select "Load Unpacked" and select this folder. To find the extensions after
+corner slider usually), then select "Load Unpacked" and select this folder (ChromeExtension). To find the extensions after
 they're loaded, type in chrome://apps in your address bar. You can then right click the icon and create
 desktop shortcuts. I recommend this plugin to make a nice button to find the menu: 
 https://chrome.google.com/webstore/detail/chrome-apps-shortcut/eobiahopcndogkgfjedmneomoghnpjpp
@@ -11,6 +11,9 @@ To use the USB connection, click "Get" in the top right of the page if you don't
 device option (the HEG), then click "Set" to connect to it and allow you to control it with the 
 interface. You can right click the page and click "Inspect" to see the data stream and check errors if 
 you are getting any.
+
+You may need the CP210x drivers to recognize the USB connection on your PC:
+https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
 
 To use the WiFi connection, connect to your device's WiFi signal (or know its IP on your network if it
 is connected to your main), then open up the Data menu and click 'Connect' or type in the custom IP 

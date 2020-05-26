@@ -89,6 +89,16 @@ h1 {
   margin-right: auto;
   text-align: center;
  }
+ .circleapi{
+   position:absolute;
+   top:90px;
+   left:10px;
+   width:100px;
+   z-index: 999;
+ }
+ .circleapi button{
+   width:100%;
+ }
 .file_wrapper{
   position: absolute;
   color: white;
@@ -237,16 +247,31 @@ h1 {
     width:    100%;
   }
 
- .hillapi {
-   position:absolute;
-   top: 100px;
-   min-width: 250px;
- }
  .hillcss {
    width: 80%;
    left: 10%;
    max-height: 440px;
  }
+ .hillapi {
+  position: absolute;
+  top: 100px;
+  max-width: 100px;
+}
+ .hillapi table {
+  top: 0px;
+  position: absolute;
+  width: 100px;
+  font-family: 'Courier New', Courier, monospace;
+  color: white;
+}
+
+.hillapi input {
+  width: 100px;
+}
+
+.hilltable button {
+  width: 100%;
+}
  .textreadercss {
   top: 100px;
   width: 90%;

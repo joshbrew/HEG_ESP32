@@ -15,6 +15,7 @@ class chromeSerial {
         else {
             console.log("ERROR: Cannot locate chrome.serial.");
         }
+        
     }
 
     setupSelect(parentId) {
