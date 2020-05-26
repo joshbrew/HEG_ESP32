@@ -922,7 +922,9 @@ class circleJS {
 
       if(((this.angle > 1.57) || (this.angleChange > 0)) && ((this.angle < 3.14) || (this.angleChange < 0))){ //generalize
           this.angle += this.angleChange*0.1;
-          this.soundFX.osc[0].frequency.value += this.angleChange*100;
+          if(this.soundFX != null){
+            this.soundFX.osc[0].frequency.value += this.angleChange*100;
+          }
       }
 
       var radius = cHeight*0.04 + (cHeight*0.46) * Math.abs(Math.cos(this.angle));
