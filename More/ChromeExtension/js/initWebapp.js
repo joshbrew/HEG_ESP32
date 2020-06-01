@@ -1,13 +1,14 @@
-  
-//Advanced Client scripts using external packages
-//Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
-if((window.location.hostname != "192.168.4.1") && (window.location.hostname != "esp32.local")) {
-  var useAdvanced = true; //Create a global flag to indicate we're capable of using advanced scripts.
+ // Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily) 
+// Advanced Client scripts using external packages
+
+// Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
+if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !== 'esp32.local')) {
+  var useAdvanced = true; // Create a global flag to indicate we're capable of using advanced scripts.
 }
 
-//------------------------------------------------------------------------
-//------------------------------Tab Modal Code----------------------------
-//------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------Tab Modal Code----------------------------
+// ------------------------------------------------------------------------
 
 var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
 
@@ -87,21 +88,21 @@ function toggleHEG(switchElement) {
 }
 document.getElementById("togBtn").onchange = function(){toggleHEG(document.getElementById("togBtn"))};
 
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
-//Initialize Session
+// Initialize Session
 var s = new HEGwebAPI('',false); 
 
-//Initialize Graph
-var g = new graphJS(1155,[255,100,80,1],1.0,[1400,600], "main_body", "g", false); //This could be swapped for a superior graphing package
+// Initialize Graph
+var g = new graphJS(1155,[255,100,80,1],1.0,[1400,600], "main_body", "g", false); // This could be swapped for a superior graphing package
 
 s.createUI("dataBox");
 g.createUI("graphBox")
 
-//Feedback
-var c = new circleJS(); //Default animation initialize
+// Feedback
+var c = new circleJS(); // Default animation initialize
 var v = null;
 var a = null;
 var h = null;
@@ -154,13 +155,13 @@ document.getElementById("txtmode").onclick = function() {
   }
 }
 
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
-if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
+if(useAdvanced) { // Setup advanced scripts now that the default app is ready.
   var link2 = document.createElement("script");
   link2.src = "js/threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-  document.head.appendChild(link2); //Append script
+  document.head.appendChild(link2); // Append script
 
   var threeApp = null;
 
@@ -174,15 +175,15 @@ if(useAdvanced) { //Setup advanced scripts now that the default app is ready.
     }
   }
 
-  //var link3 = document.createElement("script");
-  //link3.src = "https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.5.0/viewer.min.js"; // PDF Viewer JS (text scrolling experiment)
-  //document.head.appendChild(link3);
-} 
+  // var link3 = document.createElement("script");
+  // link3.src = "https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.5.0/viewer.min.js"; // PDF Viewer JS (text scrolling experiment)
+  // document.head.appendChild(link3);
+}
 
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
-//Customize session functions
+// Customize session functions
 s.handleScore = function() {
   g.us = this.us[this.us.length - 1] - this.startTime;
   if(this.ratio.length > 40){
@@ -206,7 +207,7 @@ s.handleScore = function() {
     if(txt != null) {
       txt.onData(score);
     }
-    if(useAdvanced) { //Score handling for advanced scripts
+    if(useAdvanced) { // Score handling for advanced scripts
       if(threeApp != null) {
         threeApp.onData(score);
       }
@@ -220,10 +221,10 @@ s.handleScore = function() {
     g.graphY2.push(this.slowSMAarr[this.slowSMAarr.length - 1 - g.xoffset]);
   }
   else {
-    //this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
-    //g.graphY1.shift();
-    //g.graphY1.push(this.smaSlope);
-    //this.scoreArr.push(this.smaSlope);
+    // this.smaSlope = this.scoreArr[this.scoreArr.length - 1];
+    // g.graphY1.shift();
+    // g.graphY1.push(this.smaSlope);
+    // this.scoreArr.push(this.smaSlope);
   }
   this.updateTable();
 }
@@ -231,11 +232,10 @@ s.handleScore = function() {
 s.endOfEvent = function() {
   if(g.xoffsetSlider.max < this.scoreArr.length){
     if(this.scoreArr.length % 20 == 0) { 
-      g.xoffsetSlider.max = this.scoreArr.length - 3; //Need 2 vertices minimum
+      g.xoffsetSlider.max = this.scoreArr.length - 3; // Need 2 vertices minimum
     }
   }
 }
-
 
 function deInitMode(){
   if(v != null){
@@ -275,14 +275,13 @@ function deInitMode(){
     thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
     txt = null;
   }
-  if(useAdvanced) { //Score handling for advanced scripts
+  if(useAdvanced) { // Score handling for advanced scripts
     if(threeApp != null) {
       threeApp.destroyThreeApp();
       threeApp = null;
     }
   }
 }
-
 
 
 document.getElementById("resetSession").onclick = () => { // Override default function
@@ -324,12 +323,12 @@ g.xoffsetSlider.onchange = () => {
    }
    g.xoffset = g.xoffsetSlider.value;
    
-   if(s.scoreArr.length > g.graphY1.length){ //more data than graph size, so just grab a slice of the graph
+   if(s.scoreArr.length > g.graphY1.length){ // more data than graph size, so just grab a slice of the graph
     var endIndex = s.scoreArr.length - g.xoffset - 1;
     g.graphY1 = s.scoreArr.slice(endIndex - g.graphY1.length, endIndex); // FIX 
     g.graphY2 = s.ratio.slice(endIndex -g.graphY2.length, endIndex);
    }
-   else if (s.scoreArr.length < g.graphY1.length) { //less data than graph size, generate zeroes with data from 0 to offset
+   else if (s.scoreArr.length < g.graphY1.length) { // less data than graph size, generate zeroes with data from 0 to offset
     var scoreslice = s.scoreArr.slice(0,s.scoreArr.length - 1 - g.xoffset);
     var ratioslice = s.ratio.slice(0,s.ratio.length - 1 - g.xoffset);
     if(g.graphY1.length == scoreslice){
@@ -390,61 +389,58 @@ document.getElementById("xscalebutton").onclick = () => {
   g.VERTEX_LENGTH = g.xscaleSlider.value;
 }
 
-document.getElementById("xscaletd").style.display = "none"; //Gonna leave this out for now.
-document.getElementById("xscalebutton").style.display = "none"; //Gonna leave this out for now.
-document.getElementById("xoffsettd").style.display = "none"; //Gonna leave this out for now.
-document.getElementById("xoffsetbutton").style.display = "none"; //Gonna leave this out for now.
+document.getElementById("xscaletd").style.display = "none"; // Gonna leave this out for now.
+document.getElementById("xscalebutton").style.display = "none"; // Gonna leave this out for now.
+document.getElementById("xoffsettd").style.display = "none"; // Gonna leave this out for now.
+document.getElementById("xoffsetbutton").style.display = "none"; // Gonna leave this out for now.
 
-//------------------------------------------------------------------------
-//----------------------------ToolTips------------------------------------
-//------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ----------------------------ToolTips------------------------------------
+// ------------------------------------------------------------------------
 
 function makeTooltip(parentId, position=[100,100], text="Tooltip text") {
   var tooltipHTML = "<div id='"+parentId+"_tooltip' class='tooltip'></div>";
-
   HEGwebAPI.appendFragment(tooltipHTML, parentId);
   var tooltip = document.getElementById(parentId+"_tooltip");
   tooltip.innerHTML = text;
-
   var thisParent = document.getElementById(parentId);
-  //console.log(tooltip);
+  
+  // console.log(tooltip);
   tooltip.style.left = position[0] + "px";
   tooltip.style.top = position[1] + "px";
-  //console.log(tooltip.style.left);
-  //console.log(tooltip.style.top);
+  // console.log(tooltip.style.left);
+  // console.log(tooltip.style.top);
   tooltip.style.display = "none";
-
+  
   thisParent.onmouseover = () => {
     tooltip.style.display = "";
   }
   thisParent.onmouseleave = () => {
     tooltip.style.display = "none";
   }
-
-
 }
 
-//Menu tabs
+// Menu tabs
 makeTooltip("modal_opener",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
 makeTooltip("modal_opener2",[10,70],"Graph perspective controls");
 makeTooltip("modal_opener3",[10,90],"Various feedback modes. Change the scoring sensitivity settings in the Data menu to change the reactiveness.");
 
-//Data options
-makeTooltip("commandrow",[10,70],"See documentation for a command list, not all work over WiFi.");
-makeTooltip("sensitivityrow",[300,250],"Controls how reactive the feedback is to ratio changes.");
-makeTooltip("timerow",[10,280],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
-makeTooltip("csvrow",[10,450],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
-makeTooltip("replaycsv",[10,500],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
-makeTooltip("hostrow",[10,540],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB and Bluetooth connectivity require our free Chrome Extension.")
+// Data options
+makeTooltip("commandrow",[10,100],"See documentation for a command list, not all work over WiFi.");
+makeTooltip("sensitivityrow",[300,290],"Controls how reactive the feedback is to ratio changes.");
+makeTooltip("timerow",[10,340],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
+makeTooltip("csvrow",[10,520],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
+makeTooltip("replaycsv",[10,575],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
+makeTooltip("hostrow",[10,600],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB and Bluetooth connectivity require our free Chrome Extension.")
 
-//Graph options
+// Graph options
 makeTooltip("xoffsettd",[10,40],"Scroll back and forth through your data if it is longer than the graph.");
 makeTooltip("xscaletd",[10,80],"Shrink or grow the graph on the x-axis");
 makeTooltip("yoffsettd",[10,110],"Scroll up or down on the y-axis of the graph.");
 makeTooltip("yscaletd",[10,160],"Shrink or grow the graph on the y-axis.");
 makeTooltip("autoscaletd",[10,220],"Uncheck to manually scale the graph on the y-axis.");
 
-//Feedback options
+// Feedback options
 makeTooltip("canvasmode",[10,10],"Grow the circle and keep it big!");
 makeTooltip("audiomode",[10,10],"Keep the song volume up or at a sweet spot! Use MP3 files.");
 makeTooltip("txtmode",[10,10],"Scroll the text to the right to keep reading!");

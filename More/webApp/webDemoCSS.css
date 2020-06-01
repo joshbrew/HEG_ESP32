@@ -224,8 +224,8 @@ h1 {
     position: absolute;
     max-width: 10%;
     transform: rotateZ(270deg);
-    top: 350px;
-    left: -60px;
+    top: 375px;
+    left: -20px;
     opacity: 0.2;
   }
   .volSlider:hover {
@@ -526,7 +526,7 @@ textarea:focus{
 
 input[type=range].slider {
   -webkit-appearance: none;
-  min-width: 200px;
+  min-width: 150px;
   width: 100%;
   margin: 8.4px 0;
 }

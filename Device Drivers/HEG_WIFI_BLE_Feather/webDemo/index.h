@@ -98,7 +98,7 @@ form {
   <!--<form class="scform" method="get" action="/sc">StateChanger Demo (WIP):<button class="button scbutton" type="submit">GO</button></form><br>-->
 </div>
 <div id="version" style="position:absolute; right:5px; bottom:5px">
-  Alpha v0.1.9. May 25, 2020.
+  Alpha v0.1.10. June 1, 2020.
 </div>
 
 </body>

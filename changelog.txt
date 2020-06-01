@@ -2,8 +2,29 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
-5/26/29
+6/1/20
 ------
+0.0.10
+- Reworked audio system for the AudioJS, fixed the audio feedback (not sure how I broke it!)
+- 2 more audio visualizers
+- better colors on CircleJS
+- tweaked Hill Climber
+- Generalized the CSV function
+- SoundJS has a recording function you can use, default set for audio recording but can do video, requires a SoundJS class to be set (either when audio is active or through the console)
+- SerialUtils.js for the Chrome Extension now has recording and monitoring functions (the monitor is not set up yet on the front end)
+- Separated the javascript on the webDemo.html into initWebapp.js for parity with the Chrome Extension
+- geolocateJS created for an interesting project
+
+TODO: 
+- Make performant serial monitor front end, 
+- geolocate.js interactive features - heat maps!
+- work on BCIjs integration for EEG data (I need to get ahold of one with a generic data stream) on extension, 
+- more visuals, 
+- better recording menu.
+
+5/26/20
+------
+0.0.9
 - Added a Sound scripting system, allows arrays of frequencies and sound files to be buffered and used individually.
 - Added sound options to HillJS and CircleJS, just simple tones to help indicate the feedback.
 - Added a new mode to HillJS, it looks a lot nicer now.

@@ -1,11 +1,21 @@
 //Utils developed by Diego Schmaedech (MIT License). Modified/Generalized by Joshua Brewster (MIT License)
 class chromeSerial {
-    constructor(defaultUI=true, parentId='serialmenu') {
+    constructor(defaultUI=true, parentId='serialmenu', streamMonitorId="serialmonitor") {
         this.displayPorts = [];
         this.defaultUI = defaultUI;
 
         this.encodedBuffer = "";
         this.connectionId = -1;
+
+        this.recordData = false;
+        this.recorded = [];
+
+        this.monitoring = false;
+        this.newSamples = 0;
+        this.monitorSamples = 10000; //Max 10000 samples visible in stream monitor by default
+        this.monitorData = [];
+        this.monitorIdx = 0;
+
         if (typeof chrome.serial !== 'undefined' && chrome.serial !== null) {
             if(defaultUI == true) {
                 this.setupSelect(parentId);
@@ -33,6 +43,51 @@ class chromeSerial {
             if(this.connectionId != -1 ) {this.connectSelected(false)}; // Disconnect previous
             this.connectSelected(true, document.getElementById('serialports').value);
         }
+    }
+
+    setupMonitor(parentId) {
+
+        if(this.monitorData.length > this.monitorSamples){ 
+            this.monitorData.splice(0, this.monitorData.length - this.monitorSamples);
+        }
+
+        var div = document.createElement('div');
+        div.setAttribute('id','streamMonitor');
+        this.monitorData.forEach((item,idx)=>{
+            div.innerHTML += '<div id='+this.monitorIdx+'>'+item+'</div>';
+            this.monitorIdx++;
+        });
+        this.newSamples = 0;
+        var frag = document.createDocumentFragment();
+        frag.appendChild(div);
+        
+        document.getElementById(parentId).appendChild(frag);
+
+        var monitorAnim = () => {
+            if(this.newSamples > 0){
+                if(this.monitorData.length > this.monitorSamples){ 
+                    //Remove old samples if over the limit
+                    for(var i = this.monitorIdx - this.monitorSamples - (this.monitorData.length - this.monitorSamples); i > this.monitorIdx - this.monitorSamples; i++){
+                        document.getElementById(i).remove();
+                    }
+                    this.monitorData.splice(0, this.monitorData.length - this.monitorSamples);
+                }
+                //Load new samples
+                for(var i = 0; i < newSamples; i++) {
+                    var newdiv = document.createElement('div');
+                    newdiv.innerHTML = '<div id="'+this.monitorIdx+'">'+this.monitorData[this.monitorData.length - 1 - i]+'</div>';
+                    var frag = document.createDocumentFragment();
+                    frag.appendChild(newdiv);        
+                    document.getElementById(parentId).appendChild(frag);
+                    this.monitorIdx++;
+
+                    var elem = document.getElementById('streamMonitor');
+                    elem.scrollTop = elem.scrollHeight;
+                }
+                setTimeout(requestAnimationFrame(monitorAnim),15);
+            }
+        }
+        requestAnimationFrame(monitorAnim);
     }
 
     onGetDevices = (ports) => {
@@ -73,6 +128,13 @@ class chromeSerial {
         var index;
         while ((index = this.encodedBuffer.indexOf('\n')) >= 0) {
             var line = this.encodedBuffer.substr(0, index + 1);
+            if(this.recordData == true) {
+                this.recorded.push(line);
+            }
+            if(this.monitoring = true){
+                this.newSamples++;
+                this.monitorData.push(line);
+            }
             this.onReadLine(line);
             this.encodedBuffer = this.encodedBuffer.substr(index + 1);
         }
@@ -150,5 +212,54 @@ class chromeSerial {
 
     setupSerial() {
         chrome.serial.getDevices(this.onGetDevices);
+    }
+
+    saveCsv(data=this.recorded, name=new Date().toISOString(),delimiter="|",header="Header\n"){
+        var csvDat = header;
+        data.forEach((line) => {
+            csvDat += line.split(delimiter).join(",")+"\n";
+        });
+
+        var hiddenElement = document.createElement('a');
+        hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvDat);
+        hiddenElement.target = "_blank";
+        if(name != ""){
+            hiddenElement.download = name+".csv";
+        }
+        else{
+            hiddenElement.download = new Date().toISOString()+".csv";
+        }
+        hiddenElement.click();
+    }
+
+    openFile(delimiter=",") {
+        var input = document.createElement('input');
+        input.type = 'file';
+    
+        input.onchange = e => {
+        this.csvDat = [];
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = event => {
+          var tempcsvData = event.target.result;
+          var tempcsvArr = tempcsvData.split("\n");
+          tempcsvArr.pop();
+          tempcsvArr.forEach((row,i) => {
+            if(i==0){ var temp = row.split(delimiter); }
+            else{
+              var temp = row.split(delimiter);
+              this.csvDat.push(temp);
+            }
+          });
+          this.onOpen();
+         }
+         input.value = '';
+        }
+        input.click();
+    } 
+
+    onOpen() { // Customize this function in your init script, access data with ex. console.log(serialMonitor.csvDat), where var serialMonitor = new chromeSerial(defaultUI=false)
+        alert("CSV Opened!");
     }
 }

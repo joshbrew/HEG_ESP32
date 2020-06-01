@@ -3,6 +3,7 @@ class HEGwebAPI {
   constructor(host='', defaultUI=true, parentId="main_body"){
     
     this.startTime=0;
+
     this.us=[];
     this.red=[];
     this.ir=[];
@@ -18,7 +19,8 @@ class HEGwebAPI {
     this.smaSlope = 0;
     this.scoreArr = [0];
     this.replay = false;
-
+    
+    this.raw = [];
     this.csvDat = [];
     this.csvIndex = 0;
 
@@ -52,6 +54,8 @@ class HEGwebAPI {
 
   resetVars() {
     this.startTime = 0;
+
+    this.raw = [];
     this.us = [];
     this.red = [];
     this.ir = [];
@@ -137,28 +141,50 @@ class HEGwebAPI {
     //this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
   }
 
-  saveCSV(){
-    var csv = "us,Red,IR,Ratio,ambient,Vel,Accel,Notes\n"; //csv header
-    for(var i = 0; i<this.us.length - 1; i++) {
-      if(this.noteIndex.indexOf(i) != -1) {
-        var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i],[this.noteText[this.noteIndex.indexOf(i)]]].join(',') + "\n";
-      }
-      else{
-        var temp = [this.us[i],this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i]].join(',') + "\n";
-      }
-      csv += temp;
-    }
+  saveCSV(data=this.raw, name= new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
+    var csvDat = header;
+    data.forEach((line) => {
+        csvDat += line.split(delimiter).join(",")+"\n";
+    });
+
     var hiddenElement = document.createElement('a');
-    hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
+    hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvDat);
     hiddenElement.target = "_blank";
-    if(document.getElementById("csvname").value != ""){
-      hiddenElement.download = document.getElementById("csvname").value+".csv";
+    if(name != ""){
+        hiddenElement.download = name+".csv";
     }
     else{
-      hiddenElement.download = "session_data.csv";
+        hiddenElement.download = Date().toISOString()+".csv";
     }
     hiddenElement.click();
   }
+
+  openFile(delimiter=",") {
+    var input = document.createElement('input');
+    input.type = 'file';
+
+    input.onchange = e => {
+    this.csvDat = [];
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = event => {
+      var tempcsvData = event.target.result;
+      var tempcsvArr = tempcsvData.split("\n");
+      tempcsvArr.pop();
+      tempcsvArr.forEach((row,i) => {
+        if(i==0){ var temp = row.split(delimiter); }
+        else{
+          var temp = row.split(delimiter);
+          this.csvDat.push(temp);
+        }
+      });
+      this.onOpen();
+     }
+     input.value = '';
+    }
+    input.click();
+} 
 
   handleScore() {
     //Define in-script
@@ -295,6 +321,7 @@ class HEGwebAPI {
   }
 
   hegEvent = (e) => {
+    this.raw.push(e.data);
     this.handleEventData(e.data);
   }
 
@@ -646,7 +673,7 @@ class graphJS {
   makePoints(numPoints, yArr) {
     const highestPointNdx = numPoints - 1;
     return Array.from({length: numPoints * 2}, (_, i) => {
-      const pointId = i / 2 | 0;
+      const pointId = i * 0.5 | 0;
       const lerp0To1 = pointId / highestPointNdx;
       const isY = i % 2;
       if(this.autoscale == true){
@@ -916,6 +943,15 @@ class circleJS {
       // color in the background
       this.ctx.fillStyle = this.bgColor;
       this.ctx.fillRect(0, 0, cWidth, cHeight);
+
+      // style the background
+      var gradient = this.ctx.createRadialGradient(cWidth*0.5,cHeight*0.5,2,cWidth*0.5,cHeight*0.5,100*this.angle*this.angle);
+      gradient.addColorStop(0,"purple");
+      gradient.addColorStop(0.25,"dodgerblue");
+      gradient.addColorStop(0.32,"skyblue");
+      gradient.addColorStop(1,this.bgColor);
+      this.ctx.fillStyle = gradient;
+      this.ctx.fillRect(0,0,cWidth,cHeight);
        
       // draw the circle
       this.ctx.beginPath();
@@ -947,7 +983,7 @@ class circleJS {
 
         this.useAlpha = true;
         this.useRate = true;
-        this.useVolume = true;
+        this.useVol = true;
         this.useTime = false;
 
         this.ampScore = 0;
@@ -1038,15 +1074,15 @@ class circleJS {
         }
 
         document.getElementById("useVol").onclick = () => {
-         if(this.useVolume == true){
+         if(this.useVol == true){
            this.vidQuery.muted = true;
-           this.useVolume = false;
+           this.useVol = false;
            this.volume = 0;
            this.vidQuery.volume = 0;
            document.getElementById("useVol").style.opacity = "0.3";
          }
          else{ 
-          this.useVolume = true; 
+          this.useVol = true; 
           this.vidQuery.muted = false; 
           this.volume = 0.5; 
           this.vidQuery.volume = 0.5;
@@ -1239,7 +1275,7 @@ class circleJS {
 
     init(defaultUI) {
        this.vidQuery = document.getElementById(this.vidContainerId+'vid');
-       if(this.useVolume == true){
+       if(this.useVol == true){
         this.vidQuery.muted = false;
         this.vidQuery.volume = 0.5;
         this.volume = 0.5;
@@ -1262,8 +1298,8 @@ class circleJS {
      }
  }
  
- class audioJS { //Modified from: https://codepen.io/jackfuchs/pen/yOqzEW
-  constructor(res=["800","400"], audioId="audio", audmenuId="audmenu", defaultUI=true, parentId="main_body") {
+ class audioJS { //Heavily modified from: https://codepen.io/jackfuchs/pen/yOqzEW
+  constructor(res=[window.innerWidth,"800"], audioId="audio", audmenuId="audmenu", defaultUI=true, parentId="main_body") {
     this.audioId = audioId;
     this.audmenuId = audmenuId;
     
@@ -1287,13 +1323,12 @@ class circleJS {
       this.initUI(parentId);
     }
 
-    this.maxVol = 1;
+    this.maxVol = 0.5;
     this.file = null; //the current file
     this.fileName = null; //the current file name
-    this.audioContext = null;
-    this.source = null; //the audio source
-    this.analyser = null;
-    this.gainNode = null;
+
+    this.audio = null;
+
     this.info = document.getElementById('fileinfo').innerHTML; //this used to upgrade the UI information
     this.menu = document.getElementById(this.audmenuId);
     this.infoUpdateId = null; //to sotore the setTimeout ID and clear the interval
@@ -1302,13 +1337,19 @@ class circleJS {
     this.forceStop = false;
     this.allCapsReachBottom = false;
 
+    this.useVol = true;
 
-    this.meterWidth = 14; //width of the meters in the spectrum
-    this.gap = 2; //gap between meters
-    this.capHeight = 2;
+    this.meterWidth = 14; //relative width of the meters in the spectrum
+    this.meterGap = 2; //relative gap between meters
+    this.capHeight = 2; //relative cap height
     this.capStyle = '#fff';
-    this.meterNum = 60; //count of the meters
+    this.meterNum = 256; //count of the meters
+    this.capYPositionArray = []; //store the vertical position of the caps for the previous frame
+
+    this.relativeWidth = this.meterNum*(this.meterWidth+this.meterGap); //Width of the meter (px)
     
+    this.mode = 2;
+
     this.init();
   }
 
@@ -1317,40 +1358,26 @@ class circleJS {
     if (this.animationId !== null) {
         cancelAnimationFrame(this.animationId);
     }
-    if (this.source !== null) {
-        this.source.stop(0);
+    if(this.audio !== null){
+      if (this.audio.sourceList.length > 0) {
+          this.audio.sourceList[0].stop(0);
+      }
     }
   }
 
-  createVisualizer(audioContext, buffer){
-      var audioBufferSourceNode = audioContext.createBufferSource();
-      this.analyser = audioContext.createAnalyser();
-      this.gainNode = audioContext.createGain();
-      var that = this;
-      //connect the source to the modifier nodes
-      audioBufferSourceNode.connect(this.gainNode);
-      this.gainNode.connect(this.analyser);
-      //connect the last node to the destination(the speaker), or we won't hear the sound
-      this.analyser.connect(audioContext.destination);
-      //then assign the buffer to the buffer source node
-      audioBufferSourceNode.buffer = buffer;
-      //play the source
-      if (!audioBufferSourceNode.start) {
-          audioBufferSourceNode.start = audioBufferSourceNode.noteOn //in old browsers use noteOn method
-          audioBufferSourceNode.stop = audioBufferSourceNode.noteOff //in old browsers use noteOff method
-      };
-      this.stopAudio();
-      audioBufferSourceNode.start(0);
-      this.gainNode.gain.setValueAtTime(this.maxVol, this.audioContext.currentTime);
+  createVisualizer(buffer){
+      this.audio.finishedLoading([buffer]);
+
+      this.audio.sourceList[0].start(0);
+      this.audio.gain.gain.setValueAtTime(this.maxVol, this.audio.ctx.currentTime);
       this.status = 1;
-      this.source = audioBufferSourceNode;
-      audioBufferSourceNode.onended = function() {
-          that.endAudio(that);
+      this.audio.sourceList[0].onended = () => {
+          this.endAudio();
       };
       this.updateInfo('Playing ' + this.fileName, false);
       this.info = 'Playing ' + this.fileName;
       document.getElementById('fileWrapper').style.opacity = 0.2;
-      this.draw(this.analyser);
+      this.draw();
   }
 
   initUI(parentId){
@@ -1358,8 +1385,9 @@ class circleJS {
         <table id="audtable" class="audtable">\
           <tr><td>Feedback: </td></tr> \
           <tr><td><button id="useVol" name="useVol" class="button">Volume</button></td></tr> \
+          <tr><td><button id="modebutton" name="modebutton" class="button">Mode</button></td></tr> \
         </table>\
-        <input type="range" class="slider volSlider" id="volSlider" name="volSlider" min="0" max="100" value="100"> \
+        <input type="range" class="slider volSlider" id="volSlider" name="volSlider" min="0" max="100" value="'+toString(this.maxVol*100)+'"> \
         <div id="fileWrapper" class="file_wrapper"> \
           <div id="fileinfo"></div> \
           <input type="file" id="uploadedFile"></input> \
@@ -1378,8 +1406,8 @@ class circleJS {
         else{
           this.useVol = false;
           this.maxVol = document.getElementById("volSlider").value * 0.01;
-          if(this.gainNode != null) {
-            this.gainNode.gain.setValueAtTime(this.maxVol, this.audioContext.currentTime);
+          if(this.audio.gain != null) {
+            this.audio.gain.gain.setValueAtTime(this.maxVol, this.audio.ctx.currentTime);
           }
           document.getElementById("useVol").style.opacity = "0.3";
         }
@@ -1387,9 +1415,15 @@ class circleJS {
 
       document.getElementById("volSlider").oninput = () => {
         this.maxVol = document.getElementById("volSlider").value * 0.01;
-        if(this.gainNode != null) {
-          this.gainNode.gain.setValueAtTime(this.maxVol, this.audioContext.currentTime);
+        if(this.audio.gain != null) {
+          this.audio.gain.gain.setValueAtTime(this.maxVol, this.audio.ctx.currentTime);
         }
+      }
+
+      document.getElementById("modebutton").onclick = () => {
+        if(this.mode == 0) { this.mode = 1;}
+        else if (this.mode == 1){this.mode = 2;}
+        else{ this.mode = 0; }
       }
 
       document.getElementById("showhide").onclick = () => {
@@ -1408,27 +1442,25 @@ class circleJS {
 
   decodeAudio(){
       //read and decode the file into audio array buffer 
-      var that = this;
       var file = this.file;
       var fr = new FileReader();
-      fr.onload = function(e) {
+      fr.onload = (e) => {
           var fileResult = e.target.result;
-          var audioContext = that.audioContext;
-          if (audioContext === null) {
+          if (this.audio.ctx === null) {
               return;
           };
-          that.updateInfo('Decoding the audio', true);
-          audioContext.decodeAudioData(fileResult, function(buffer) {
-              that.updateInfo('Decode successful, starting the visualizer', true);
-              that.createVisualizer(audioContext, buffer);
-          }, function(e) {
-              that.updateInfo('!Fail to decode the file', false);
-              console.log(e);
+          this.updateInfo('Decoding the audio', true);
+          this.audio.ctx.decodeAudioData(fileResult, (buffer) => {
+            this.updateInfo('Decode successful, starting the visualizer', true);
+            this.createVisualizer(buffer);
+          }, (e) => {
+            this.updateInfo('Failed to decode the file!', false);
+            console.log(e);
           });
       };
       fr.onerror = function(e) {
-          that.updateInfo('!Fail to read the file', false);
-          console.log(e);
+        this.updateInfo('Failed to read the file!', false);
+        console.log(e);
       };
       //assign the file to the reader
       this.updateInfo('Starting read the file', true);
@@ -1437,7 +1469,7 @@ class circleJS {
 
   onData(score){
     if(this.useVol == true) {
-      var newVol = this.gainNode.gain.value + score;
+      var newVol = this.audio.gain.gain.value + score;
       if(newVol > this.maxVol){
         newVol = this.maxVol;
       }
@@ -1447,80 +1479,73 @@ class circleJS {
       if(this.defaultUI == true) {
         document.getElementById("volSlider").value = newVol * 100;
       }
-      this.gainNode.gain.setValueAtTime(newVol, this.audioContext.currentTime);
+      this.audio.gain.gain.value = newVol;
     }
   }
 
-  endAudio(instance){
+  endAudio(){
     if (this.forceStop) {
       this.forceStop = false;
       this.status = 1;
       return;
     };
     this.status = 0;
-    var text = 'HTML5 Audio API showcase | An Audio Visualizer';
+    var text = 'Song ended...';
     document.getElementById('fileWrapper').style.opacity = 1;
     document.getElementById('fileinfo').innerHTML = text;
-    instance.info = text;
+    this.info = text;
     document.getElementById('uploadedFile').value = '';
   }
 
   updateInfo(text, processing) {
     var infoBar = document.getElementById('fileinfo'),
     dots = '...',
-    i = 0,
-    that = this;
+    i = 0;
     infoBar.innerHTML = text + dots.substring(0, i++);
     if (this.infoUpdateId !== null) {
         clearTimeout(this.infoUpdateId);
     };
     if (processing) {
         //animate dots at the end of the info text
-        var animateDot = function() {
+        var animateDot = () => {
             if (i > 3) {
                 i = 0
             };
             infoBar.innerHTML = text + dots.substring(0, i++);
-            that.infoUpdateId = setTimeout(animateDot, 250);
+            this.infoUpdateId = setTimeout(animateDot, 250);
         }
         this.infoUpdateId = setTimeout(animateDot, 250);
     };
   }
 
   init(){
-      window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
-      try {
-          this.audioContext = new AudioContext();
-      } catch (e) {
-          this.updateInfo('!Your browser does not support AudioContext', false);
-          console.log(e);
-      } 
-      var that = this;
+
       var audioInput = document.getElementById('uploadedFile');
       var dropContainer = document.getElementById(this.audioId+"canvas");
       //listen the file upload
-      audioInput.onchange = function() {
-        if (that.audioContext===null) {return;};
+      audioInput.onchange = () => {
+        this.audio = new SoundJS();
+        if (this.audio.ctx===null) {return;};
         
         //the if statement fixes the file selection cancel, because the onchange will trigger even if the file selection has been cancelled
         if (audioInput.files.length !== 0) {
             //only process the first file
-            that.file = audioInput.files[0];
-            that.fileName = that.file.name;
-            if (that.status === 1) {
+            this.file = audioInput.files[0];
+            this.fileName = this.file.name;
+            if (this.status === 1) {
                 //the sound is still playing but we uploaded another file, so set the forceStop flag to true
-                that.forceStop = true;
+                this.forceStop = true;
             };
             document.getElementById('fileWrapper').style.opacity = 1;
-            that.updateInfo('Uploading', true);
+            this.updateInfo('Uploading', true);
             //once the file is ready, start the visualizer
-            that.decodeAudio();
+            this.decodeAudio();
         };
       };
       //listen the drag & drop
-      dropContainer.addEventListener("dragenter", function() {
+      dropContainer.addEventListener("dragenter", () => {
           document.getElementById('fileWrapper').style.opacity = 1;
-          that.updateInfo('Drop it on the page', true);
+          this.updateInfo('Drop it on the page', true);
       }, false);
       dropContainer.addEventListener("dragover", function(e) {
           e.stopPropagation();
@@ -1528,77 +1553,204 @@ class circleJS {
           //set the drop mode
           e.dataTransfer.dropEffect = 'copy';
       }, false);
-      dropContainer.addEventListener("dragleave", function() {
+      dropContainer.addEventListener("dragleave", () => {
           document.getElementById('fileWrapper').style.opacity = 0.2;
-          that.updateInfo(that.info, false);
+          this.updateInfo(this.info, false);
       }, false);
-      dropContainer.addEventListener("drop", function(e) {
+      dropContainer.addEventListener("drop", (e) => {
           e.stopPropagation();
           e.preventDefault();
-          if (that.audioContext===null) {return;};
+          if (this.audio.ctx===null) {return;};
           document.getElementById('fileWrapper').style.opacity = 1;
-          that.updateInfo('Uploading', true);
+          this.updateInfo('Uploading', true);
           //get the dropped file
-          that.file = e.dataTransfer.files[0];
-          if (that.status === 1) {
+          this.file = e.dataTransfer.files[0];
+          if (this.status === 1) {
               document.getElementById('fileWrapper').style.opacity = 1;
-              that.forceStop = true;
+              this.forceStop = true;
           };
-          that.fileName = that.file.name;
-          //once the file is ready,start the visualizer
-          that.decodeAudio();
+          this.fileName = this.file.name;
+          //once the file is ready, start the visualizer
+          this.decodeAudio();
       }, false);
     }
 
-    draw = (analyser) => {
-      var that = this;
+    drawMeter = () => {
       var cwidth = this.c.width;
-      var cheight = this.c.height - 2;
-      var capYPositionArray = []; ////store the vertical position of the caps for the previous frame
-      var drawMeter = function() {
-          var array = new Uint8Array(analyser.frequencyBinCount);
-          analyser.getByteFrequencyData(array);
-          if (that.status === 0) {
-              //fix when some sounds and the value still not back to zero
-              for (var i = array.length - 1; i >= 0; i--) {
-                  array[i] = 0;
-              };
-              that.allCapsReachBottom = true;
-              for (var i = capYPositionArray.length - 1; i >= 0; i--) {
-                  that.allCapsReachBottom = that.allCapsReachBottom && (capYPositionArray[i] === 0);
-              };
-              if (that.allCapsReachBottom) {
-                  cancelAnimationFrame(that.animationId); //since the sound is stopped and animation finished, stop the requestAnimation to prevent potential memory leak,THIS IS VERY IMPORTANT!
-                  return;
-              };
+      var cheight = this.c.height;
+
+      var meterWidthScale = cwidth/this.relativeWidth;
+
+      var array = new Uint8Array(this.audio.analyser.frequencyBinCount);
+      this.audio.analyser.getByteFrequencyData(array);
+      if (this.status === 0) {
+          //fix when some sounds stop and the value is still not back to zero
+          for (var i = array.length - 1; i >= 0; i--) {
+              array[i] = 0;
           };
-          var step = Math.round(array.length / that.meterNum); //sample limited data from the total array
-          that.ctx.clearRect(0, 0, cwidth, cheight);
-          for (var i = 0; i < that.meterNum * 0.85; i++) {
-              var value = array[i * step];
-              if (capYPositionArray.length < Math.round(that.meterNum)) {
-                  capYPositionArray.push(value);
-              };
-              that.ctx.fillStyle = that.capStyle;
-              //draw the cap, with transition effect
-              var xoffset = that.meterWidth + that.gap;
-              if (value < capYPositionArray[i]) {
-                  that.ctx.fillRect(i * xoffset, cheight - (--capYPositionArray[i]), that.meterWidth, that.capHeight);
-              } else {
-                  that.ctx.fillRect(i * xoffset, cheight - value, that.meterWidth, that.capHeight);
-                  capYPositionArray[i] = value;
-              };
-              that.ctx.fillStyle = that.gradient; //set the fillStyle to gradient for a better look
-              that.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + that.capHeight, that.meterWidth, cheight); //the meter
-          }
-          setTimeout(()=>{that.animationId = requestAnimationFrame(drawMeter);},15); 
+          this.allCapsReachBottom = true;
+          for (var i = this.capYPositionArray.length - 1; i >= 0; i--) {
+            this.allCapsReachBottom = this.allCapsReachBottom && (this.capYPositionArray[i] === 0);
+          };
+          if (this.allCapsReachBottom) {
+              cancelAnimationFrame(this.animationId); //since the sound is stopped and animation finished, stop the requestAnimation to prevent potential memory leak.
+              return;
+          };
+      };
+      var step = Math.round((array.length*0.75) / this.meterNum); //sample limited data from the total array
+      this.ctx.clearRect(0, 0, cwidth, cheight);
+      for (var i = 0; i < this.meterNum; i++) {
+          var value = array[i * step];
+          if (this.capYPositionArray.length < this.meterNum) {
+            this.capYPositionArray.push(value);
+          };
+          this.capYPositionArray[i] = this.capYPositionArray[i] - 0.5;
+          this.ctx.fillStyle = this.capStyle;
+          //draw the cap, with transition effect
+          var xoffset = (this.meterWidth*meterWidthScale + this.meterGap*meterWidthScale);
+          if (value < this.capYPositionArray[i]) {
+            this.ctx.fillRect(i * xoffset, cheight - this.capYPositionArray[i], this.meterWidth*meterWidthScale, this.capHeight);
+          } else {
+            this.ctx.fillRect(i * xoffset, cheight - value, this.meterWidth*meterWidthScale, this.capHeight);
+            this.capYPositionArray[i] = value;
+          };
+          this.ctx.fillStyle = this.gradient; //set the fillStyle to gradient for a better look
+          this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , cheight - value + this.capHeight, this.meterWidth*meterWidthScale, cheight); //the meter
       }
-      setTimeout(()=>{this.animationId = requestAnimationFrame(drawMeter);},15); 
+    }
+
+    drawLine = () => {
+      var cwidth = this.c.width;
+      var cheight = this.c.height;
+
+      var meterWidthScale = cwidth/this.relativeWidth;
+
+      var array = new Uint8Array(this.audio.analyser.frequencyBinCount);
+      this.audio.analyser.getByteFrequencyData(array);
+      if (this.status === 0) {
+          //fix when some sounds stop and the value is still not back to zero
+          for (var i = array.length - 1; i >= 0; i--) {
+              array[i] = 0;
+          };
+          this.allCapsReachBottom = true;
+          for (var i = this.capYPositionArray.length - 1; i >= 0; i--) {
+            this.allCapsReachBottom = this.allCapsReachBottom && (this.capYPositionArray[i] === 0);
+          };
+          if (this.allCapsReachBottom) {
+              cancelAnimationFrame(this.animationId); //since the sound is stopped and animation finished, stop the requestAnimation to prevent potential memory leak.
+              return;
+          };
+      };
+      var step = Math.round((array.length*0.75) / this.meterNum); //sample limited data from the total array
+
+      this.ctx.clearRect(0, 0, cwidth, cheight);
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, cheight - this.capYPositionArray[0]*2);
+      for (var i = 0; i < this.meterNum; i++) {
+        var value = array[i * step];
+        this.capYPositionArray[i]=value;
+        var xoffset = (this.meterWidth + this.meterGap)*meterWidthScale;
+        this.ctx.lineTo(i*xoffset,cheight - this.capYPositionArray[i]*2);
+      }
+      this.ctx.strokeStyle = 'red';
+      this.ctx.stroke();
+    }
+
+    drawCircle = () => { //Based on: https://www.kkhaydarov.com/audio-visualizer/
+      
+      // find the center of the window
+      var center_x = this.c.width * 0.5;
+      var center_y = this.c.height * 0.5;
+      var radius = 150;
+       
+      var array = new Uint8Array(this.audio.analyser.frequencyBinCount);
+      this.audio.analyser.getByteFrequencyData(array);
+
+      // style the background
+      var gradient = this.ctx.createRadialGradient(center_x,center_y,2,center_x,center_y,600+array[100]);
+      gradient.addColorStop(0,"blue");
+      gradient.addColorStop(0.25,"purple");
+      gradient.addColorStop(1,"rgba(255,69,0,0)");
+      this.ctx.fillStyle = gradient;
+      this.ctx.fillRect(0,0,this.c.width,this.c.height);
+
+      var gradient2 = this.ctx.createRadialGradient(center_x*0.2,center_y*1.7,1,center_x*0.2,center_y*1.7,2+array[2]*0.5);
+      gradient2.addColorStop(0,"yellow");
+      gradient2.addColorStop(0.2,"greenyellow");
+      gradient2.addColorStop(1,"rgba(255,69,0,0)");
+      this.ctx.fillStyle = gradient2;
+      this.ctx.fillRect(0,0,this.c.width,this.c.height);
+
+      var gradient3 = this.ctx.createRadialGradient(center_x*0.2,center_y*0.3,1,center_x*0.2,center_y*0.3,2+array[200]*0.5);
+      gradient3.addColorStop(0,"red");
+      gradient3.addColorStop(0.2,"crimson");
+      gradient3.addColorStop(1,"rgba(255,69,0,0)");
+      this.ctx.fillStyle = gradient3;
+      this.ctx.fillRect(0,0,this.c.width,this.c.height);
+
+      var gradient4 = this.ctx.createRadialGradient(center_x*1.8,center_y*0.3,1,center_x*1.8,center_y*0.3,2+array[100]*0.5);
+      gradient4.addColorStop(0,"hotpink");
+      gradient4.addColorStop(0.2,"magenta");
+      gradient4.addColorStop(1,"rgba(255,69,0,0)");
+      this.ctx.fillStyle = gradient4;
+      this.ctx.fillRect(0,0,this.c.width,this.c.height);
+
+      var gradient5 = this.ctx.createRadialGradient(center_x*1.8,center_y*1.7,1,center_x*1.8,center_y*1.7,2+array[50]*0.5);
+      gradient5.addColorStop(0,"deepskyblue");
+      gradient5.addColorStop(0.2,"skyblue");
+      gradient5.addColorStop(1,"rgba(255,69,0,0)");
+      this.ctx.fillStyle = gradient5;
+      this.ctx.fillRect(0,0,this.c.width,this.c.height);
+
+      /*
+      //draw a circle
+      this.ctx.beginPath();
+      this.ctx.arc(center_x,center_y,radius,0,2*Math.PI);
+      this.ctx.stroke();
+      */
+      for(var i = 0; i < this.meterNum; i++){
+          
+          //divide a circle into equal parts
+          var rads = Math.PI * 2 / this.meterNum;
+          
+          var bar_height = array[i];
+          
+          // set coordinates
+          var x = center_x + Math.cos(rads * i) * (radius);
+          var y = center_y + Math.sin(rads * i) * (radius);
+          var x_end = center_x + Math.cos(rads * i)*(radius + bar_height);
+          var y_end = center_y + Math.sin(rads * i)*(radius + bar_height);
+          
+          //draw a bar
+          var lineColor = "rgb(" + array[i] + ", " + array[i] + ", " + 205 + ")";
+    
+          this.ctx.strokeStyle = lineColor;
+          this.ctx.lineWidth = this.capHeight;
+          this.ctx.beginPath();
+          this.ctx.moveTo(x,y);
+          this.ctx.lineTo(x_end,y_end);
+          this.ctx.stroke();
+      
+      }
+    } 
+ 
+    draw = () => {
+      this.c.width=window.innerWidth;
+      if(this.mode == 0){
+        this.drawMeter(); 
+      }
+      else if(this.mode == 1){
+        this.drawLine();
+      }
+      else if(this.mode == 2){
+        this.drawCircle();
+      }
+      setTimeout(()=>{this.animationId = requestAnimationFrame(this.draw)},15);
     }
  }
 
  class hillJS {
-  constructor(res=["700","350"], updateInterval=2000, hillsId="hillscanvas", hillsmenuId="hillsmenu", defaultUI=true, parentId="main_body") {
+  constructor(res=["1400","500"], updateInterval=2000, hillsId="hillscanvas", hillsmenuId="hillsmenu", defaultUI=true, parentId="main_body") {
    this.hillsId = hillsId;
    this.hillsmenuId = hillsmenuId;
 
@@ -1609,6 +1761,7 @@ class circleJS {
    HEGwebAPI.appendFragment(canvasHTML,parentId);
 
    this.defaultUI = defaultUI;
+   
    if(defaultUI == true){
     this.initUI(parentId);
     this.menu = document.getElementById(this.hillsmenuId);
@@ -1631,18 +1784,23 @@ class circleJS {
    this.gradient.addColorStop(0.1, 'white');
    this.gradient.addColorStop(0.00, 'gold');
    
-   this.hillMode = 1;
+   this.mode = 1;
+
    this.updateInterval = updateInterval;
    this.allCapsReachBottom = false;
    this.meterWidth = 12;
-   this.gap = 2;
+   this.meterGap = 2;
+   this.hillNum = 150; //count of the meters
    this.capHeight = 2;
    this.capStyle = '#fff';
-   this.hillNum = 50; //count of the meters
+
+   this.relativeWidth = this.hillNum*(this.meterWidth+this.meterGap);
+
    this.updateInterval = updateInterval; //ms between update
    this.hillScore = [...Array(this.hillNum).fill(50)]; //
    this.animationId = null;
    this.draw();
+
   }
 
   cancelDraw() {
@@ -1672,8 +1830,8 @@ class circleJS {
       this.hillScore = [...Array(this.hillNum).fill(50)];
     }
     document.getElementById("hillsModebutton").onclick = () => {
-      if(this.hillMode == 0) { this.hillMode = 1;}
-      else{this.hillMode = 0;}
+      if(this.mode == 0) { this.mode = 1;}
+      else{this.mode = 0;}
     }
     document.getElementById("hillsAudbutton").onclick = () => {
       if(this.soundFX == null){
@@ -1730,10 +1888,10 @@ class circleJS {
         this.hillScore[this.hillScore.length - 1] = 10;
       }
       if(score > 0) {
-        this.hillScore[this.hillScore.length - 1] += 1;
+        this.hillScore[this.hillScore.length - 1] += 0.5;
       }
       if(score < 0) {
-        this.hillScore[this.hillScore.length - 1] -= 0.5;
+        this.hillScore[this.hillScore.length - 1] -= 0.3;
       }
     //}
     //else {
@@ -1756,12 +1914,15 @@ class circleJS {
     }
 
     var cwidth = this.c.width;
-    var cheight = this.c.height - 2;
+    var cheight = this.c.height;
     var capYPositionArray = [];
+    
+    var wscale = cwidth / this.relativeWidth;
+    var xoffset = (this.meterWidth+this.meterGap)*wscale;
     var hscale = 1; //Height scalar
     if(this.hillScore[this.hillScore.length-1] > cheight) {hscale = cheight / this.hillScore[this.hillScore.length-1];}
     this.ctx.clearRect(0, 0, cwidth, cheight);
-    if(this.hillMode == 0){ // bars
+    if(this.mode == 0){ // bars
       for (var i = 0; i < this.hillNum; i++) {
           var value = this.hillScore[i]*hscale;
           if(value < 0){ value = 0;}
@@ -1770,25 +1931,23 @@ class circleJS {
           }
           this.ctx.fillStyle = this.capStyle;
           //draw the cap, with transition effect
-          var xoffset = this.meterWidth + this.gap;
           if (value < capYPositionArray[i]) {
-              this.ctx.fillRect(i * xoffset, (cheight - (--capYPositionArray[i])), this.meterWidth, this.capHeight);
+              this.ctx.fillRect(i * xoffset, (cheight - (--capYPositionArray[i])), this.meterWidth*wscale, this.capHeight);
           } else {
-              this.ctx.fillRect(i * xoffset, (cheight - value), this.meterWidth, this.capHeight);
+              this.ctx.fillRect(i * xoffset, (cheight - value), this.meterWidth*wscale, this.capHeight);
               capYPositionArray[i] = value;
           }
           this.ctx.fillStyle = this.gradient; 
-          this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , (cheight - value + this.capHeight), this.meterWidth, cheight);
+          this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , (cheight - value + this.capHeight), this.meterWidth*wscale, cheight);
       }
     }
-    if(this.hillMode == 1){ //gradient
+    if(this.mode == 1){ //gradient
       this.ctx.fillStyle = this.gradient;
       this.ctx.beginPath();
       this.ctx.moveTo(0,cheight - this.hillScore[0])
       for (var i = 0; i < this.hillNum; i++) {
         var value = this.hillScore[i]*hscale;
         if(value < 0){ value = 0; }
-        var xoffset = this.meterWidth + this.gap;
         this.ctx.lineTo(i*xoffset, (cheight - value))
         if (i == this.hillNum - 1){      
           this.ctx.lineTo(cwidth,(cheight - value));
@@ -2008,8 +2167,20 @@ class circleJS {
  class SoundJS { //Only one Audio context at a time!
   constructor(){
     window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
-    this.ctx = new AudioContext();
+    
+    this.ctx = null;
+    try {
+      this.ctx = new AudioContext();
+    } catch (e) {
+      alert("Your browser does not support AudioContext!");
+      console.log(e);
+    } 
+    
     this.sourceList = [];
+    
+    this.recordedData = [];
+    this.recorder = null;
+    this.buffer = [];
 
     this.osc = [];
     this.gain = this.ctx.createGain();
@@ -2054,7 +2225,7 @@ class circleJS {
       this.sourceList.push(this.ctx.createBufferSource()); 
       var idx = this.sourceList.length - 1;
       this.sourceList[idx].buffer = element;
-      this.sourceList[bufferIndex].onended = () => {this.sourceList.splice(idx, 1)};
+      this.sourceList[idx].onended = () => {this.sourceList.splice(idx, 1)};
       this.sourceList[idx].connect(this.gain); //Attach to volume node
     });
   }
@@ -2082,6 +2253,169 @@ class circleJS {
   setPlaybackRate(bufferIndex, rate){
     this.sourceList[bufferIndex].playbackRate.value = rate;
   }
+
+  record(name = new Date().toISOString(), args={audio:true, video:false}, type=null, streamElement=null){ // video settings vary e.g. video:{width:{min:1024,ideal:1280,max:1920},height:{min:576,ideal:720,max:1080}}
+    /*
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      devices = devices.filter((d) => d.kind === 'audioinput');
+      devices.forEach(function(device) {
+        let menu = document.getElementById("inputdevices");
+        if (device.kind == "audioinput") {
+          let item = document.createElement("option");
+          item.innerHTML = device.label;
+          item.value = device.deviceId;
+          menu.appendChild(item);
+          }
+      });
+    }); //Device selection
+
+    navigator.permissions.query({name:'microphone'}).then(function(result) {
+      if (result.state == 'granted') {
+
+      } else if (result.state == 'prompt') {
+
+      } else if (result.state == 'denied') {
+
+      }
+      result.onchange = function() {
+
+      };
+    });
+    */
+    var supported = null;
+    var ext = null;
+    var types = type;
+    if(types==null){
+      if(args.video != false){
+        types = [
+          'video/webm',
+          'video/webm;codecs=vp8',
+          'video/webm;codecs=vp9',
+          'video/webm;codecs=vp8.0',
+          'video/webm;codecs=vp9.0',
+          'video/webm;codecs=h264',
+          'video/webm;codecs=H264',
+          'video/webm;codecs=avc1',
+          'video/webm;codecs=vp8,opus',
+          'video/WEBM;codecs=VP8,OPUS',
+          'video/webm;codecs=vp9,opus',
+          'video/webm;codecs=vp8,vp9,opus',
+          'video/webm;codecs=h264,opus',
+          'video/webm;codecs=h264,vp9,opus',
+          'video/x-matroska;codecs=avc1'
+        ];
+        }
+      else if(args.audio == true){
+        types = [
+          'audio/wav', // might be supported native, otherwise see:
+          'audio/mp3', // probably not supported
+          'audio/webm',
+          'audio/webm;codecs=opus',
+          'audio/webm;codecs=pcm',
+          'audio/ogg',
+          'audio/x-matroska' // probably not supported
+        ];
+      }
+    }
+
+    for(var i=0; i<types.length; i++){
+      if(MediaRecorder.isTypeSupported(types[i]) == true){
+        supported = types[i];
+        console.log("Supported type: ", supported);
+        if(types[i].indexOf('webm') != -1){
+          ext = '.webm';
+        }
+        if(types[i].indexOf('ogg') != -1){
+          ext = '.ogg';
+        }
+        if(types[i].indexOf('mp3') != -1){
+          ext = '.mp3';
+        }
+        if(types[i].indexOf('wav') != -1){
+          ext = '.wav';
+        }
+        if(types[i].indexOf('x-matroska') != -1){
+          ext = '.mkv';
+        }
+        break;
+      }
+    }
+
+    if(supported != null){
+      function errfunc(e) {
+        console.log(e);
+      } 
+
+      navigator.mediaDevices.getUserMedia(args).then((recordingDevice) => { //Get
+        console.log("Media stream created.");
+        
+        if(streamElement != null){ // attach to audio or video element, or Audio(). For canvas, use an AudioContext analyzer.
+          streamElement.src = window.URL.createObjectURL(recordingDevice);
+        }
+
+        this.recorder = new MediaRecorder(recordingDevice);
+
+        this.recorder.onstop = (e) => {
+          console.log("Media recorded, saving...");
+
+          var blob = new Blob(this.recordedData, {
+            type: supported
+          });
+
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = "display: none";
+          a.href = url;
+          a.download = name + ext;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        }
+        
+        this.recorder.ondataavailable = (e) => {
+          this.recordedData.push(e.data);
+        }
+
+        this.recorder.start(); //Begin recording
+
+      }, errfunc);
+
+    }
+    else {
+      alert("Cannot record! Check function call settings, ensure browser is compatible.");
+    }
+  }
+
+  replayRecording(streamElement) { //Replay the currently buffered recording in an acceptable stream element, e.g. attach to audio or video element, or an Audio() class, or a video element. For canvas, use an AudioContext analyzer.
+    if(this.recordedData.length > 1){
+      this.buffer = new Blob(this.recordedData);
+      streamElement.src = window.URL.createObjectURL(buffer);
+    }
+  }
+
+ }
+
+
+ class geolocateJS {
+    constructor(){
+      if(navigator.geolocation){
+        
+      }
+      else{
+        alert("Geolocation not supported in this browser!");
+      }
+
+      this.locationData=[];
+    }
+
+    showPosition(position){
+      //alert("Lat: "+position.coords.latitude+", Lon: "+position.coords.longitude);
+      this.locationData.push(new Date().toISOString()+","+position.coords.latitude+","+position.coords.longitude);
+    }
+
+    getPosition(){
+      navigator.geolocation.getCurrentPosition(this.showPosition);
+    }
 
  }
 )=====";

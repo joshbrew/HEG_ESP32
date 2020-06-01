@@ -21,6 +21,7 @@
 #include "webDemo/connect.h" // Wifi connect page
 #include "webDemo/sc.h" // State Changer page
 #include "webDemo/HEGwebAPI.h" //HEG web javascript
+#include "webDemo/initWebapp.h" //Web app custom javascript
 #include "webDemo/webDemo.h" // Web app page
 #include "webDemo/webDemoCSS.h" // Web app CSS page
 #include "webDemo/help.h" // Help page
@@ -860,6 +861,10 @@ void setupWiFi(){
   server.on("/HEGwebAPI.js", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/javascript", HEGwebAPI);
   });
+  server.on("/initWebapp.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/javascript", initWebapp);
+  });
+  
   
   server.on("/webDemoCSS.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/css", webDemoCSS);
