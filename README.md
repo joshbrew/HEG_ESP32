@@ -7,7 +7,7 @@ Important HEGduino stuff you can find here:
 - [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
 - [Setting up Arduino to flash the ESP32 with our biofeedback software](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
-- [Chrome Extension version of our biofeedback software with WiFi, BT Serial, & USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/More/ChromeExtension)
+- [Chrome Extension version of our biofeedback software with WiFi, BT Serial, & USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/Software/ChromeExtension)
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
 - [Lolin32 Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Lolin32)
 - [Huzzah32 Feather Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Feather)
@@ -34,26 +34,19 @@ These builds are tested on the Lolin32 and Huzzah32 Feather respectively but sho
 
 On the firmware you will find a WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
-You can demo it now via our Chrome Extension (via the More folder) or right on board the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
+You can demo it now via our Chrome Extension (via the Software folder) or right on board the firmware, it's evolving fast. We will eventually be comparable to professional software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
-## Chrome Extension with Serial support and ThreeJS
-Find it in the More folder of this repository.
-![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/ChromeApp.PNG)
-
 ## Data Charter (WIP) CSV analyzer for the web app (also found on our [Data page on our website](https://hegalpha.com))
 ![HEGCharter](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/datacharter.PNG?raw=true)
-
-## Modded HEGstudio with this HEG (Windows only, very buggy, and available [HERE](https://github.com/moothyknight/HEGstudio-Fork-HEGduino))
-You may use the classic software that shipped with the nIR Peanut HEG (with some fixes), modified for our HEG output via USB (Windows only)
-![](https://raw.githubusercontent.com/moothyknight/HEG_ESP32/master/Pictures/20190211_201736.PNG)
-
 
 ## More Links
 Our website: [HEG Alpha](https://hegalpha.com)
 
 Find us on [CrowdSupply](https://crowdsupply.com/alaskit/hegduino)
+
+and [OpenBCI](https://shop.openbci.com/collections/frontpage/products/hegduino-kit?variant=32052268531784)
 
 Special thanks to the [Biocomp/Biofeedback Institute of LA](https://www.biocompresearch.org/), [Brain Trainer](https://brain-trainer.com/), and [AlasKit](https://alaskit.net)
 
