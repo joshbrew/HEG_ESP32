@@ -2,6 +2,12 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+6/2/20
+------
+- reverted CSV function in HEGwebAPI (it has the new one too, just not dumping raw data due to noise issues)
+- fixed Chrome extension csv printing for serial and bluetooth
+
+
 6/1/20
 ------
 0.0.10

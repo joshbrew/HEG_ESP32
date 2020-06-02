@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+</head>
+<body>
+<div id="threeContainer" height="700px" width = "1200px"></canvas>
+<script>
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera( 75, 1200 / 700, 0.1, 1000 );
+    var renderer = new THREE.WebGLRenderer();
+    var tLoader = new THREE.TextureLoader();
+    tLoader.crossOrigin = "Anonymous"
+
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(1200, 700);
+    document.getElementById("threeContainer").appendChild(renderer.domElement);
+
+    var light = new THREE.PointLight( 0xffffff, 1, 100 );
+    light.position.set( 50, 50, 50 );
+    scene.add( light );
+
+    var waterNormals = tLoader.load("https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/waternormals.jpg")
+
+    var water = new THREE.Water( renderer, camera, scene, {
+        textureWidth: 512, 
+        textureHeight: 512,
+        waterNormals: waterNormals,
+        alpha:  1.0,
+        sunDirection: light.position.clone().normalize(),
+        sunColor: 0xffffff,
+        waterColor: 0x001e0f,
+        distortionScale: 50.0,
+    } );
+    var mirrorMesh = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500 ),
+        water.material
+    );
+
+    mirrorMesh.add( water );
+    mirrorMesh.rotation.x = - Math.PI * 0.5;
+    scene.add( mirrorMesh );
+
+
+</script>
+</body>
+</html>

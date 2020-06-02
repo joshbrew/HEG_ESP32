@@ -112,7 +112,7 @@ class HEGwebAPI {
   }
 
   static sma(arr, window) {
-    var temp = [];
+    var temp = []; //console.log(arr);
     for(var i = 0; i < arr.length; i++) {
       if((i == 0)) {
         temp.push(arr[0]);
@@ -125,7 +125,7 @@ class HEGwebAPI {
         var arrslice = arr.slice(i-window,i);
         temp.push(arrslice.reduce((previous,current) => current += previous) / window);
       }
-    }
+    } 
     //console.log(temp);
     return temp;
   }
@@ -140,10 +140,29 @@ class HEGwebAPI {
     //this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
   }
 
-  saveCSV(data=this.raw, name= new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
+  saveCSV(name=new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
+    var csvDat = header;
+    this.us.forEach((us, i) => {
+      csvDat += [us,this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i]].join(',')+'\n';
+    });
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvDat);
+    hiddenElement.target = "_blank";
+    if(name != ""){
+        hiddenElement.download = name+".csv";
+    }
+    else{
+        hiddenElement.download = Date().toISOString()+".csv";
+    }
+    hiddenElement.click();
+  }
+
+  saveCSVGeneral(data=this.raw, name= new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
     var csvDat = header;
     data.forEach((line) => {
-        csvDat += line.split(delimiter).join(",")+"\n";
+      csvDat += line.split(delimiter).join(",");
+      if(line.indexOf('\n') < 0) {csvDat+="\n";}
     });
 
     var hiddenElement = document.createElement('a');
@@ -263,21 +282,22 @@ class HEGwebAPI {
       if(data.includes("|")) {
         var dataArray = data.split("|");
         var thisRatio = parseFloat(dataArray[3]);
-        if((thisRatio > 0)){ //&& (((this.us.length > 2) && ((thisRatio / this.ratio[this.ratio.length - 1] > 0.6) && (thisRatio/this.ratio[this.ratio.length - 1] < 1.4))) || (this.us.length < 2))) { // Add error filtering here.
+        if(thisRatio > 0) { 
           if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
           this.us.push(parseInt(dataArray[0]));
           this.red.push(parseInt(dataArray[1]));
-          this.ir.push(parseInt(dataArray[2]));
+          this.ir.push(parseInt(dataArray[2])); 
           this.ratio.push(parseFloat(dataArray[3]));
           this.ambient.push(parseInt(dataArray[4]));
           this.velAvg.push(parseFloat(dataArray[5]));
           this.accelAvg.push(parseFloat(dataArray[6]));
 
           if(this.us.length > 5) { // SMA filtering for ratio
-            var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 7, this.ratio.length-1),5);
+            var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 5, this.ratio.length), 5); 
+            console.log(temp);
             if((this.ratio[this.ratio.length - 1] < temp[4] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[4] * 1.3)) {
               this.ratio[this.ratio.length - 1] = this.ratio[this.ratio.length - 2]; // Roll the ratio back if outside margin 
-              this.red[this.red.length - 1] = this.red[this.red.length - 2]; // roll back the other values too for good measure
+              this.red[this.red.length - 1] = this.red[this.red.length - 2]; // roll back the other values too 
               this.ir[this.ir.length - 1] = this.ir[this.ir.length - 2];
               this.ambient[this.ambient.length - 1] = this.ambient[this.ambient.length - 2];
               this.velAvg[this.velAvg.length - 1] = this.velAvg[this.velAvg.length - 2];

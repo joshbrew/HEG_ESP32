@@ -1,0 +1,16 @@
+V1.1 WIP design, main goal trying to figure out how to squash the noise because 2 years in and I'm still a totally n00b circuit designer.
+
+The noise sources:
+- Power
+  -- e.g. wired connections
+  -- ESP32 power draw (e.g. can lower power consumption in settings)
+- WiFi
+  -- e.g. during transactions
+  -- I obviously shouldn't have the ADC right underneath but copper ought to help absorb WiFi inductance. I can get to very low noise even on WiFi, even on a 10ft wire to the sensor...
+- Grounding
+  -- Keeping analog and digital grounds as far away from each other as possible.
+
+Things I'm doing:
+- For one, fixing my terrible wiring on the V1.0 (result of not starting from scratch from my old old drafts). E.g. unnecessary vias, digital SDA/SCL and AVDD pins the same (may cause issues).
+- Alternative LDO for analog power source to ADC and to OPT101. Includes a few caps.
+- Moving around grounding stuff, different ground plane strategy (I forgot to even attach the last ones to the pins).
