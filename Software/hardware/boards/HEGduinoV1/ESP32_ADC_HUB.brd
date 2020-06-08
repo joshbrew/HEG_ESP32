@@ -30,7 +30,7 @@
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="21" name="tPlace" color="14" fill="1" visible="yes" active="yes"/>
-<layer number="22" name="bPlace" color="13" fill="1" visible="no" active="yes"/>
+<layer number="22" name="bPlace" color="13" fill="1" visible="yes" active="yes"/>
 <layer number="23" name="tOrigins" color="14" fill="1" visible="yes" active="yes"/>
 <layer number="24" name="bOrigins" color="13" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
@@ -36215,8 +36215,10 @@ NO_LDO if not in use</text>
 <wire x1="40.3352" y1="29.7942" x2="41.8338" y2="29.7942" width="0.4064" layer="22"/>
 <wire x1="42.9006" y1="29.845" x2="44.3992" y2="29.845" width="0.4064" layer="22"/>
 <wire x1="53.1114" y1="29.7688" x2="54.61" y2="29.7688" width="0.4064" layer="22"/>
-<text x="14.351" y="34.4424" size="0.4064" layer="21" rot="R270">Connect for 
+<text x="14.351" y="35.4584" size="0.4064" layer="21" rot="R270">Connect for 
 Huzzah32 Feather</text>
+<text x="68.58" y="42.926" size="0.4064" layer="22" rot="MR90">AOUT        VPD   GND_DIG</text>
+<text x="62.992" y="41.402" size="0.4064" layer="22" rot="MR90">GND_ANA  VRED      VIR</text>
 </plain>
 <libraries>
 <library name="microbuilder_merge">
