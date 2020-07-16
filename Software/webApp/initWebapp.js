@@ -1,6 +1,12 @@
 // Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily) 
 // Advanced Client scripts using external packages
 
+ 
+// Initialize Session - undefined are default values
+var s = new HEGwebAPI('',undefined,undefined,undefined,undefined,false); //HEGduino
+//var s = new HEGwebAPI('',["us","lRed","lIR","lRatio","cRed","cIR","cRatio","rRed","rIR","rRatio"],undefined,undefined,undefined,false); //Statechanger
+  
+
 // Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
 if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !== 'esp32.local')) {
     var useAdvanced = true; // Create a global flag to indicate we're capable of using advanced scripts.
@@ -91,10 +97,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
-  
-  // Initialize Session
-  var s = new HEGwebAPI('',false); 
-  
+ 
   // Initialize Graph
   var g = new graphJS(1155,[255,100,80,1],1.0,[1400,600], "main_body", "g", false); // This could be swapped for a superior graphing package
   
@@ -159,9 +162,9 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   // ------------------------------------------------------------------------
   
   if(useAdvanced) { // Setup advanced scripts now that the default app is ready.
-    var link2 = document.createElement("script");
-    link2.src = "threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-    document.head.appendChild(link2); // Append script
+    var link = document.createElement("script");
+    link.src = "js/threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+    document.head.appendChild(link); // Append script
   
     var threeApp = null;
   
@@ -226,7 +229,6 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
       // g.graphY1.push(this.smaSlope);
       // this.scoreArr.push(this.smaSlope);
     }
-    this.updateTable();
   }
   
   s.endOfEvent = function() {
@@ -239,40 +241,34 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   function deInitMode(){
     if(v != null){
-      var thisNode = document.getElementById(v.vidapiId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      thisNode = document.getElementById(v.vidContainerId);    
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+      HEGwebAPI.removeParent(v.vidapiId);  
+      HEGwebAPI.removeParent(v.vidContainerId);
       v.deInit();
       v = null;
     }
     if(a != null){
       a.stopAudio();
       a.endAudio(a);
-      var thisNode = document.getElementById(a.audioId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
-      thisNode = document.getElementById(a.audmenuId);
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+      HEGwebAPI.removeParent(a.audioId);
+      HEGwebAPI.removeParent(a.audmenuId);
       a = null;
     }
     if(c != null){
       c.deInit();
-      c.c.parentNode.parentNode.parentNode.removeChild(c.c.parentNode.parentNode);
-      var thisNode = document.getElementById(c.parentId+"menu");
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+      HEGwebAPI.removeParentParent(c.canvasId);
+      HEGwebAPI.removeParent(c.canvasmenuId);
       c = null;
     }
     if(h != null){
       h.deInit();
-      h.c.parentNode.parentNode.parentNode.removeChild(h.c.parentNode.parentNode);
-      h.menu.parentNode.parentNode.removeChild(h.menu.parentNode);
+      HEGwebAPI.removeParentParent(h.canvasId);
+      HEGwebAPI.removeParent(h.canvasmenuId)
       h = null;
     }
     if(txt != null){
       txt.deInit();
-      txt.c.parentNode.parentNode.parentNode.removeChild(txt.c.parentNode.parentNode);
-      var thisNode = document.getElementById(txt.textId+"menu");
-      thisNode.parentNode.parentNode.removeChild(thisNode.parentNode);
+      HEGwebAPI.removeParentParent(txt.canvasId);
+      HEGwebAPI.removeParent(txt.canvasmenuId);
       txt = null;
     }
     if(useAdvanced) { // Score handling for advanced scripts
@@ -283,7 +279,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     }
   }
   
-  
+
   document.getElementById("resetSession").onclick = () => { // Override default function
     s.resetVars();
     g.resetVars();
@@ -450,3 +446,40 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   if(useAdvanced == true){
     makeTooltip("threemode",[300,10],"Turn the Earth! More coming!");
   }
+
+  
+//------------------------------------------------------------------------
+//----------------------Chrome Extension Additions------------------------
+//------------------------------------------------------------------------
+/*
+var serialMonitor = new chromeSerial();
+serialMonitor.finalCallback = () => { //Set this so USB devices bind to the interface once connected.
+  s.removeEventListeners();
+
+  document.getElementById("startbutton").onclick = () => {
+    serialMonitor.sendMessage('t');
+  }
+  document.getElementById("stopbutton").onclick = () => {
+    serialMonitor.sendMessage('f');
+  }
+  document.getElementById("sendbutton").onclick = () => {
+    serialMonitor.sendMessage(document.getElementById('command').value);
+  }
+
+  serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
+    //pass to data handler
+    if(line.split(s.delimiter).length == s.header.length - 1 ) { //Most likely a data line based on our stream header formatting
+      s.handleEventData(line); 
+      //console.log("Passing Serial Data...", Date.now())
+    }
+    else{
+      console.log("RECEIVED: ", line);
+    }
+  }
+}
+
+makeTooltip("serialContainer",[-220,10],"Click 'Get' to get available Serial devices and 'Set' to pair it with the interface. Right click and press 'Inspect' to see debug output in the Console");
+*/
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------

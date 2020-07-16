@@ -4,13 +4,11 @@ class HEGwebAPI {
     
     this.startTime=0;
 
-    this.us=[];
-    this.red=[];
-    this.ir=[];
+    this.alloutput = [];
+    this.raw = [];
+    this.filtered = [];
+    this.us= [];
     this.ratio=[];
-    this.ambient=[];
-    this.velAvg=[];
-    this.accelAvg=[];
 
     this.slowSMA = 0;
     this.slowSMAarr = [0];
@@ -20,7 +18,6 @@ class HEGwebAPI {
     this.scoreArr = [0];
     this.replay = false;
     
-    this.raw = [];
     this.csvDat = [];
     this.csvIndex = 0;
 
@@ -35,6 +32,8 @@ class HEGwebAPI {
     
     window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
     window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.msCancelAnimationFrame;
+    
+    this.defaultUI = defaultUI;
     if(defaultUI==true){
       this.parentId = parentId;
       this.createUI(parentId);
@@ -55,14 +54,11 @@ class HEGwebAPI {
   resetVars() {
     this.startTime = 0;
 
+    this.alloutput = [];
     this.raw = [];
+    this.filtered = [];
     this.us = [];
-    this.red = [];
-    this.ir = [];
     this.ratio = [];
-    this.ambient = [];
-    this.velAvg = [];
-    this.accelAvg = [];
     
     this.slowSMA = 0;
     this.slowSMAarr = [0];
@@ -141,25 +137,8 @@ class HEGwebAPI {
     //this.scoreArr.push(this.scoreArr[this.scoreArr.length-1]+this.smaSlope);
   }
 
-  saveCSV(name=new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
-    var csvDat = header;
-    this.us.forEach((us, i) => {
-      csvDat += [us,this.red[i],this.ir[i],this.ratio[i],this.ambient[i],this.velAvg[i],this.accelAvg[i]].join(',')+'\n';
-    });
-
-    var hiddenElement = document.createElement('a');
-    hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvDat);
-    hiddenElement.target = "_blank";
-    if(name != ""){
-        hiddenElement.download = name+".csv";
-    }
-    else{
-        hiddenElement.download = Date().toISOString()+".csv";
-    }
-    hiddenElement.click();
-  }
-
-  saveCSVGeneral(data=this.raw, name= new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
+  //Converts arrays of strings representing lines of data into CSVs
+  saveCSV(data=this.filtered, name=new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
     var csvDat = header;
     data.forEach((line) => {
       csvDat += line.split(delimiter).join(",");
@@ -213,23 +192,13 @@ class HEGwebAPI {
     if(this.csvIndex < 2){
       if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
       this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
-      this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
-      this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
       this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-      this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
-      this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
-      this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
     }
     this.csvIndex++;
     if(this.csvIndex < this.csvDat.length - 1){
       if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
       this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
-      this.red.push(parseInt(this.csvDat[this.csvIndex][1]));
-      this.ir.push(parseInt(this.csvDat[this.csvIndex][2]));
       this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-      this.ambient.push(parseInt(this.csvDat[this.csvIndex][4]));
-      this.velAvg.push(parseFloat(this.csvDat[this.csvIndex][5]));
-      this.accelAvg.push(parseFloat(this.csvDat[this.csvIndex][6]));
       if(this.us.length >= 2){
         this.handleScore();
       }
@@ -275,38 +244,34 @@ class HEGwebAPI {
 
   handleEventData(data){
     console.log("HEGDUINO", data);
-    if(document.getElementById("heg").innerHTML != data){  //on new output
+    if(this.raw[this.raw.length - 1] != data){  //on new output
       document.getElementById("heg").innerHTML = data;
-      var onRead = new CustomEvent('on_read', { detail: {data: data} });
+      var onRead = new CustomEvent('on_read', { detail: {data: data} }); //Create event for posting data from an iframe implementation of this code.
       window.parent.dispatchEvent(onRead); 
       window.parent.postMessage(data, "*");
       if(data.includes("|")) {
+        this.raw.push(data);
         var dataArray = data.split("|");
         var thisRatio = parseFloat(dataArray[3]);
         if(thisRatio > 0) { 
           if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
           this.us.push(parseInt(dataArray[0]));
-          this.red.push(parseInt(dataArray[1]));
-          this.ir.push(parseInt(dataArray[2])); 
           this.ratio.push(parseFloat(dataArray[3]));
-          this.ambient.push(parseInt(dataArray[4]));
-          this.velAvg.push(parseFloat(dataArray[5]));
-          this.accelAvg.push(parseFloat(dataArray[6]));
 
           if(this.us.length > 5) { // SMA filtering for ratio
             var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 5, this.ratio.length), 5); 
-            console.log(temp);
+            //console.log(temp);
             if((this.ratio[this.ratio.length - 1] < temp[4] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[4] * 1.3)) {
               this.ratio[this.ratio.length - 1] = this.ratio[this.ratio.length - 2]; // Roll the ratio back if outside margin 
-              this.red[this.red.length - 1] = this.red[this.red.length - 2]; // roll back the other values too 
-              this.ir[this.ir.length - 1] = this.ir[this.ir.length - 2];
-              this.ambient[this.ambient.length - 1] = this.ambient[this.ambient.length - 2];
-              this.velAvg[this.velAvg.length - 1] = this.velAvg[this.velAvg.length - 2];
-              this.accelAvg[this.accelAvg.length - 1] = this.accelAvg[this.accelAvg.length - 2];
+              dataArray[3] = temp;
             } 
+            this.filtered.push(dataArray.join("|"));
           }
           //handle new data
           this.handleScore();
+          if(this.defaultUI == true){
+            this.updateTable(dataArray);
+          }
         } 
       }
     }
@@ -324,24 +289,27 @@ class HEGwebAPI {
     // Define in-script
   }
 
-  openEvent(e){
+  openEvent = (e) => {
+    this.alloutput.push(e.data);
     console.log("HEGDUINO", "Events Connected");
     //document.getElementById("message").innerHTML = "Output:";
   }
 
-  errorEvent(e){
+  errorEvent = (e) => {
     if (e.target.readyState != EventSource.OPEN) {
+      this.alloutput.push(e.data);
       console.log("HEGDUINO", "Events Disconnected");
     }
   }
 
-  messageEvent(e){
+  messageEvent = (e) => {
     console.log("HEGDUINO", e.data);
+    this.alloutput.push(e.data);
     //document.getElementById("message").innerHTML = e.data;
   }
 
   hegEvent = (e) => {
-    this.raw.push(e.data);
+    //this.raw.push(e.data);
     this.handleEventData(e.data);
   }
 
@@ -365,8 +333,11 @@ class HEGwebAPI {
     }
   }
  
-  updateTable(){
-    document.getElementById("dataTable").innerHTML = '<tr><td id="us">'+this.us[this.us.length-1]+'</td><td id="red">'+this.red[this.red.length-1]+'</td><td id="ir">'+this.ir[this.ir.length-1]+'</td><td id="ratio">'+this.ratio[this.ratio.length-1]+'</td><td id="ambient">'+this.ambient[this.ambient.length-1]+'</td><td id="Vel">'+this.velAvg[this.velAvg.length-1]+'</td><td id="Accel">'+this.accelAvg[this.accelAvg.length-1]+'</td><td class="scoreth">'+this.scoreArr[this.scoreArr.length-1].toFixed(4)+'</td></tr>';
+  updateTable(dataArray){
+    var HTMLtoAppend = '<tr>';
+    dataArray.forEach((value)=>{HTMLtoAppend += '<th>'+value+'</th>'});
+    HTMLtoAppend += '</tr>'
+    document.getElementById("dataTable").innerHTML = HTMLtoAppend;
   }
 
   createUI(parentId) {
@@ -402,7 +373,7 @@ class HEGwebAPI {
     var containerHTML = '<div id="container"></div>';
     var messageHTML = '<msgDiv id="message">Output:</div>';
     var eventHTML = '<eventDiv id="heg">Not connected...</eventDiv>';
-    var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>us</th><th>Red</th><th>IR</th><th>Ratio</th><th>ambient</th><th>Vel</th><th>Accel</th><th class="scoreth">SMA Score</th></tr></table></div>';
+    var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>us</th><th>Red</th><th>IR</th><th>Ratio</th><th>Ambient</th><th>Velocity</th><th>Accel</th></tr></table></div>';
     var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
     HEGwebAPI.appendFragment(dataDivHTML,parentId);
@@ -509,6 +480,7 @@ class HEGwebAPI {
     }
   }
 }
+
 class graphJS {
   constructor(nPoints=[1155], color=[0,255,0,1], yscale=1, res=[1400,600], parentId="main_body", canvasId="g", defaultUI=true){
     //WebGL graph based on: https://tinyurl.com/y5roydhe

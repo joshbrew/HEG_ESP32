@@ -176,9 +176,6 @@ Designed By: Joshua Brewster
 <text x="147.4724" y="16.1544" size="0.3048" layer="114">U3</text>
 <text x="163.068" y="18.0594" size="0.3048" layer="114">P1</text>
 <text x="163.0426" y="13.716" size="0.3048" layer="114">P2</text>
-<text x="187.2488" y="19.4056" size="0.3048" layer="114">LED1</text>
-<text x="187.2488" y="15.113" size="0.3048" layer="114">LED2</text>
-<text x="185.0644" y="15.9004" size="0.6096" layer="114" rot="R90">cathode</text>
 <rectangle x1="148.9964" y1="16.4592" x2="149.2758" y2="16.8656" layer="114"/>
 <wire x1="127.7112" y1="13.5636" x2="127.6858" y2="13.5382" width="0.1524" layer="47"/>
 <wire x1="127.7874" y1="21.844" x2="190.5" y2="21.844" width="0.1524" layer="20"/>
@@ -365,6 +362,12 @@ Joshua Brewster - MIT License</text>
 <wire x1="174.0916" y1="14.0208" x2="176.0474" y2="14.0208" width="0.1524" layer="22"/>
 <wire x1="174.0408" y1="13.7668" x2="175.5902" y2="13.7668" width="0.1524" layer="22"/>
 <wire x1="173.8884" y1="13.5636" x2="174.7266" y2="13.5636" width="0.1524" layer="22"/>
+<text x="146.304" y="17.8562" size="0.254" layer="21">TOP</text>
+<text x="150.3172" y="15.5194" size="0.254" layer="21" rot="R90">TOP</text>
+<text x="190.6016" y="14.7574" size="0.6096" layer="21">+</text>
+<text x="186.3344" y="14.7574" size="0.6096" layer="21">-</text>
+<text x="190.5508" y="19.4818" size="0.6096" layer="21">+</text>
+<text x="186.2836" y="19.4818" size="0.6096" layer="21">-</text>
 </plain>
 <libraries>
 <library name="MAX86141">
@@ -1052,27 +1055,15 @@ design rules under a new name.</description>
 <attribute name="MANUFACTURER_PART_NUMBER" value="TXBN0304RUTR" x="147.7518" y="16.2814" size="1.778" layer="27" display="off"/>
 <attribute name="VENDOR" value="Texas Instruments" x="147.7518" y="16.2814" size="1.778" layer="27" display="off"/>
 </element>
-<element name="C1" library="adafruit" package="C0402" value="1uF" x="142.1638" y="14.6812" smashed="yes" rot="R90">
-<attribute name="VALUE" x="136.3726" y="13.9446" size="1.27" layer="27" rot="R90"/>
-</element>
+<element name="C1" library="adafruit" package="C0402" value="1uF" x="142.1638" y="14.6812" smashed="yes" rot="R90"/>
 <element name="C3" library="adafruit" package="C0402" value="1uF" x="146.4818" y="13.6144" smashed="yes"/>
-<element name="C2" library="adafruit" package="C0402" value="1uF" x="143.3068" y="14.6812" smashed="yes" rot="R90">
-<attribute name="VALUE" x="145.2118" y="14.0462" size="1.27" layer="27" rot="R90"/>
-</element>
-<element name="C5" library="adafruit" package="C0402" value="0.1uF" x="149.6822" y="13.7414" smashed="yes" rot="R90">
-<attribute name="VALUE" x="151.5872" y="13.1064" size="1.27" layer="27" rot="R90"/>
-</element>
-<element name="C4" library="adafruit" package="C0402" value="10uF" x="148.5392" y="13.7414" smashed="yes" rot="R90">
-<attribute name="VALUE" x="150.4442" y="13.1064" size="1.27" layer="27" rot="R90"/>
-</element>
+<element name="C2" library="adafruit" package="C0402" value="1uF" x="143.3068" y="14.6812" smashed="yes" rot="R90"/>
+<element name="C5" library="adafruit" package="C0402" value="0.1uF" x="149.6822" y="13.7414" smashed="yes" rot="R90"/>
+<element name="C4" library="adafruit" package="C0402" value="10uF" x="148.5392" y="13.7414" smashed="yes" rot="R90"/>
 <element name="C6" library="adafruit" package="C0402" value="10uF" x="151.7142" y="12.7508" smashed="yes"/>
-<element name="C8" library="adafruit" package="C0402" value="1uF" x="150.7744" y="18.2626" smashed="yes">
-<attribute name="VALUE" x="150.1394" y="16.3576" size="1.27" layer="27"/>
-</element>
+<element name="C8" library="adafruit" package="C0402" value="1uF" x="150.7744" y="18.2626" smashed="yes"/>
 <element name="C7" library="adafruit" package="C0402" value="1uF" x="148.1836" y="18.2372" smashed="yes" rot="R180"/>
-<element name="R1" library="adafruit" package="R0402" value="10k" x="144.4498" y="14.6812" smashed="yes" rot="R90">
-<attribute name="VALUE" x="145.9484" y="14.4526" size="1.27" layer="27" rot="R90"/>
-</element>
+<element name="R1" library="adafruit" package="R0402" value="10k" x="144.4498" y="14.6812" smashed="yes" rot="R90"/>
 <element name="U4" library="LP5907MFX-3.3_NOPB" package="SOT95P280X145-5N" value="LP5907MFX-3.3/NOPB" x="143.7894" y="17.653" smashed="yes">
 <attribute name="AVAILABILITY" value="Unavailable" x="143.7894" y="17.653" size="1.778" layer="27" display="off"/>
 <attribute name="DESCRIPTION" value=" Linear Voltage Regulator IC 1 Output 250mA SOT-23-5 " x="143.7894" y="17.653" size="1.778" layer="27" display="off"/>
@@ -1080,7 +1071,6 @@ design rules under a new name.</description>
 <attribute name="MP" value="LP5907MFX-3.3/NOPB" x="143.7894" y="17.653" size="1.778" layer="27" display="off"/>
 <attribute name="PACKAGE" value="SOT-23 Texas Instruments" x="143.7894" y="17.653" size="1.778" layer="27" display="off"/>
 <attribute name="PRICE" value="None" x="143.7894" y="17.653" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="142.6835" y="15.360759375" size="0.402146875" layer="27"/>
 </element>
 <element name="JP2" library="pinhead" library_urn="urn:adsk.eagle:library:325" package="1X05" package3d_urn="urn:adsk.eagle:package:22469/2" value="" x="132.7912" y="20.1422" smashed="yes" rot="R180">
 <attribute name="POPULARITY" value="69" x="132.7912" y="20.1422" size="1.778" layer="27" rot="R180" display="off"/>
@@ -1096,7 +1086,7 @@ design rules under a new name.</description>
 <contactref element="U1" pad="C1"/>
 <contactref element="LED2" pad="C"/>
 <wire x1="186.5605" y1="16.3774" x2="186.8272" y2="16.3774" width="0.1524" layer="1"/>
-<wire x1="186.8272" y1="16.3774" x2="168.6504" y2="16.3774" width="0.2032" layer="1"/>
+<wire x1="186.8272" y1="16.3774" x2="168.6504" y2="16.3774" width="0.254" layer="1"/>
 <wire x1="168.6504" y1="16.3774" x2="165.1508" y2="12.8778" width="0.2032" layer="1"/>
 <wire x1="165.1508" y1="12.8778" x2="153.7462" y2="12.8778" width="0.2032" layer="1"/>
 <wire x1="153.7462" y1="12.8778" x2="153.162" y2="13.462" width="0.2032" layer="1"/>
@@ -1111,7 +1101,7 @@ design rules under a new name.</description>
 <wire x1="153.3271" y1="13.8303" x2="153.035" y2="13.8303" width="0.2032" layer="1"/>
 <wire x1="153.3271" y1="13.8303" x2="153.924" y2="13.2334" width="0.2032" layer="1"/>
 <wire x1="153.924" y1="13.2334" x2="163.606" y2="13.2334" width="0.2032" layer="1"/>
-<wire x1="186.8272" y1="18.2174" x2="168.59" y2="18.2174" width="0.2032" layer="1"/>
+<wire x1="186.8272" y1="18.2174" x2="168.59" y2="18.2174" width="0.254" layer="1"/>
 <wire x1="168.59" y1="18.2174" x2="163.606" y2="13.2334" width="0.2032" layer="1"/>
 <wire x1="153.035" y1="13.8303" x2="152.2888" y2="14.5765" width="0.2032" layer="1"/>
 <wire x1="152.2888" y1="14.5765" x2="152.2888" y2="15.083" width="0.2032" layer="1"/>
@@ -1420,7 +1410,7 @@ design rules under a new name.</description>
 <wire x1="153.035" y1="14.1732" x2="150.5458" y2="14.1732" width="0.1524" layer="16"/>
 <contactref element="C4" pad="2"/>
 <contactref element="C5" pad="2"/>
-<wire x1="148.4518" y1="17.303" x2="148.4518" y2="17.0814" width="0.1524" layer="1"/>
+<wire x1="148.4518" y1="17.303" x2="148.4518" y2="17.0814" width="0.254" layer="1"/>
 <via x="150.0378" y="17.0942" extent="1-16" drill="0.2"/>
 <wire x1="150.0378" y1="17.0942" x2="150.025" y2="17.0814" width="0.1524" layer="1"/>
 <wire x1="150.025" y1="17.0814" x2="148.4518" y2="17.0814" width="0.1524" layer="1"/>
@@ -1434,10 +1424,10 @@ design rules under a new name.</description>
 <wire x1="150.0378" y1="17.0942" x2="150.0378" y2="14.1732" width="0.1524" layer="16"/>
 <contactref element="C7" pad="2"/>
 <wire x1="147.1518" y1="18.603" x2="147.5176" y2="18.2372" width="0.1524" layer="1"/>
-<wire x1="147.5176" y1="18.2372" x2="148.4518" y2="17.303" width="0.1524" layer="1"/>
+<wire x1="147.5176" y1="18.2372" x2="148.4518" y2="17.303" width="0.254" layer="1"/>
 <wire x1="147.5336" y1="18.2372" x2="147.5176" y2="18.2372" width="0.1524" layer="1"/>
 <contactref element="U4" pad="5"/>
-<wire x1="145.0444" y1="18.603" x2="147.1518" y2="18.603" width="0.1524" layer="1"/>
+<wire x1="145.0444" y1="18.603" x2="147.1518" y2="18.603" width="0.254" layer="1"/>
 <wire x1="149.6822" y1="14.3914" x2="149.5044" y2="14.2136" width="0.1524" layer="1"/>
 <wire x1="149.5044" y1="14.2136" x2="149.5044" y2="14.1732" width="0.1524" layer="1"/>
 <wire x1="148.5392" y1="14.3914" x2="148.5392" y2="14.1986" width="0.1524" layer="1"/>

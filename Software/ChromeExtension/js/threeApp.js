@@ -297,7 +297,7 @@ class ThreeGlobe {
         this.sphereMesh = null;
         this.points = null;
 
-        document.getElementById("threeContainer").remove();
+        HEGwebAPI.removeParent("threeContainer");
     }
 
     onData(score) {
@@ -340,3 +340,25 @@ class ThreeGlobe {
 
     }  
 } 
+
+function fibSphere(nPoints){
+    var goldenRatio = (1 + Math.sqrt(5)) * .5;
+    var goldenAngle = (2.0 - goldenRatio) * (2.0*Math.PI);
+    
+    var vertices = [];
+
+    for(var i = 0; i<nPoints; i++){
+        var t = i/nPoints;
+        var angle1 = Math.acos(1-2*t);
+        var angle2 = goldenAngle*i;
+
+        var x = Math.sin(angle1)*Math.cos(angle2);
+        var y = Math.sin(angle1)*Math.sin(angle2);
+        var z = Math.cos(angle1);
+
+        vertices.push(x,y,z);
+    }
+
+    return vertices; // Returns vertex list [x0,y0,z0,x1,y1,z1,...] 
+    
+}

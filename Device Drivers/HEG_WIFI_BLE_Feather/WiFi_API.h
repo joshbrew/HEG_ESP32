@@ -736,12 +736,11 @@ void setupWiFi(){
     //response->addHeader("Access-Control-Allow-Origin", "*");
     request->send(response);
   });
-  server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request){
+  server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request)
+	{
     coreNotEnabledMicros = currentMicros;
-    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",help_page);
-    //response->addHeader("Access-Control-Allow-Origin", "*");
-    request->send(response);
-  });
+		request->send_P(200,"text/html", help_page);
+	});
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
     coreNotEnabledMicros = currentMicros;
     //AsyncWebServerResponse *response = request->beginResponse(200,"text/html",ws_page);
