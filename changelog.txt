@@ -2,6 +2,11 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+7/16/20
+------
+- Generalization: One-liners and commands to control device stream format compatibility e.g. different delimiters and ratio or timer positions, this auto propagates to the CSV recording as well.
+- Other cleanup, getting ready for more feature updates.
+
 6/2/20
 ------
 - reverted CSV function in HEGwebAPI (it has the new one too, just not dumping raw data due to noise issues)

@@ -18,7 +18,6 @@ More/hardware/boards/MAX86141HEG/CAMOutputs/Assembly/MAX86141_HEG_MINI.txt
 More/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
 More/webApp/other/wip/threewater.html
 Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
-Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI.brd
 Software/hardware/boards/MAX86141HEG/CAMOutputs/CAMOutputs/MAX86141GERBS.zip
 Software/hardware/boards/MAX86141HEG/CAMOutputs/CAMOutputs/GerberFiles/Stiffener_BOT.gbr
 Software/hardware/boards/MAX86141HEG/CAMOutputs/CAMOutputs/GerberFiles/solderpaste_top.gbr
@@ -37,7 +36,6 @@ Software/hardware/boards/MAX86141HEG/CAMOutputs/CAMOutputs/Assembly/PnP_MAX86141
 Software/hardware/boards/MAX86141HEG/CAMOutputs/CAMOutputs/Assembly/MAX86141_HEG_MINI.txt
 Software/hardware/boards/MAX86141HEG/CAMOutputs/Assembly/MAX86141_HEG_MINI_centroid.csv
 Software/hardware/boards/MAX86141HEG/CAMOutputs/Assembly.zip
-Software/hardware/boards/HEGduinoV1/ESP32_ADC_HUB.brd
 Software/hardware/boards/HEGduinoV1/ESP32_ADC_HUB.b#1
 Software/hardware/boards/HEGduinoV1/CAMOutputs/HEGpcbGerbs.zip
 Software/hardware/boards/HEGduinoV1/CAMOutputs/GerberFiles/solderpaste_top.gbr
@@ -56,6 +54,5 @@ Software/hardware/boards/HEGduinoV1/CAMOutputs/Assembly/PnP_ESP32_ADC_HUB_front.
 Software/hardware/boards/HEGduinoV1/CAMOutputs/Assembly/PnP_ESP32_ADC_HUB_back.txt
 Software/hardware/boards/HEGduinoV1/CAMOutputs/Assembly/ESP32_ADC_HUB.txt
 Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
-Software/hardware/boards/HEGduinoV1/ESP32_ADC_HUB.brd
-Software/hardware/boards/HEGduinoV1/ESP32_ADC_HUB.brd
+Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
 Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
