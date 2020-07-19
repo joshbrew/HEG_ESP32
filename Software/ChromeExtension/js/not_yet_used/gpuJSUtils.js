@@ -1,4 +1,66 @@
 //Include gpu-browser.min.js before this script
+var kernels = ({
+    edgeDetection: [
+      -1, -1, -1,
+      -1,  8, -1,
+      -1, -1, -1
+    ],
+    boxBlur: [
+      1/9, 1/9, 1/9,
+      1/9, 1/9, 1/9,
+      1/9, 1/9, 1/9
+    ],
+    sobelLeft: [
+        1,  0, -1,
+        2,  0, -2,
+        1,  0, -1
+    ],
+    sobelRight: [
+        -1, 0, 1,
+        -2, 0, 2,
+        -1, 0, 1
+    ],
+    sobelTop: [
+        1,  2,  1,
+        0,  0,  0,
+       -1, -2, -1  
+    ],
+    sobelBottom: [
+        -1, 2, 1,
+         0, 0, 0,
+         1, 2, 1
+    ],
+    identity: [
+        0, 0, 0, 
+        0, 1, 0, 
+        0, 0, 0
+    ],
+    gaussian3x3: [
+        1,  2,  1, 
+        2,  4,  2, 
+        1,  2,  1
+    ],
+    guassian7x7: [
+        0, 0,  0,   5,   0,   0,  0,
+        0, 5,  18,  32,  18,  5,  0,
+        0, 18, 64,  100, 64,  18, 0,
+        5, 32, 100, 100, 100, 32, 5,
+        0, 18, 64,  100, 64,  18, 0,
+        0, 5,  18,  32,  18,  5,  0,
+        0, 0,  0,   5,   0,   0,  0,
+    ],
+    emboss: [
+        -2, -1,  0, 
+        -1,  1,  1, 
+         0,  1,  2
+    ],
+    sharpen: [
+        0, -1,  0,
+       -1,  5, -1,
+        0, -1,  0
+    ]
+  });
+
 
 function includeGPUJS() {
     var link1 = document.createElement("script");
@@ -115,30 +177,6 @@ function sumP(arr) { //Parallel Sum Operation
     console.info(sum(arr,arr.length));
 }
 
-
-var kernels = ({
-    edgeDetection: [
-      -1, -1, -1,
-      -1, 8, -1,
-      -1, -1, -1
-    ],
-    boxBlur: [
-      1/9, 1/9, 1/9,
-      1/9, 1/9, 1/9,
-      1/9, 1/9, 1/9
-    ],
-    sobelX: [
-        1,  0,  -1,
-        2,  0,  -2,
-        1,  0,  -1
-    ],
-    sobelY: [
-        1,  2,   1,
-        0,  0,   0,
-       -1, -2,  -1  
-    ]
-  });
-
 function testGPUthreading3D(){
     var gpu = new GPU();
     var kernel = gpu.createKernel(function(){
@@ -220,3 +258,4 @@ function testVideoConv(video=null, kernel){
     return convolution.canvas;
 
 }
+//Next apply multiple kernels in same operation
