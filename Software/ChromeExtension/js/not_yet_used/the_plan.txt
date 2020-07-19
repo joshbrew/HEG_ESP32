@@ -1,0 +1,13 @@
+gpuJS is my new favorite thing.
+
+For EEG we need to:
+
+Bandpass raw input data and do other filtering after that, maybe 4 or 5 or 10 more filters.
+Visualize raw and filtered data per channel.
+Capture the data in meaningful formats.
+
+"Okay and we need 32+ channels on screen on your browser..."
+
+Hmmm
+
+
