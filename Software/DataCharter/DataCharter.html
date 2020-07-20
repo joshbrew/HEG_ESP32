@@ -375,7 +375,7 @@
                   type: 'histogram',
                   histfunc:"sum",
                   xbins: {
-                    size: 0.125
+                    size: 0.05
                   },
                   marker: {
                     color: "rgba(255,0,0, 0.75)"
@@ -390,7 +390,7 @@
                   type: 'histogram',
                   histfunc:"sum",
                   xbins: {
-                    size: 0.125
+                    size: 0.05
                   },
                   name: "IR",
                   marker: {
@@ -404,7 +404,7 @@
                   type: 'histogram',
                   histfunc:"sum",
                   xbins: {
-                    size: 0.125
+                    size: 0.05
                   },
                   name: "Ratio",
                   marker: {
@@ -764,7 +764,7 @@
         complex fast fourier transform and inverse from
         http://rosettacode.org/wiki/Fast_Fourier_transform#C.2B.2B
         */
-        function icfft(amplitudes) //for use on a cfft array
+        function icfft(amplitudes, size)
         {
           var N = amplitudes.length;
           var iN = 1 / N;
@@ -775,7 +775,7 @@
               amplitudes[i].im = -amplitudes[i].im;
         
           //apply fourier transform
-          temp = cfft(amplitudes)
+          temp = cfft(amplitudes, size)
           amplitudes = temp[0]
         
           for(var i = 0 ; i < N; ++i)
@@ -847,8 +847,8 @@
         function frequencyDomain(data, fs){ // Returns Frequency Domain object: [frequency Distribution, amplitude Distribution] with range based on input sample rate. Assumes constant sample rate.
           var tdat = [...data]; // Red
           var len = tdat.length;
-          var transformArr = cfft(tdat, len); //Returns Time Domain FFT
-          var transform = icfft(transformArr[0]); //console.log(transform);
+          //var transformArr = cfft(tdat, len); //Returns Time Domain FFT
+          var transform = icfft(tdat, len); //console.log(transform);
           var tranScaled = scaleTransform(transform, transform.length);
           
           var amplitudes = [];
