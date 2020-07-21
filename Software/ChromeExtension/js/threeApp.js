@@ -9,6 +9,59 @@ link2.src = "js/postprocessing.min.js"; // Can set this to be a nonlocal link li
 link2.async = false; // Load synchronously
 document.head.appendChild(link2); //Append script
 
+class graphNode { //Use this to organize 3D models if needed 
+    constructor(parent=null, children=[null], id=null) {
+        this.id = id;
+        this.parent = parent; //Access/inherit parent object
+        this.children = children; //List of child objects for this node, each with independent data
+        this.globalPos = parent.globalPos || {x:0,y:0,z:0}; //Global x,y,z position
+        this.localPos = {x:0,y:0,z:0};  //Local x,y,z position offset. Render as global + local pos
+        this.globalRot = parent.globalRot || {x:0,y:0,z:0}; //Global x,y,z rotation (rads)
+        this.localRot = {x:0,y:0,z:0}; //Local x,y,z rotation (rads). Render as global + local rot
+
+        this.children.forEach((child)=>{
+            child.globalPos = parent.globalPos;
+            child.globalRot = parent.globalRot;
+        })
+    }
+
+    inherit(parent) { //
+        this.parent = parent;
+        this.globalPos = parent.globalPos;
+        this.globalRot = parent.globalRot;
+        this.children.forEach((child)=>{
+            child.globalPos = parent.global;
+        });
+    }
+
+    addChild(child){ //Add child node reference
+        this.children.push(child); //Remember: JS is all pass by object reference.
+    }
+
+    removeChild(id){ //Remove child node reference
+        this.children.forEach((child, idx)=>{
+            if(child.id == id){
+                this.children.splice(idx,1);
+            }
+        });
+    }
+
+    translate(offset=[0,0,0]){ //Recursive global translation of this node and all children
+        this.globalPos=[this.globalPos.x+offset[0],this.globalPos.y+offset[1],this.globalPos.z+offset[2]];
+        this.children.forEach((child)=>{
+            child.translate(offset);
+        });
+    }
+
+    rotate(offset=[0,0,0]){ //Offsets the rotation of this node and all child nodes (radian)
+        this.globalRot.x+=offset[0];
+        this.globalRot.y+=offset[1];
+        this.globalRot.z+=offset[2];
+        this.children.forEach((child)=>{
+            child.rotate(offset);
+        });
+    }
+}
 
 class ThreeGlobe {
     constructor() {

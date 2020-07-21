@@ -1,0 +1,51 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <div>CFFT TEST</div>
+        <div id="chart"></div>
+        <div id="fftchart"></div>
+        <script src="cfft.js"></script>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script>
+            var sineWave = [];
+            var t = [];
+            var fs = 200;
+            var freq = 10;
+            var increment = 1/fs;
+            for (var ti = 0; ti < 3-increment; ti+=increment){ //200 sps, 3 sec
+                sineWave.push(Math.sin(2*Math.PI*freq*ti));
+                t.push(ti);
+            }
+            console.info(sineWave);
+            var freqDom = frequencyDomain(sineWave,fs);
+            console.info(freqDom);
+            //alert("Check console for result!");
+            
+            
+            var data = [[{
+              x: t,
+              y: sineWave,
+              type: 'line',
+              marker: {
+                color: "rgba(255,100,100, 1)"
+              },
+              name: "Sine",
+              //xbins: {  size: 0.01  }
+            }],[{
+                x:freqDom[0],
+                y:freqDom[1],
+                type: 'line',
+                marker: {
+                    color: "rgba(100,255,100, 1)"
+                },
+                name: 'freqDom',    
+                xbins: {  size: 1  }
+            }]];
+            Plotly.newPlot("chart",data[0]);
+            Plotly.newPlot("fftchart",data[1]);
+            
+        </script>
+    </body>
+</html>

@@ -362,6 +362,80 @@ function testGPUpipeline() {
     console.info(result);
 }
 
+function testGPUCameraWobble() {
+    var camera = true;
+    var image = () => {
+        if (camera) {
+          const stream = navigator.mediaDevices
+              ? navigator.mediaDevices.getUserMedia({video: true})
+              : new Promise((y, n) => navigator.getUserMedia({video: true}, y, n));
+          var html = document.createElement('div');
+          html.innerHTML = `<video autoplay=true playsinline=true></video>`;
+          const video =  document.body.appendChild(html);
+          video.style.maxWidth = "100%";
+          stream.then((stream) => {
+            if ("srcObject" in video) video.srcObject = stream;
+            else video.src = URL.createObjectURL(stream);
+            invalidation.then(() => {
+              stream.getTracks().forEach(t => t.stop());
+              URL.revokeObjectURL(video.src);
+            });    
+            draw();
+            return getimagedata(video);
+          });
+          //while (true) {
+          //  requestAnimationFrame(getimagedata(video));
+          //}
+        } 
+        else {
+          return new Promise((resolve, reject) => {
+            const image = new Image;
+            image.onload = () => resolve(getimagedata(image));
+            image.onerror = reject;
+            image.crossOrigin = "anonymous";
+            image.src = "https://raw.githubusercontent.com/tensorflow/tfjs-examples/master/mobilenet/cat.jpg";
+          });
+        }
+      }
+    
+    function getimagedata(v) {
+        const w = Math.min(400, v.width || Infinity), h = Math.min(300, v.height || Infinity);
+        const context = DOM.context2d(w, h, 1);
+        context.drawImage(v, 0, 0, w, h);
+        return context.getImageData(0, 0, w, h);
+      }
+
+    var kernel = function(data, wobble) {
+        var x = this.thread.x,
+            y = this.thread.y;
+      
+        //var data = this.constants.data;
+        // wouldn't be fun if the kernel did _nothing_
+        x = Math.floor(x + wobble * Math.sin(y / 10));
+        y = Math.floor(y + wobble * Math.cos(x / 10));
+        
+        var n = 4 * ( x + this.constants.w * (this.constants.h - y) );
+        this.color(data[n]/256, data[n+1]/256,data[n+2]/256,1);
+      }
+
+    var render = new GPU({ mode: "gpu" })
+            .createKernel(kernel)
+            .setConstants({ w: image.width, h: image.height })
+            .setOutput([image.width, image.height])
+            .setGraphical(true);
+
+    var draw = () => {
+        //var fpsTime = performance.now(); var fps = 60;
+        render(image.data, 14 * Math.sin(Date.now() / 400));
+        render.getCanvas();
+        //fps = (1 + fps) * (1 + 0.000984 * (fpsTime - (fpsTime = performance.now())));
+        //console.log(fps);
+        setTimeout(requestAnimationFrame(draw),15);
+    }
+
+    image();
+
+}
 /*
         basic complex number arithmetic from 
         http://rosettacode.org/wiki/Fast_Fourier_transform#Scala
@@ -417,7 +491,7 @@ function testGPUpipeline() {
        complex fast fourier transform and inverse from
        http://rosettacode.org/wiki/Fast_Fourier_transform#C.2B.2B
        */
-       function icfft(amplitudes, size) //for use on a cfft array
+       function icfft(amplitudes, size)
        {
          var N = amplitudes.length;
          var iN = 1 / N;
@@ -431,7 +505,7 @@ function testGPUpipeline() {
          temp = cfft(amplitudes, size)
          amplitudes = temp[0]
        
-         for(var i = 0 ; i < N; ++i)
+         for(var i = 0 ; i < amplitudes.length; ++i)
          {
            //conjugate again
            amplitudes[i].im = -amplitudes[i].im;
@@ -447,7 +521,7 @@ function testGPUpipeline() {
        {
          var N = amplitudes.length;
          
-         if((amplitudes.length == size) && (amplitudes.length/2 != Math.floor(amplitudes.length/2))){
+         if(amplitudes.length % 2 != 0){
            amplitudes.pop(); //Make the initial array even to make the rest work.
            size = size-1;
          }
@@ -495,13 +569,13 @@ function testGPUpipeline() {
            x[i]["im"] *= bSi; i++;
          }
          return x;
-       };
+       }
 
        function frequencyDomain(data, fs){ // Returns Frequency Domain object: [frequency Distribution, amplitude Distribution] with range based on input sample rate. Assumes constant sample rate.
          var tdat = [...data]; // Red
          var len = tdat.length;
-         //var transformArr = cfft(tdat, len); //Returns Time Domain FFT
-         var transform = icfft(tdat, len); //console.log(transform);
+         var transformArr = cfft(tdat, len); //Returns Time Domain FFT
+         var transform = icfft(transformArr[0], len); //transformArr[0] //console.log(transform);
          var tranScaled = scaleTransform(transform, transform.length);
          
          var amplitudes = [];
@@ -563,6 +637,7 @@ class gpuUtils {
     constructor(){
         this.gpu = new GPU();
         this.kernel;
+        
     }
 
     addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
@@ -599,10 +674,10 @@ class gpuUtils {
             return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
             });
             
-            this.gpu.addFunction(function cScaleTransform(transform, iSize) {
-                transform[this.thread.x][0] *= iSize;
-                transform[this.thread.x][1] *= iSize;
-                return transform;
-              });
+        this.gpu.addFunction(function cScaleTransform(transform, iSize) {
+            transform[this.thread.x][0] *= iSize;
+            transform[this.thread.x][1] *= iSize;
+            return transform;
+            });
     }
 }
