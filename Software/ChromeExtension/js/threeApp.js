@@ -18,19 +18,43 @@ class graphNode { //Use this to organize 3D models if needed
         this.localPos = {x:0,y:0,z:0};  //Local x,y,z position offset. Render as global + local pos
         this.globalRot = parent.globalRot || {x:0,y:0,z:0}; //Global x,y,z rotation (rads)
         this.localRot = {x:0,y:0,z:0}; //Local x,y,z rotation (rads). Render as global + local rot
+        this.functions = []; // List of functions. E.g. function foo(x) {return x;}; this.functions["foo"] = foo; this.functions.foo = foo(x) {return x;}. Got it?
 
-        this.children.forEach((child)=>{
-            child.globalPos = parent.globalPos;
-            child.globalRot = parent.globalRot;
-        })
+        //3D Rendering stuff
+        this.model = null; //
+        this.mesh = [0,0,0,
+                     1,1,1]; // Model vertex list, array of vec3's xyz, so push x,y,z components. For ThreeJS use THREE.Mesh(vertices, material) to generate a model from this list with the selected material
+        this.colors = [  0,  0,  0,
+                       255,255,255,]; // Vertex color list, array of vec3's rgb or vec4's rgba for outside of ThreeJS. For ThreeJS use THREE.Color("rgb(r,g,b)") for each array item. 
+        this.materials = []; // Array of materials i.e. lighting properties and texture mappings.
+        this.textures = []; // Array of texture images. For ThreeJS load these with THREE.ImageUtils.loadTexture(url); Multiple textures require custom shader materials in ThreeJS
+        /*               
+        //For ThreeJS, set material vertex colors with these using custom BufferGeometry i.e. 
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute( colors, 4));
+        var pointmat = new THREE.PointsMaterial( { 
+            vertexColors: THREE.VertexColors,
+            opacity:0.99
+        } );
+        materials.push(pointmat); // If we need to save it for any reason
+        this.model = new THREE.Points( geometry, pointmat ); //Then use the ThreeJS built in functions to manipulate this object e.g. this.model.rotation.z etc. 
+        */
+        
+        if(parent !== null){
+            this.inherit(parent);
+        }
     }
 
-    inherit(parent) { //
+    inherit(parent) { //Sets globals to be equal to parent info and adds parent functions to this node. 
         this.parent = parent;
         this.globalPos = parent.globalPos;
         this.globalRot = parent.globalRot;
+        this.functions.concat(parent.functions);
         this.children.forEach((child)=>{
             child.globalPos = parent.global;
+            child.functions.concat(parent.functions);
         });
     }
 
