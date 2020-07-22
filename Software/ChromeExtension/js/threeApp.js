@@ -14,9 +14,9 @@ class graphNode { //Use this to organize 3D models hierarchically if needed
         this.id = id;
         this.parent = parent; //Access/inherit parent object
         this.children = children; //List of child objects for this node, each with independent data
-        this.globalPos = parent.globalPos || {x:0,y:0,z:0}; //Global x,y,z position
+        this.globalPos = {x:0,y:0,z:0}; //Global x,y,z position
         this.localPos = {x:0,y:0,z:0};  //Local x,y,z position offset. Render as global + local pos
-        this.globalRot = parent.globalRot || {x:0,y:0,z:0}; //Global x,y,z rotation (rads)
+        this.globalRot = {x:0,y:0,z:0}; //Global x,y,z rotation (rads)
         this.localRot = {x:0,y:0,z:0}; //Local x,y,z rotation (rads). Render as global + local rot
         this.functions = []; // List of functions. E.g. function foo(x) {return x;}; this.functions["foo"] = foo; this.functions.foo = foo(x) {return x;}. Got it?
 
