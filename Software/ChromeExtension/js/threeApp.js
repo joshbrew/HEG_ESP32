@@ -9,7 +9,7 @@ link2.src = "js/postprocessing.min.js"; // Can set this to be a nonlocal link li
 link2.async = false; // Load synchronously
 document.head.appendChild(link2); //Append script
 
-class graphNode { //Use this to organize 3D models if needed 
+class graphNode { //Use this to organize 3D models hierarchically if needed 
     constructor(parent=null, children=[null], id=null) {
         this.id = id;
         this.parent = parent; //Access/inherit parent object
@@ -39,7 +39,7 @@ class graphNode { //Use this to organize 3D models if needed
             opacity:0.99
         } );
         materials.push(pointmat); // If we need to save it for any reason
-        this.model = new THREE.Points( geometry, pointmat ); //Then use the ThreeJS built in functions to manipulate this object e.g. this.model.rotation.z etc. 
+        this.model = new THREE.Points( geometry, materials ); //Then use the ThreeJS built in functions to manipulate this object e.g. this.model.rotation.z etc. 
         */
         
         if(parent !== null){
