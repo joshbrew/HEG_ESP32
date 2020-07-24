@@ -2,28 +2,46 @@
     <head>
     </head>
     <body>
-        <div>CFFT TEST</div>
+        <div>FREQUENCY DOMAIN TEST, CHECK CONSOLE FOR RESULT</div>
+        <div id="freq"></div>
         <div id="chart"></div>
         <div id="fftchart"></div>
         <script src="cfft.js"></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="complex_array.js"></script>
+        <script src="fft.js"></script>
         <script>
             var sineWave = [];
             var t = [];
-            var fs = 200;
-            var freq = 10;
+            var fs = 1000;
+            var freq = 300;
             var increment = 1/fs;
+            document.getElementById("freq").innerHTML = freq + " Hz";
             for (var ti = 0; ti < 3-increment; ti+=increment){ //200 sps, 3 sec
-                sineWave.push(Math.sin(2*Math.PI*freq*ti));
+                var amplitude = Math.sin(2*Math.PI*freq*ti);
+                //amplitude += Math.sin(2*Math.PI*300*ti); //Add 300Hz interference
+                sineWave.push(amplitude);
                 t.push(ti);
             }
             console.info(sineWave);
             var freqDom = frequencyDomain(sineWave,fs);
-            console.info(freqDom);
-            //alert("Check console for result!");
+            //console.info(freqDom);
+
+            var fftdata = new ComplexArray(sineWave.length);
             
+            /*
+            fftdata.map((value,i) => {
+                value.real = sineWave[i];
+            });
+            */
+            //fftdata.FFT();
+            //fftdata.InvFFT();
+            fftdata.frequencyMap((value,i) => {
+                value.real = sineWave[i];
+            });
             
+            console.info(fftdata);
             var data = [[{
               x: t,
               y: sineWave,
@@ -35,7 +53,7 @@
               //xbins: {  size: 0.01  }
             }],[{
                 x:freqDom[0],
-                y:freqDom[1],
+                y:fftdata.real,
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"
@@ -43,9 +61,16 @@
                 name: 'freqDom',    
                 xbins: {  size: 1  }
             }]];
-            Plotly.newPlot("chart",data[0]);
-            Plotly.newPlot("fftchart",data[1]);
-            
+            var config = { 
+                scrollZoom: true, 
+                responsive: true, 
+            }
+            Plotly.newPlot("chart",data[0],undefined,config);
+            Plotly.newPlot("fftchart",data[1],undefined,config);
+
+            //alert("Check console for result!");
+
+
         </script>
     </body>
 </html>

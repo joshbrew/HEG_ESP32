@@ -468,7 +468,7 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
 
   serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
     //pass to data handler
-    if(line.split(s.delimiter).length == s.header.length - 1 ) { //Most likely a data line based on our stream header formatting
+    if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
       s.handleEventData(line); 
       //console.log("Passing Serial Data...", Date.now())
     }
