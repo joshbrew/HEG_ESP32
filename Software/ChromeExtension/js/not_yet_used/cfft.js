@@ -55,7 +55,8 @@
        */
        function icfft(amplitudes, size)
        {
-         var N = amplitudes.length;
+
+         var N = size;
          var iN = 1 / N;
        
          //conjugate if imaginary part is not 0
@@ -137,7 +138,7 @@
          var tdat = [...data]; // Red
          var len = tdat.length;
          var transformArr = cfft(tdat, len); //Returns Time Domain FFT
-         var transform = icfft(transformArr[0], len); //transformArr[0] //console.log(transform);
+         var transform = icfft(transformArr[0], transformArr[0].length); //transformArr[0] //console.log(transform);
          var tranScaled = scaleTransform(transform, transform.length);
          
          var amplitudes = [];
