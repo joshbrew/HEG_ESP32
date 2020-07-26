@@ -5,11 +5,13 @@
         <div>FREQUENCY DOMAIN TEST, CHECK CONSOLE FOR RESULT</div>
         <div id="freq"></div>
         Sine Wave Graph.
-        <div id="chart"></div>
+        <div id="sinechart"></div>
         Homebrew FFT graph. Definitely funky.
         <div id="homebrewfft"></div>
         FFT.JS result. The Frequency distribution is not correct however.
         <div id="fftchart"></div>
+        Phase Spectrum from FFT.JS result
+        <div id="phasechart"></div>
         <!--- DSP.JS result.
         <div id="dspchart"></div> --->
         <script src="cfft.js"></script>
@@ -24,11 +26,11 @@
             var fs = 8192; // Sample rate
             var freq = 256; // Generate this frequency
             var increment = 1/fs; //x-axis time increment based on sample rate
-            var sec = 1; //Seconds of data to generate 
-            document.getElementById("freq").innerHTML = freq + " Hz";
+            var sec = 2; //Seconds of data to generate 
+            document.getElementById("freq").innerHTML = freq + " Hz, at "+fs+" samples per sec";
             for (var ti = 0; ti < sec-increment; ti+=increment){ //200 sps, 3 sec
                 var amplitude = Math.sin(2*Math.PI*freq*ti);
-                //amplitude += Math.sin(2*Math.PI*300*ti); //Add 300Hz interference
+                amplitude += Math.sin(2*Math.PI*300*ti); //Add 300Hz interference
                 sineWave.push(amplitude);
                 t.push(ti);
             }
@@ -40,21 +42,21 @@
 
             var fftdata = new ComplexArray(sineWave.length);
         
-            /*
-            fftdata.map((value,i) => {
-                value.real = sineWave[i];
-            });
-            */
-            //fftdata.FFT();
-            //fftdata.InvFFT();
             fftdata.frequencyMap((value,i) => {
                 value.real = sineWave[i];
             });
             console.info(fftdata);
-            var amplitudeSpectrum = [];
-            fftdata.forEach(function(item, idx) { //Extract amplitude spectrum. Must be mapped based on frequency.
-                amplitudeSpectrum.push(Math.sqrt(Math.pow(item.real,2)+Math.pow(item.imag,2))); //sqrt(real^2 + imag^2) = amplitude
-            });
+            var amplitudeSpectrum = fftdata.magnitude(); 
+
+            var orderedAmpSpectrum = [...amplitudeSpectrum.slice(Math.ceil(amplitudeSpectrum.length/2),amplitudeSpectrum.length),...amplitudeSpectrum.slice(0,Math.ceil(amplitudeSpectrum.length/2))];
+
+            var phaseSpectrum = [];
+            
+            fftdata.forEach((item) => {            
+                phaseSpectrum.push(Math.atan2(item.imag,item.real)*180/Math.PI);
+            })
+            
+            var orderedPhaseSpectrum = [...phaseSpectrum.slice(Math.ceil(phaseSpectrum.length/2),phaseSpectrum.length),...phaseSpectrum.slice(0,Math.ceil(phaseSpectrum.length/2))]
 
             //dsp.js
             //var dspdata = new FFT(8192, fs);
@@ -72,7 +74,7 @@
               //xbins: {  size: 0.01  }
             }],[{
                 x:freqDom[0],
-                y:amplitudeSpectrum,
+                y:orderedAmpSpectrum,
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"
@@ -90,7 +92,7 @@
                 xbins: {  size: 1  }
             }],[{
                 x:freqDom[0],
-                y:0, //dspdata.spectrum,
+                y:orderedPhaseSpectrum, //dspdata.spectrum,
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"
@@ -103,10 +105,10 @@
                 scrollZoom: true, 
                 responsive: true, 
             }
-            Plotly.newPlot("chart",data[0],undefined,config);
-            Plotly.newPlot("fftchart",data[1],undefined,config);
+            Plotly.newPlot("sinechart",data[0],undefined,config);
             Plotly.newPlot("homebrewfft",data[2],undefined,config);
-            Plotly.newPlot("dspchart",data[3],undefined,config);
+            Plotly.newPlot("fftchart",data[1],undefined,config);
+            Plotly.newPlot("phasechart",data[3],undefined,config);
 
             //alert("Check console for result!");
             

@@ -150,8 +150,9 @@
          var df = fs/N; // frequency resolution
          
          var freqDist = [];
-         for(var i=-fs; i<fs; i+=(2*df)) {
-           freqDist.push(i);
+         for(var i=(-N/2); i<(N/2); i++) {
+           var freq = i*df;
+           freqDist.push(freq);
          }
 
          return [freqDist,amplitudes];
