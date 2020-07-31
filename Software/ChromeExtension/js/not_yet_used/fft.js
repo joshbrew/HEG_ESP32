@@ -16,7 +16,7 @@ function frequencyMap(input, filterer) {
 
 class ComplexArray {
   constructor(other, arrayType = Float32Array) {
-    if (other instanceof baseComplexArray) {
+    if (other instanceof ComplexArray) {
       // Copy constuctor.
       this.ArrayType = other.ArrayType;
       this.real = new this.ArrayType(other.real);

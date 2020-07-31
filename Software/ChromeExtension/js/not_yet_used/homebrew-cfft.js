@@ -139,10 +139,10 @@
          var len = tdat.length;
          var transformArr = cfft(tdat, len); //Returns Time Domain FFT
          var transform = icfft(transformArr[0], transformArr[0].length); //transformArr[0] //console.log(transform);
-         var tranScaled = scaleTransform(transform, transform.length);
+         //var tranScaled = scaleTransform(transform, transform.length);
          
          var amplitudes = [];
-         tranScaled.forEach(function(item, idx) { //Extract amplitude spectrum. Must be mapped based on frequency.
+         transform.forEach(function(item, idx) { //Extract amplitude spectrum. Must be mapped based on frequency.
            amplitudes.push(Math.sqrt(Math.pow(item["re"],2)+Math.pow(item["im"],2))); //sqrt(real^2 + imag^2) = amplitude
          });
 
