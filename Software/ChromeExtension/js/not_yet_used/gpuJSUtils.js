@@ -1,3 +1,306 @@
+
+class gpuUtils {
+  constructor(){
+      this.gpu = new GPU();
+      this.kernel;
+      this.PI = 3.141592653589793;
+      this.SQRT1_2 = 0.7071067811865476
+  }
+
+  addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
+      this.gpu.addFunction(function add(a, b) {
+        return a + b;
+      });
+      
+      this.gpu.addFunction(function sub(a, b) {
+        return a - b;
+      });
+
+      this.gpu.addFunction(function mul(a, b) {
+        return a * b;
+      });
+
+      this.gpu.addFunction(function div(a, b) {
+        return a / b;
+      });
+
+      this.gpu.addFunction(function cadd(a_real,a_imag,b_real,b_imag) {
+        return [a_real+b_real,a_imag+b_imag];
+      });
+
+      this.gpu.addFunction(function csub(a_real,a_imag,b_real,b_imag) {
+        return [a_real-b_real,a_imag-b_imag];
+      });
+
+      this.gpu.addFunction(function cmul(a_real,a_imag,b_real,b_imag) {
+        return [a_real*b_real - a_imag*b_imag, a_real*b_imag + a_imag*b_real];
+      });
+
+      this.gpu.addFunction(function cexp(a_real,a_imag) {
+        const er = Math.exp(a_real);
+        return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
+      });
+          
+      this.gpu.addFunction(function cScaleTransform(transform, iSize) {
+        transform[this.thread.x][0] *= iSize;
+        transform[this.thread.x][1] *= iSize;
+        return transform;
+      });
+
+      this.gpu.addFunction(function mag(a,b){ // Returns magnitude
+        return Math.sqrt(a*a + b*b);
+      });
+
+      this.gpu.addFunction(function conj(imag){ //Complex conjugate of x + iy is x - iy
+        return 0-imag;
+      });
+
+      this.gpu.addFunction(function lof(n){ //Lowest odd factor
+        const sqrt_n = Math.sqrt(n);
+        var factor = 3;
+
+        while(factor <= sqrt_n) {
+          if (n % factor === 0) return factor;
+          factor += 2;
+        }
+      });
+
+      //TO DO
+      //BitReverseIndex(index,n)
+      //BitReverseComplexArray(array)
+
+      /*
+        function BitReverseIndex(index, n) {
+          let bitreversed_index = 0;
+
+          while (n > 1) {
+            bitreversed_index <<= 1;
+            bitreversed_index += index & 1;
+            index >>= 1;
+            n >>= 1;
+          }
+          return bitreversed_index;
+        }
+
+        function BitReverseComplexArray(array) {
+          const n = array.length;
+          const flips = new Set();
+
+          for(let i = 0; i < n; i++) {
+            const r_i = BitReverseIndex(i, n);
+
+            if (flips.has(i)) continue;
+
+            [array.real[i], array.real[r_i]] = [array.real[r_i], array.real[i]];
+            [array.imag[i], array.imag[r_i]] = [array.imag[r_i], array.imag[i]];
+
+            flips.add(r_i);
+          }
+
+          return array;
+        }
+      */
+
+      this.getRecursive = this.gpu.createKernel(function (input,p){ //Not sure about this yet.
+        var recursive_result = new Array(2);
+        recursive_result[0] = input[0][this.thread.x*p + this.thread.y]; //this.thread.y does not work on a 1D output. Need to solve this
+        recursive_result[1] = input[1][this.thread.x*p + this.thread.y];
+        return recursive_result
+      }).setOutput([100])
+      .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
+      .setDynamicOutput(true)
+      .setDynamicArguments(true); //setDynamic output allows setOutput to be called for different sized arrays
+
+
+      //UNFINISHED. This needs to be broken up properly in separate kernels then combined. Reference fft.js
+      this.FFT_Recursive = this.gpu.createKernel(function(input, len, inverse){ //This needs to be done with a combined kernel so that getRecursive can be called
+        
+        /* OG CODE
+          const n = input.length;
+
+          if (n === 1) {
+            return input;
+          }
+
+          const output = new ComplexArray(n, input.ArrayType);
+
+          // Use the lowest odd factor, so we are able to use FFT_2_Iterative in the
+          // recursive transforms optimally.
+          const p = LowestOddFactor(n);
+          const m = n / p;
+          const normalisation = 1 / Math.sqrt(p);
+          let recursive_result = new ComplexArray(m, input.ArrayType);
+
+        */
+        
+        if(len === 1){
+          return input;
+        }
+
+        const p = lof(len);
+        const m = ;en/p;
+        const normalize = 1 / Math.sqrt(p);
+        var recursive_result = [];
+
+        /* OG CODE
+          // Loops go like O(n Σ p_i), where p_i are the prime factors of n.
+          // for a power of a prime, p, this reduces to O(n p log_p n)
+          for(let j = 0; j < p; j++) { //this.thread.y
+            for(let i = 0; i < m; i++) { //this.thread.x
+              recursive_result.real[i] = input.real[i * p + j];
+              recursive_result.imag[i] = input.imag[i * p + j];
+            }
+            // Don't go deeper unless necessary to save allocs.
+            if (m > 1) {
+              recursive_result = fft(recursive_result, inverse);
+            }
+
+        */
+
+        
+        //Get Recursive Result
+        //Need to put this into a combined kernel
+        this.getRecursive.setOutput([len]);
+        recursive_result = this.getRecursive(input,p);
+
+        if(m > 1){
+          recursive_result = this.fft(recursive_result,len,inverse); //This is a scoping issue, need to do this in the combined kernel and have it call itself to not pass things between CPU and GPU at all unless absolutely necessary (only for input and output ideally)
+        }
+
+        /*
+        
+            const del_f_r = Math.cos(2*PI*j/n);
+            const del_f_i = (inverse ? -1 : 1) * Math.sin(2*PI*j/n);
+            let f_r = 1;
+            let f_i = 0;
+
+            for(let i = 0; i < n; i++) { //this.thread.y
+              const _real = recursive_result.real[i % m];
+              const _imag = recursive_result.imag[i % m];
+
+              output.real[i] += f_r * _real - f_i * _imag;
+              output.imag[i] += f_r * _imag + f_i * _real;
+
+              [f_r, f_i] = [
+                f_r * del_f_r - f_i * del_f_i,
+                f_i = f_r * del_f_i + f_i * del_f_r,
+              ];
+            }
+          }
+        */
+
+
+        //This section should be scoped into its own kernel as it is its own loop
+        const del_f_r = Math.cos(2*PI*this.thread.y/len);
+        var del_f_i = 0;
+        if(inverse === true){
+          del_f_i = -1*Math.sin(2*PI*this.thread.y/len);
+        }
+        else{
+          del_f_i = Math.sin(2*PI*this.thread.y/len);
+        }
+        var f_r = 1;
+        var f_i = 0;
+
+        var output = new Array(2);
+        
+        var real = recursive_result[0][this.thread.x % m];
+        var imag = recursive_result[1][this.thread.x % m];
+
+        output[0] += f_r * output[0] - f_i * output[1];
+        output[1] += f_r * output[1] + f_i * output[0];
+
+        f_r = f_r * del_f_r - f_i * del_f_i;
+        f_i = f_r * del_f_i + f_i * del_f_r;
+
+        return output;
+
+      }).setOutput([100]) // Output array of vec2's representing real and complex components. Call setOutput with input array size.
+      .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
+      .setDynamicOutput(true)
+      .setDynamicArguments(true); //setDynamic output allows setOutput to be called for different sized arrays
+
+      //WIP
+      this.FFT_Iterative = this.gpu.createKernel(function(input, len, inverse){
+        var output = new Array(2);
+
+          /*
+          const n = input.length;
+
+          const output = BitReverseComplexArray(input);
+          const output_r = output.real;
+          const output_i = output.imag;
+
+
+          */
+          const n = len;
+
+          const output = BitReverseComplexArray(input);
+          const output_r = output[0];
+          const output_i = output[1];
+
+
+          /*
+          // Loops go like O(n log n):
+          //   width ~ log n; i,j ~ n
+          let width = 1;
+          while (width < n) {
+            const del_f_r = Math.cos(PI/width);
+            const del_f_i = (inverse ? -1 : 1) * Math.sin(PI/width);
+            for (let i = 0; i < n/(2*width); i++) {
+              let f_r = 1;
+              let f_i = 0;
+              for (let j = 0; j < width; j++) {
+                const l_index = 2*i*width + j;
+                const r_index = l_index + width;
+
+                const left_r = output_r[l_index];
+                const left_i = output_i[l_index];
+                const right_r = f_r * output_r[r_index] - f_i * output_i[r_index];
+                const right_i = f_i * output_r[r_index] + f_r * output_i[r_index];
+
+                output_r[l_index] = SQRT1_2 * (left_r + right_r);
+                output_i[l_index] = SQRT1_2 * (left_i + right_i);
+                output_r[r_index] = SQRT1_2 * (left_r - right_r);
+                output_i[r_index] = SQRT1_2 * (left_i - right_i);
+
+                [f_r, f_i] = [
+                  f_r * del_f_r - f_i * del_f_i,
+                  f_r * del_f_i + f_i * del_f_r,
+                ];
+              }
+            }
+            width <<= 1;
+          }
+
+          return output;
+        */
+       return output;
+
+
+      }).setOutput([100])
+      .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
+      .setDynamicOutput(true)
+      .setDynamicArguments(true);
+
+      this.fft = this.gpu.combineKernels(this.getRecursive,this.FFT_Recursive,this.FFT_Iterative, function(input,len){
+        if (len & (len - 1)) {
+          return FFT_Recursive(input, inverse); // Faster
+        } else {
+          return FFT_2_Iterative(input, inverse); // Slower
+        }
+      }).setOutput([100])
+      .setDynamicArguments(true)
+      .setDynamicOutput(true)
+
+      //TODO, abstract this to handle 2D input, i.e. each row is one channel of data, so the whole input stream will be decoded one one kernel and results outputted altogether. Saves memory big time
+  }
+}
+
+
+
+
+
 //Include gpu-browser.min.js before this script
 var kernels = ({
     edgeDetection: [
@@ -294,7 +597,7 @@ function testVideoConv(video=null, kernel){
     return convolution.canvas;
 
 }
-//Next apply multiple kernels in same operation
+//Next apply multiple kernels in same operation (untested)
 function multiConv2D(img=null, kernels=[]){
     const multiConv2D = gpu.createKernelMap({
         conv2D: function (src, width, height, kernel, kernelRadius) {
@@ -435,118 +738,4 @@ function testGPUCameraWobble() {
 
     image();
 
-}
-
-class gpuUtils {
-    constructor(){
-        this.gpu = new GPU();
-        this.kernel;
-        this.PI = 3.141592653589793;
-        this.SQRT1_2 = 0.7071067811865476
-    }
-
-    addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
-        this.gpu.addFunction(function add(a, b) {
-          return a + b;
-        });
-        
-        this.gpu.addFunction(function sub(a, b) {
-          return a - b;
-        });
-
-        this.gpu.addFunction(function mul(a, b) {
-          return a * b;
-        });
-
-        this.gpu.addFunction(function div(a, b) {
-          return a / b;
-        });
-
-        this.gpu.addFunction(function cadd(a_real,a_imag,b_real,b_imag) {
-          return [a_real+b_real,a_imag+b_imag];
-        });
-
-        this.gpu.addFunction(function csub(a_real,a_imag,b_real,b_imag) {
-          return [a_real-b_real,a_imag-b_imag];
-        });
-
-        this.gpu.addFunction(function cmul(a_real,a_imag,b_real,b_imag) {
-          return [a_real*b_real - a_imag*b_imag, a_real*b_imag + a_imag*b_real];
-        });
-
-        this.gpu.addFunction(function cexp(a_real,a_imag) {
-          const er = Math.exp(a_real);
-          return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
-        });
-            
-        this.gpu.addFunction(function cScaleTransform(transform, iSize) {
-          transform[this.thread.x][0] *= iSize;
-          transform[this.thread.x][1] *= iSize;
-          return transform;
-        });
-
-        this.gpu.addFunction(function mag(a,b){ // Returns magnitude
-          return Math.sqrt(a*a + b*b);
-        });
-
-        this.gpu.addFunction(function conj(imag){ //Complex conjugate of x + iy is x - iy
-          return 0-imag
-        });
-
-        this.gpu.addFunction(function lof(n){ //Lowest odd factor
-          const sqrt_n = Math.sqrt(n);
-          var factor = 3;
-
-          while(factor <= sqrt_n) {
-            if (n % factor === 0) return factor;
-            factor += 2;
-          }
-        });
-
-        this.getRecursive = this.gpu.createKernel(function (input,len,p){
-          var recursive_result = new Array(2);
-          recursive_result[0] = input[0][this.thread.x*p + this.thread.y];
-          recursive_result[1] = input[1][this.thread.x*p + this.thread.y];
-          return recursive_result
-        }).setOutput[input.length];
-
-        this.FFT_Recursive = this.gpu.createKernel(function(input, len, inverse){
-          if(len === 1){
-            return input;
-          }
-
-          const p = lof(len);
-          const m = n/p;
-          const normalize = 1 / Math.sqrt(p);
-          var recursive_result = [];
-          //Get Recursive Result
-
-          if(m > 1){
-            recursive_result = 0;//fft(recursive_result,len,inverse);
-          }
-
-          const del_f_r = Math.cos(2*PI*this.thread.y/len);
-          var del_f_i = 0;
-          if(inverse === true){
-            del_f_i = -1*Math.sin(2*PI*this.thread.y/len);
-          }
-          else{
-            del_f_i = Math.sin(2*PI*this.thread.y/len);
-          }
-          var f_r = 1;
-          var f_i = 0;
-
-          var output = new Array(2);
-          
-          var real = recursive_result[0][this.thread.x % m];
-          var imag = recursive_result[1][this.thread.x % m];
-
-          output[0] += f_r * output[0] - f_i * output[1];
-          output[1] += f_r * output[1] + f_i * output[0];
-
-          f_r = f_r * del_f_r - f_i * del_f_i;
-          f_i = f_r * del_f_i + f_i * del_f_r;
-
-        }).setOutput([input.length]).setLoopMaxIterations(input.length)
-    }
 }
