@@ -1,6 +1,6 @@
 // Math constants and functions we need.
-const PI = Math.PI;
-const SQRT1_2 = Math.SQRT1_2;
+const PI = Math.PI; // 3.141592653589793
+const SQRT1_2 = Math.SQRT1_2; // 0.7071067811865476
 
 function FFT(input) {
   return ensureComplexArray(input).FFT();
@@ -14,7 +14,76 @@ function frequencyMap(input, filterer) {
   return ensureComplexArray(input).frequencyMap(filterer);
 };
 
-class ComplexArray extends baseComplexArray {
+class ComplexArray {
+  constructor(other, arrayType = Float32Array) {
+    if (other instanceof baseComplexArray) {
+      // Copy constuctor.
+      this.ArrayType = other.ArrayType;
+      this.real = new this.ArrayType(other.real);
+      this.imag = new this.ArrayType(other.imag);
+    } else {
+      this.ArrayType = arrayType;
+      // other can be either an array or a number.
+      this.real = new this.ArrayType(other);
+      this.imag = new this.ArrayType(this.real.length);
+    }
+
+    this.length = this.real.length;
+  }
+
+  toString() {
+    const components = [];
+
+    this.forEach((value, i) => {
+      components.push(
+        `(${value.real.toFixed(2)}, ${value.imag.toFixed(2)})`
+      );
+    });
+
+    return `[${components.join(', ')}]`;
+  }
+
+  forEach(iterator) {
+    const n = this.length;
+    // For gc efficiency, re-use a single object in the iterator.
+    const value = Object.seal(Object.defineProperties({}, {
+      real: {writable: true}, imag: {writable: true},
+    }));
+
+    for (let i = 0; i < n; i++) {
+      value.real = this.real[i];
+      value.imag = this.imag[i];
+      iterator(value, i, n);
+    }
+  }
+
+  // In-place mapper.
+  map(mapper) {
+    this.forEach((value, i, n) => {
+      mapper(value, i, n);
+      this.real[i] = value.real;
+      this.imag[i] = value.imag;
+    });
+
+    return this;
+  }
+
+  conjugate() {
+    return new ComplexArray
+    (this).map((value) => {
+      value.imag *= -1;
+    });
+  }
+
+  magnitude() {
+    const mags = new this.ArrayType(this.length);
+
+    this.forEach((value, i) => {
+      mags[i] = Math.sqrt(value.real*value.real + value.imag*value.imag);
+    })
+
+    return mags;
+  }
   FFT() {
     return fft(this, false);
   }
@@ -39,9 +108,9 @@ function fft(input, inverse) {
   const n = input.length;
 
   if (n & (n - 1)) {
-    return FFT_Recursive(input, inverse);
+    return FFT_Recursive(input, inverse); // Faster
   } else {
-    return FFT_2_Iterative(input, inverse);
+    return FFT_2_Iterative(input, inverse); // Slower
   }
 }
 
@@ -63,8 +132,8 @@ function FFT_Recursive(input, inverse) {
 
   // Loops go like O(n Σ p_i), where p_i are the prime factors of n.
   // for a power of a prime, p, this reduces to O(n p log_p n)
-  for(let j = 0; j < p; j++) {
-    for(let i = 0; i < m; i++) {
+  for(let j = 0; j < p; j++) { //this.thread.y
+    for(let i = 0; i < m; i++) { //this.thread.x
       recursive_result.real[i] = input.real[i * p + j];
       recursive_result.imag[i] = input.imag[i * p + j];
     }
@@ -78,7 +147,7 @@ function FFT_Recursive(input, inverse) {
     let f_r = 1;
     let f_i = 0;
 
-    for(let i = 0; i < n; i++) {
+    for(let i = 0; i < n; i++) { //this.thread.y
       const _real = recursive_result.real[i % m];
       const _imag = recursive_result.imag[i % m];
 

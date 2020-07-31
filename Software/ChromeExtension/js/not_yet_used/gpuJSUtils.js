@@ -436,248 +436,117 @@ function testGPUCameraWobble() {
     image();
 
 }
-/*
-        basic complex number arithmetic from 
-        http://rosettacode.org/wiki/Fast_Fourier_transform#Scala
-        */
-       function Complex(re, im) 
-       {
-         this.re = re;
-         this.im = im || 0.0;
-       }
-       Complex.prototype.add = function(other, dst)
-       {
-         dst.re = this.re + other.re;
-         dst.im = this.im + other.im;
-         return dst;
-       }
-       Complex.prototype.sub = function(other, dst)
-       {
-         dst.re = this.re - other.re;
-         dst.im = this.im - other.im;
-         return dst;
-       }
-       Complex.prototype.mul = function(other, dst)
-       {
-         //cache re in case dst === this
-         var r = this.re * other.re - this.im * other.im;
-         dst.im = this.re * other.im + this.im * other.re;
-         dst.re = r;
-         return dst;
-       }
-       Complex.prototype.cexp = function(dst)
-       {
-         var er = Math.exp(this.re);
-         dst.re = er * Math.cos(this.im);
-         dst.im = er * Math.sin(this.im);
-         return dst;
-       }
-       Complex.prototype.log = function()
-       {
-         /*
-         although 'It's just a matter of separating out the real and imaginary parts of jw.' is not a helpful quote
-         the actual formula I found here and the rest was just fiddling / testing and comparing with correct results.
-         http://cboard.cprogramming.com/c-programming/89116-how-implement-complex-exponential-functions-c.html#post637921
-         */
-         if( !this.re )
-           console.log(this.im.toString()+'j');
-         else if( this.im < 0 )
-           console.log(this.re.toString()+this.im.toString()+'j');
-         else
-           console.log(this.re.toString()+'+'+this.im.toString()+'j');
-       }
-
-       /*
-       complex fast fourier transform and inverse from
-       http://rosettacode.org/wiki/Fast_Fourier_transform#C.2B.2B
-       */
-       function icfft(amplitudes, size)
-       {
-         var N = amplitudes.length;
-         var iN = 1 / N;
-       
-         //conjugate if imaginary part is not 0
-         for(var i = 0 ; i < N; ++i)
-           if(amplitudes[i] instanceof Complex)
-             amplitudes[i].im = -amplitudes[i].im;
-       
-         //apply fourier transform
-         temp = cfft(amplitudes, size)
-         amplitudes = temp[0]
-       
-         for(var i = 0 ; i < amplitudes.length; ++i)
-         {
-           //conjugate again
-           amplitudes[i].im = -amplitudes[i].im;
-           //scale
-           amplitudes[i].re *= iN;
-           amplitudes[i].im *= iN;
-         }
-         return amplitudes;
-       }
-        
-       
-       function cfft(amplitudes, size)
-       {
-         var N = amplitudes.length;
-         
-         if(amplitudes.length % 2 != 0){
-           amplitudes.pop(); //Make the initial array even to make the rest work.
-           size = size-1;
-         }
-         if( N <= 1 )
-           return [amplitudes,size];
-       
-         var hN = N / 2;
-         var even = [];
-         var odd = [];
-         if((amplitudes.length != size) && (Math.floor(hN) != hN)) { return [amplitudes,size];} // If the sub-index is not an integer stop
-         even.length = Math.floor(hN);
-         odd.length = Math.floor(hN);
-         for(var i = 0; i < hN; ++i)
-         {
-           even[i] = amplitudes[i*2];
-           odd[i] = amplitudes[i*2+1];
-         }
-         var evenfft = cfft(even, size);
-         var oddfft = cfft(odd, size);
-         even = evenfft[0];
-         odd = oddfft[0];
-       
-         var a = -2*Math.PI;
-         for(var k = 0; k < hN; ++k)
-         {
-           if(!(even[k] instanceof Complex))
-             even[k] = new Complex(even[k], 0);
-           if(!(odd[k] instanceof Complex))
-             odd[k] = new Complex(odd[k], 0);
-           var p = k/N;
-           var t = new Complex(0, a * p);
-           t.cexp(t).mul(odd[k], t);
-           amplitudes[k] = even[k].add(t, odd[k]);
-           amplitudes[k + hN] = even[k].sub(t, even[k]);
-         }
-         return [amplitudes,size];
-       }
-       
-       function scaleTransform(trans, size) {
-         var i = 0,
-             bSi = 1.0 / size,
-             x = trans;
-         while(i < x.length) {
-           x[i]["re"] *= bSi;
-           x[i]["im"] *= bSi; i++;
-         }
-         return x;
-       }
-
-       function frequencyDomain(data, fs){ // Returns Frequency Domain object: [frequency Distribution, amplitude Distribution] with range based on input sample rate. Assumes constant sample rate.
-         var tdat = [...data]; // Red
-         var len = tdat.length;
-         var transformArr = cfft(tdat, len); //Returns Time Domain FFT
-         var transform = icfft(transformArr[0], len); //transformArr[0] //console.log(transform);
-         var tranScaled = scaleTransform(transform, transform.length);
-         
-         var amplitudes = [];
-         tranScaled.forEach(function(item, idx) { //Extract amplitude spectrum. Must be mapped based on frequency.
-           amplitudes.push(Math.sqrt(Math.pow(item["re"],2)+Math.pow(item["im"],2))); //sqrt(real^2 + imag^2) = amplitude
-         });
-
-         var N = transform.length; // FFT size
-         var df = fs/N; // frequency resolution
-         
-         var freqDist = [];
-         for(var i=-fs; i<fs; i+=(2*df)) {
-           freqDist.push(i);
-         }
-
-         return [freqDist,amplitudes];
-
-       }
-
-       /*
-       With a complex DFT Array X (from Matlab tutorial)
-         Freq:
-         fs=20; %~20sps in our case
-         N=tdat.length; %FFT size
-         X = 1/N*fftshift(fft(x,N));%N-point complex DFT
-
-         df=fs/N; %frequency resolution
-         sampleIndex = -N/2:N/2-1; %ordered index for FFT plot
-         f=sampleIndex*df; %x-axis index converted to ordered frequencies
-         stem(f,abs(X)); %magnitudes vs frequencies
-         xlabel('f (Hz)'); ylabel('|X(k)|');
-
-         Phase:
-         X2=X;%store the FFT results in another array
-         %detect noise (very small numbers (eps)) and ignore them
-         threshold = max(abs(X))/10000; %tolerance threshold
-         X2(abs(X)<threshold) = 0; %maskout values that are below the threshold
-         phase=atan2(imag(X2),real(X2))*180/pi; %phase information
-         plot(f,phase); %phase vs frequencies
-       */
-
-       /*
-       function fftShift(fftarr){ // Two sided FFT ordering. Assumes even-length input array
-         var temp = [];
-         var len = fftarr.length
-         temp.length = len;
-         fftarr.forEach(function(item,idx) {
-           if(idx < len/2) {
-             temp[idx+len/2] = item;
-           }
-           else{
-             temp[idx] = item;
-           }
-         });
-       }*/
-
 
 class gpuUtils {
     constructor(){
         this.gpu = new GPU();
         this.kernel;
-        
+        this.PI = 3.141592653589793;
+        this.SQRT1_2 = 0.7071067811865476
     }
 
     addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
         this.gpu.addFunction(function add(a, b) {
-            return a + b;
-            });
+          return a + b;
+        });
         
         this.gpu.addFunction(function sub(a, b) {
-            return a - b;
-            });
+          return a - b;
+        });
 
         this.gpu.addFunction(function mul(a, b) {
-            return a * b;
-            });
+          return a * b;
+        });
 
         this.gpu.addFunction(function div(a, b) {
-            return a / b;
-            });
+          return a / b;
+        });
 
         this.gpu.addFunction(function cadd(a_real,a_imag,b_real,b_imag) {
-            return [a_real+b_real,a_imag+b_imag];
-            });
+          return [a_real+b_real,a_imag+b_imag];
+        });
 
         this.gpu.addFunction(function csub(a_real,a_imag,b_real,b_imag) {
-            return [a_real-b_real,a_imag-b_imag];
-            });
+          return [a_real-b_real,a_imag-b_imag];
+        });
 
         this.gpu.addFunction(function cmul(a_real,a_imag,b_real,b_imag) {
-            return [a_real*b_real - a_imag*b_imag, a_real*b_imag + a_imag*b_real];
-            });
+          return [a_real*b_real - a_imag*b_imag, a_real*b_imag + a_imag*b_real];
+        });
 
         this.gpu.addFunction(function cexp(a_real,a_imag) {
-            var er = Math.exp(a_real);
-            return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
-            });
+          const er = Math.exp(a_real);
+          return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
+        });
             
         this.gpu.addFunction(function cScaleTransform(transform, iSize) {
-            transform[this.thread.x][0] *= iSize;
-            transform[this.thread.x][1] *= iSize;
-            return transform;
-            });
+          transform[this.thread.x][0] *= iSize;
+          transform[this.thread.x][1] *= iSize;
+          return transform;
+        });
+
+        this.gpu.addFunction(function mag(a,b){ // Returns magnitude
+          return Math.sqrt(a*a + b*b);
+        });
+
+        this.gpu.addFunction(function conj(imag){ //Complex conjugate of x + iy is x - iy
+          return 0-imag
+        });
+
+        this.gpu.addFunction(function lof(n){ //Lowest odd factor
+          const sqrt_n = Math.sqrt(n);
+          var factor = 3;
+
+          while(factor <= sqrt_n) {
+            if (n % factor === 0) return factor;
+            factor += 2;
+          }
+        });
+
+        this.getRecursive = this.gpu.createKernel(function (input,len,p){
+          var recursive_result = new Array(2);
+          recursive_result[0] = input[0][this.thread.x*p + this.thread.y];
+          recursive_result[1] = input[1][this.thread.x*p + this.thread.y];
+          return recursive_result
+        }).setOutput[input.length];
+
+        this.FFT_Recursive = this.gpu.createKernel(function(input, len, inverse){
+          if(len === 1){
+            return input;
+          }
+
+          const p = lof(len);
+          const m = n/p;
+          const normalize = 1 / Math.sqrt(p);
+          var recursive_result = [];
+          //Get Recursive Result
+
+          if(m > 1){
+            recursive_result = 0;//fft(recursive_result,len,inverse);
+          }
+
+          const del_f_r = Math.cos(2*PI*this.thread.y/len);
+          var del_f_i = 0;
+          if(inverse === true){
+            del_f_i = -1*Math.sin(2*PI*this.thread.y/len);
+          }
+          else{
+            del_f_i = Math.sin(2*PI*this.thread.y/len);
+          }
+          var f_r = 1;
+          var f_i = 0;
+
+          var output = new Array(2);
+          
+          var real = recursive_result[0][this.thread.x % m];
+          var imag = recursive_result[1][this.thread.x % m];
+
+          output[0] += f_r * output[0] - f_i * output[1];
+          output[1] += f_r * output[1] + f_i * output[0];
+
+          f_r = f_r * del_f_r - f_i * del_f_i;
+          f_i = f_r * del_f_i + f_i * del_f_r;
+
+        }).setOutput([input.length]).setLoopMaxIterations(input.length)
     }
 }

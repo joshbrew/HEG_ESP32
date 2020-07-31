@@ -8,25 +8,24 @@
         <div id="sinechart"></div>
         Homebrew FFT graph. Definitely funky.
         <div id="homebrewfft"></div>
-        FFT.JS result. The Frequency distribution is not correct however.
+        jsFFT result. The Frequency distribution is not correct however.
         <div id="fftchart"></div>
-        Phase Spectrum from FFT.JS result
+        Phase Spectrum from jsFFT result
         <div id="phasechart"></div>
         <!--- DSP.JS result.
         <div id="dspchart"></div> --->
         <script src="cfft.js"></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <script src="complex_array.js"></script>
         <script src="fft.js"></script>
         
         <script>
             var sineWave = [];
             var t = [];
-            var fs = 8192; // Sample rate
+            var fs = 5005; // Sample rate
             var freq = 256; // Generate this frequency
             var increment = 1/fs; //x-axis time increment based on sample rate
-            var sec = 2; //Seconds of data to generate 
+            var sec = 1; //Seconds of data to generate 
             document.getElementById("freq").innerHTML = freq + " Hz, at "+fs+" samples per sec";
             for (var ti = 0; ti < sec-increment; ti+=increment){ //200 sps, 3 sec
                 var amplitude = Math.sin(2*Math.PI*freq*ti);
@@ -36,20 +35,18 @@
             }
             console.info(sineWave);
 
-            var freqDom = frequencyDomain(sineWave,fs);
-            
-            console.info(freqDom);
-
+            console.time("jsfft");
             var fftdata = new ComplexArray(sineWave.length);
         
             fftdata.frequencyMap((value,i) => {
                 value.real = sineWave[i];
             });
-            console.info(fftdata);
+            
             var amplitudeSpectrum = fftdata.magnitude(); 
 
             var orderedAmpSpectrum = [...amplitudeSpectrum.slice(Math.ceil(amplitudeSpectrum.length/2),amplitudeSpectrum.length),...amplitudeSpectrum.slice(0,Math.ceil(amplitudeSpectrum.length/2))];
-
+            console.timeEnd("jsfft");
+            console.info(fftdata);
             var phaseSpectrum = [];
             
             fftdata.forEach((item) => {            
@@ -58,6 +55,12 @@
             
             var orderedPhaseSpectrum = [...phaseSpectrum.slice(Math.ceil(phaseSpectrum.length/2),phaseSpectrum.length),...phaseSpectrum.slice(0,Math.ceil(phaseSpectrum.length/2))]
 
+
+            console.time("homebrew");
+            var freqDom = frequencyDomain(sineWave,fs);
+            console.timeEnd("homebrew");
+            console.info(freqDom);
+            
             //dsp.js
             //var dspdata = new FFT(8192, fs);
             //dspdata.forward(sineWave);
