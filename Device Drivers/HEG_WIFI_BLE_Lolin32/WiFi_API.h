@@ -660,7 +660,7 @@ void setupWiFi(){
   //  Serial.println("An Error has occurred while mounting SPIFFS");
   //  return;
   //}
-  WiFi.setTxPower(WIFI_POWER_13dBm); //19_5Dbm, 19dBm, 18.5dBm, 17dBm, 15 dBm, 13dBm, 11dBm, 8_5dBm, 7dBm, 2dBm, MINUS_1dBm
+  WiFi.setTxPower(WIFI_POWER_MINUS_1dBm); //19_5dBm, 19dBm, 18.5dBm, 17dBm, 15 dBm, 13dBm, 11dBm, 8_5dBm, 7dBm, 2dBm, MINUS_1dBm
   EEPROM.begin(512);
   //Serial.println(EEPROM.read(0));
   //Serial.println(EEPROM.readString(2));
