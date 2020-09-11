@@ -423,7 +423,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   // Data options
   makeTooltip("commandrow",[10,100],"See documentation for a command list, not all work over WiFi.");
-  makeTooltip("sensitivityrow",[300,290],"Controls how reactive the feedback is to ratio changes.");
+  makeTooltip("sensitivityrow",[10,290],"Controls how reactive the feedback is to ratio changes.");
   makeTooltip("timerow",[10,340],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
   makeTooltip("csvrow",[10,520],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
   makeTooltip("replaycsv",[10,575],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
