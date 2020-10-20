@@ -1,13 +1,13 @@
 # HEG ESP32 - Open Source. Home of HEGduino!
-Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's.
+Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's. [New Delobotomizer repo here](https://github.com/moothyknight/HEG_ESP32_Delobotomizer) for drivers for the new hardware.
 
 Join our little community at: [HEG Alpha](https://hegalpha.com)
 
 Important HEGduino stuff you can find here:
-- [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
-- [Setting up Arduino to flash the ESP32 with our biofeedback software](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
 - [Chrome Extension version of our biofeedback software with WiFi, BT Serial, & USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/Software/ChromeExtension)
+- [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
+- [(For self-assembly only) Setting up Arduino to flash the ESP32 with our biofeedback software](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
 - [Lolin32 Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Lolin32)
 - [Huzzah32 Feather Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Feather)
