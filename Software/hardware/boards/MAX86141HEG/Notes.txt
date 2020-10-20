@@ -1,4 +1,1 @@
-Got it working on the last prototype, but it had grounding issues. Otherwise it was fully programmable!
-WIP Arduino drivers (tested, working): https://github.com/moothyknight/MAX86141_Arduino
-
-Other notes: The LDO and Logic level shifter could be lower noise. MAX86141 has 1.8v logic
+Fully tested and working designs. Custom mount design for use with LOLIN32 breakout board for a wearable headset.

@@ -7293,22 +7293,6 @@ type 0309, grid 2.5 mm</description>
 <busses>
 </busses>
 <nets>
-<net name="LED2" class="0">
-<segment>
-<pinref part="U1" gate="A" pin="LED2_DRV"/>
-<pinref part="LED2" gate="G$1" pin="C"/>
-<wire x1="96.52" y1="73.66" x2="109.22" y2="73.66" width="0.1524" layer="91"/>
-<label x="99.06" y="73.66" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="LED1" class="0">
-<segment>
-<pinref part="U1" gate="A" pin="LED1_DRV"/>
-<pinref part="LED1" gate="G$1" pin="C"/>
-<wire x1="96.52" y1="86.36" x2="109.22" y2="86.36" width="0.1524" layer="91"/>
-<label x="99.06" y="86.36" size="1.778" layer="95"/>
-</segment>
-</net>
 <net name="VREF" class="0">
 <segment>
 <pinref part="U1" gate="A" pin="VREF"/>
@@ -7659,6 +7643,28 @@ type 0309, grid 2.5 mm</description>
 <pinref part="U1" gate="A" pin="PD_GND"/>
 <wire x1="96.52" y1="83.82" x2="101.092" y2="83.82" width="0.1524" layer="91"/>
 <label x="100.584" y="84.074" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="LED3" class="0">
+<segment>
+<pinref part="LED2" gate="G$1" pin="C"/>
+<wire x1="109.22" y1="73.66" x2="109.22" y2="71.374" width="0.1524" layer="91" style="longdash"/>
+<wire x1="109.22" y1="71.374" x2="62.23" y2="71.374" width="0.1524" layer="91" style="longdash"/>
+<wire x1="62.23" y1="71.374" x2="62.23" y2="83.82" width="0.1524" layer="91" style="longdash"/>
+<pinref part="U1" gate="A" pin="LED3_DRV"/>
+<wire x1="62.23" y1="83.82" x2="45.72" y2="83.82" width="0.1524" layer="91" style="longdash"/>
+<label x="39.37" y="83.82" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="LED2" class="0">
+<segment>
+<pinref part="LED1" gate="G$1" pin="C"/>
+<wire x1="109.22" y1="86.36" x2="109.22" y2="77.978" width="0.1524" layer="91" style="longdash"/>
+<wire x1="109.22" y1="77.978" x2="106.68" y2="77.978" width="0.1524" layer="91" style="longdash"/>
+<pinref part="U1" gate="A" pin="LED2_DRV"/>
+<wire x1="106.68" y1="77.978" x2="106.68" y2="73.66" width="0.1524" layer="91" style="longdash"/>
+<wire x1="106.68" y1="73.66" x2="96.52" y2="73.66" width="0.1524" layer="91" style="longdash"/>
+<label x="98.044" y="73.406" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>

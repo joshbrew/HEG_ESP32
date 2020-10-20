@@ -4,10 +4,10 @@
 
 #include "WiFi_API.h" // WiFi settings and macros. HEG and BLE libraries linked through here.
 
-
 //===============================================================
 // Setup
 //===============================================================
+
 
 void setup(void){
   Serial.begin(115200);
@@ -39,7 +39,6 @@ void setup(void){
   
   //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);
 }
-
 
 void loop(void){
   currentMicros = esp_timer_get_time();

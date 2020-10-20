@@ -6,14 +6,14 @@
         <div id="freq"></div>
         Sine Wave Graph.
         <div id="sinechart"></div>
-        Homebrew FFT graph. Definitely funky.
+        Homebrew DFT graph. 
         <div id="homebrewfft"></div>
-        jsFFT result. The Frequency distribution is not correct however.
+        jsFFT result. 
         <div id="fftchart"></div>
         Phase Spectrum from jsFFT result
         <div id="phasechart"></div>
-        Tensorflow JS FFT result
-        <div id="tflowchart"></div>
+        Homebrew cfft.js result - it's whack at some sample rates and OK at others, but also really fast.
+        <div id="homebrewcfft"></div>
         <!--- DSP.JS result.
         <div id="dspchart"></div> --->
         <script src="homebrew-cfft.js"></script>
@@ -21,7 +21,8 @@
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <script src="fft.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.15.1/dist/tf.min.js"></script>
-        
+        <script src="gpu-browser.min.js" charset="UTF-8"></script>
+        <script src="gpuJSUtils.js"></script>
         <script>
             var sineWave = [];
             var t = [];
@@ -32,11 +33,11 @@
             document.getElementById("freq").innerHTML = freq + " Hz, at "+fs+" samples per sec";
             for (var ti = 0; ti < sec-increment; ti+=increment){ //200 sps, 3 sec
                 var amplitude = Math.sin(2*Math.PI*freq*ti);
-                //amplitude += Math.sin(2*Math.PI*300*ti); //Add 300Hz interference
+                amplitude += Math.sin(2*Math.PI*150*ti); //Add 150Hz interference
                 sineWave.push(amplitude);
                 t.push(ti);
             }
-            console.info(sineWave);
+            //console.info(sineWave);
 
             console.time("jsfft");
             var fftdata = new ComplexArray(sineWave.length);
@@ -49,7 +50,7 @@
 
             var orderedAmpSpectrum = [...amplitudeSpectrum.slice(Math.ceil(amplitudeSpectrum.length/2),amplitudeSpectrum.length),...amplitudeSpectrum.slice(0,Math.ceil(amplitudeSpectrum.length/2))];
             console.timeEnd("jsfft");
-            console.info(fftdata);
+            //console.info(fftdata);
             var phaseSpectrum = [];
             
             fftdata.forEach((item) => {            
@@ -59,16 +60,57 @@
             var orderedPhaseSpectrum = [...phaseSpectrum.slice(Math.ceil(phaseSpectrum.length/2),phaseSpectrum.length),...phaseSpectrum.slice(0,Math.ceil(phaseSpectrum.length/2))]
 
 
-            console.time("homebrew");
+            console.time("cfftjs");
             var freqDom = frequencyDomain(sineWave,fs);
-            console.timeEnd("homebrew");
-            console.info(freqDom);
+            console.timeEnd("cfftjs");
+            //console.info(freqDom);
 
-            tf.setBackend('webgl');
-            console.time("tflowjs");
-            const results = tf.tensor1d(sineWave).rfft();
-            console.timeEnd("tflowjs");
-            results.print();
+            //https://www.codeproject.com/Tips/352127/Fast-Fourier-Transform-using-DX
+            console.time("simpledft");
+            var real = [];
+            var imag = [];
+            var mags = [];
+            var TWOPI = 2*3.141592653589793
+            //var maxFreq = sineWave.length/2;
+            //var step = 0.25;
+            //var freq = 0;
+            for(var k=0; k<sineWave.length;k++){
+                real.push(0);
+                imag.push(0);
+                for(var j=0;j<sineWave.length;j++){
+                    var shared = TWOPI*k*j/sineWave.length
+                    real[k] = real[k]+sineWave[j]*Math.cos(shared);
+                    imag[k] = imag[k]-sineWave[j]*Math.sin(shared);
+                }
+                mags.push(Math.sqrt(real[k]*real[k]+imag[k]*imag[k]));
+            }
+            //console.log(fft);
+            console.timeEnd("simpledft");
+
+            
+            var gpuClass = new gpuUtils();
+            console.time("gpuDFT");
+            gpuClass.dft.setOutput([sineWave.length]);
+            gpuClass.dft.setLoopMaxIterations(sineWave.length);
+            var gpuresult = gpuClass.dft(sineWave,sineWave.length);
+            console.timeEnd("gpuDFT");
+            console.log("GPU.js performance can vary");
+
+            var orderedMags = [...gpuresult.slice(Math.ceil(gpuresult.length/2),gpuresult.length),...gpuresult.slice(0,Math.ceil(gpuresult.length/2))];
+            
+            var sigList = [sineWave,sineWave,sineWave];
+            
+            console.time("gpuListDFT");
+            gpuClass.listdft.setOutput([sineWave.length,3])
+            gpuClass.listdft.setLoopMaxIterations(sineWave.length);
+            var gpuresult2 = gpuClass.listdft(sigList,sineWave.length);
+            console.timeEnd("gpuListDFT")
+
+            //tf.setBackend('webgl');
+            //console.time("tflowjs");
+            //const results = tf.tensor1d(sineWave).rfft();
+            //console.timeEnd("tflowjs");
+            //results.print();
             
             //dsp.js
             //var dspdata = new FFT(8192, fs);
@@ -95,7 +137,7 @@
                 xbins: {  size: 1  }
             }],[{
                 x:freqDom[0],
-                y:freqDom[1],
+                y:orderedMags,
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"
@@ -113,7 +155,14 @@
                 xbins: {  size: 1  }
             }],
             [{
-                x:results
+                x:freqDom[0],
+                y:freqDom[1],
+                type: 'line',
+                marker: {
+                    color: "rgba(100,255,100, 1)"
+                },
+                name: 'homebrewcfft',    
+                xbins: {  size: 1  }
             }]
             ];
             var config = { 
@@ -124,6 +173,7 @@
             Plotly.newPlot("homebrewfft",data[2],undefined,config);
             Plotly.newPlot("fftchart",data[1],undefined,config);
             Plotly.newPlot("phasechart",data[3],undefined,config);
+            Plotly.newPlot("homebrewcfft",data[4],undefined,config);
 
             //alert("Check console for result!");
             

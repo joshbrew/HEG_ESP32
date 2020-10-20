@@ -19,7 +19,6 @@
 #include "webDemo/update.h" //Update page
 #include "webDemo/ws.h" // Websocket client page
 #include "webDemo/connect.h" // Wifi connect page
-#include "webDemo/sc.h" // State Changer page
 #include "webDemo/HEGwebAPI.h" //HEG web javascript
 #include "webDemo/initWebapp.h" //Web app custom javascript
 #include "webDemo/webDemo.h" // Web app page
@@ -729,12 +728,6 @@ void setupWiFi(){
   //  response->addHeader("Access-Control-Allow-Origin", "*");  
   //  request->send(response);
   //});
-  server.on("/sc", HTTP_GET,[](AsyncWebServerRequest *request){
-    coreNotEnabledMicros = currentMicros;
-    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",sc_page);
-    //response->addHeader("Access-Control-Allow-Origin", "*");
-    request->send(response);
-  });
   	server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request)
 	{
     coreNotEnabledMicros = currentMicros;

@@ -5,6 +5,8 @@ class gpuUtils {
       this.kernel;
       this.PI = 3.141592653589793;
       this.SQRT1_2 = 0.7071067811865476
+
+      this.addFunctions();
   }
 
   addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
@@ -65,6 +67,36 @@ class gpuUtils {
         }
       });
 
+      this.gpu.addFunction(function DFT(signal,len,freq){ //Extract a particular frequency
+        var real = 0;
+        var imag = 0;
+        for(var i = 0; i<len; i++){
+          var shared = 6.28318530718*freq*i/len; //this.thread.x is the target frequency
+          real = real+signal[i]*Math.cos(shared);
+          imag = imag-signal[i]*Math.sin(shared);
+        }
+        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
+        return [real,imag]; //mag(real,imag)
+      });
+
+      //Return frequency domain based on DFT
+      this.dft = this.gpu.createKernel(function (signal,len){
+        var result = DFT(signal,len,this.thread.x);
+          return mag(result[0],result[1]);
+      })
+      .setDynamicOutput(true)
+      .setDynamicArguments(true);
+      //.setOutput([signal.length]) //Call before running the kernel
+      //.setLoopMaxIterations(signal.length);
+
+      this.listdft = this.gpu.createKernel(function (signals,len){
+        var result = DFT(signals[this.thread.y],len,this.thread.x);
+        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
+        return mag(result[0],result[1]); //mag(real,imag)
+      })
+      .setDynamicOutput(true)
+      .setDynamicArguments(true);
+
       //TO DO
       //BitReverseIndex(index,n)
       //BitReverseComplexArray(array)
@@ -100,21 +132,22 @@ class gpuUtils {
           return array;
         }
       */
-
+      /*
       this.getRecursive = this.gpu.createKernel(function (input,p){ //Not sure about this yet.
         var recursive_result = new Array(2);
         recursive_result[0] = input[0][this.thread.x*p + this.thread.y]; //this.thread.y does not work on a 1D output. Need to solve this
         recursive_result[1] = input[1][this.thread.x*p + this.thread.y];
         return recursive_result
-      }).setOutput([100])
-      .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
+      })
       .setDynamicOutput(true)
       .setDynamicArguments(true); //setDynamic output allows setOutput to be called for different sized arrays
-
+      //.setOutput([100])
+      //.setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
+      
 
       //UNFINISHED. This needs to be broken up properly in separate kernels then combined. Reference fft.js
       this.FFT_Recursive = this.gpu.createKernel(function(input, len, inverse){ //This needs to be done with a combined kernel so that getRecursive can be called
-        
+        */
         /* OG CODE
           const n = input.length;
 
@@ -132,16 +165,16 @@ class gpuUtils {
           let recursive_result = new ComplexArray(m, input.ArrayType);
 
         */
-        
+        /*
         if(len === 1){
           return input;
         }
 
         const p = lof(len);
-        const m = ;en/p;
+        const m = en/p;
         const normalize = 1 / Math.sqrt(p);
         var recursive_result = [];
-
+        */
         /* OG CODE
           // Loops go like O(n Σ p_i), where p_i are the prime factors of n.
           // for a power of a prime, p, this reduces to O(n p log_p n)
@@ -157,7 +190,7 @@ class gpuUtils {
 
         */
 
-        
+        /*
         //Get Recursive Result
         //Need to put this into a combined kernel
         this.getRecursive.setOutput([len]);
@@ -166,7 +199,7 @@ class gpuUtils {
         if(m > 1){
           recursive_result = this.fft(recursive_result,len,inverse); //This is a scoping issue, need to do this in the combined kernel and have it call itself to not pass things between CPU and GPU at all unless absolutely necessary (only for input and output ideally)
         }
-
+        */
         /*
         
             const del_f_r = Math.cos(2*PI*j/n);
@@ -189,7 +222,7 @@ class gpuUtils {
           }
         */
 
-
+        /*
         //This section should be scoped into its own kernel as it is its own loop
         const del_f_r = Math.cos(2*PI*this.thread.y/len);
         var del_f_i = 0;
@@ -219,25 +252,17 @@ class gpuUtils {
       .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
       .setDynamicOutput(true)
       .setDynamicArguments(true); //setDynamic output allows setOutput to be called for different sized arrays
-
+      */
       //WIP
+      /*
       this.FFT_Iterative = this.gpu.createKernel(function(input, len, inverse){
         var output = new Array(2);
-
-          /*
-          const n = input.length;
-
-          const output = BitReverseComplexArray(input);
-          const output_r = output.real;
-          const output_i = output.imag;
-
-
-          */
+      
           const n = len;
 
-          const output = BitReverseComplexArray(input);
-          const output_r = output[0];
-          const output_i = output[1];
+          const noutput = BitReverseComplexArray(input);
+          const output_r = noutput[0];
+          const output_i = noutput[1];
 
 
           /*
@@ -275,14 +300,16 @@ class gpuUtils {
 
           return output;
         */
-       return output;
+       /*
+       return noutput;
 
 
       }).setOutput([100])
       .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
       .setDynamicOutput(true)
       .setDynamicArguments(true);
-
+      */
+      /*
       this.fft = this.gpu.combineKernels(this.getRecursive,this.FFT_Recursive,this.FFT_Iterative, function(input,len){
         if (len & (len - 1)) {
           return FFT_Recursive(input, inverse); // Faster
@@ -292,7 +319,7 @@ class gpuUtils {
       }).setOutput([100])
       .setDynamicArguments(true)
       .setDynamicOutput(true)
-
+      */
       //TODO, abstract this to handle 2D input, i.e. each row is one channel of data, so the whole input stream will be decoded one one kernel and results outputted altogether. Saves memory big time
   }
 }
@@ -739,3 +766,56 @@ function testGPUCameraWobble() {
     image();
 
 }
+
+var mandebrotFrag = 
+`
+uniform sampler1D tex;
+uniform vec2 center;
+uniform float scale;
+uniform int iter;
+
+void main() {
+    vec2 z, c;
+
+    c.x = 1.3333 * (gl_TexCoord[0].x - 0.5) * scale - center.x;
+    c.y = (gl_TexCoord[0].y - 0.5) * scale - center.y;
+
+    int i;
+    z = c;
+    for(i=0; i<iter; i++) {
+        float x = (z.x * z.x - z.y * z.y) + c.x;
+        float y = (z.y * z.x + z.x * z.y) + c.y;
+
+        if((x * x + y * y) > 4.0) break;
+        z.x = x;
+        z.y = y;
+    }
+
+    gl_FragColor = texture1D(tex, (i == iter ? 0.0 : float(i)) / 100.0);
+}
+`;
+
+var juliaSetFrag =
+`
+uniform sampler1D tex;
+uniform vec2 c;
+uniform int iter;
+
+void main() {
+    vec2 z;
+    z.x = 3.0 * (gl_TexCoord[0].x - 0.5);
+    z.y = 2.0 * (gl_TexCoord[0].y - 0.5);
+
+    int i;
+    for(i=0; i<iter; i++) {
+        float x = (z.x * z.x - z.y * z.y) + c.x;
+        float y = (z.y * z.x + z.x * z.y) + c.y;
+
+        if((x * x + y * y) > 4.0) break;
+        z.x = x;
+        z.y = y;
+    }
+
+    gl_FragColor = texture1D(tex, (i == iter ? 0.0 : float(i)) / 100.0);
+}
+`;

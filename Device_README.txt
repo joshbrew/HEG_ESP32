@@ -57,12 +57,12 @@ HEG serial commands:
 't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light.
 'f' - Sensor off.
 'W' - Reset WiFi to default access point mode (wipes saved credentials).
+'u' - toggles USB only streaming. Toggles back to WiFi mode (default)
 'B' - Toggle Bluetooth Serial mode. Resets device to be in BTSerial mode. Enter 'B' again to swap back. Can connect to this via standard serial monitors.
 'b' - Toggle BLE mode, this resets the device to start in BLE mode, so you have to enter 'b' again through the serial or BLE connection to switch back to WiFi.
 'R' - hard resets the ESP32.
 'S' - places ESP32 in deep sleep mode, reset power (press the reset button on the device) to re-activate
 's' - soft resets the sensor data.
-'u' - toggles USB data stream. 
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
