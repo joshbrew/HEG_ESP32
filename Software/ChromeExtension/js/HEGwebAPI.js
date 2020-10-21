@@ -50,7 +50,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
       else {
         this.handleEventData(e); 
       }
-    }); //Generic event listener for postMessage events
+    }); //Generic event listener for postMessage events (for iframes)
     */
     this.createEventListeners(host);
   }

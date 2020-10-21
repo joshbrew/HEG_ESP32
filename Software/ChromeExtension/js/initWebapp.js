@@ -4,8 +4,9 @@
  
 // Initialize Session - undefined are default values
 var s = new HEGwebAPI('',undefined,undefined,undefined,undefined,false); //HEGduino
+//var s = new HEGwebAPI('',["us","Red","IR","Ambient","Ratio","HR","SPO2"],undefined,undefined,undefined,false); // Delobotomizer
 //var s = new HEGwebAPI('',["us","lRed","lIR","lRatio","cRed","cIR","cRatio","rRed","rIR","rRatio"],undefined,undefined,undefined,false); //Statechanger
-  
+//var s = new HEGwebAPI('',["us","Ratio"],",",0,1,undefined,undefined,false); window.PEANUT = true; //Peanut (USB only)
 
 // Detect that we are not using the default local hosting on the ESP32 so we can grab scripts
 if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !== 'esp32.local')) {
@@ -423,7 +424,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   // Data options
   makeTooltip("commandrow",[10,100],"See documentation for a command list, not all work over WiFi.");
-  makeTooltip("sensitivityrow",[300,290],"Controls how reactive the feedback is to ratio changes.");
+  makeTooltip("sensitivityrow",[300,250],"Controls how reactive the feedback is to ratio changes.");
   makeTooltip("timerow",[10,340],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
   makeTooltip("csvrow",[10,520],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
   makeTooltip("replaycsv",[10,575],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
@@ -466,14 +467,24 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
     serialMonitor.sendMessage(document.getElementById('command').value);
   }
 
-  serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
-    //pass to data handler
-    if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
-      s.handleEventData(line); 
-      //console.log("Passing Serial Data...", Date.now())
+  if(window.PEANUT){
+    serialMonitor.sendMessage("protocol 3");
+    serialMonitor.onReadLine = (line) => {
+      console.log(line);
+      //var timeus = Date.now() * 1000;
+      //s.handleEventData(timeus+","+line);
     }
-    else{
-      console.log("RECEIVED: ", line);
+  }
+  else{
+    serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
+      //pass to data handler
+      if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
+        s.handleEventData(line); 
+        //console.log("Passing Serial Data...", Date.now())
+      }
+      else{
+        console.log("RECEIVED: ", line);
+      }
     }
   }
 }
