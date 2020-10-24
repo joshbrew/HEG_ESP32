@@ -1,15 +1,14 @@
 const char HEGwebAPI[] PROGMEM = R"=====(
-class HEGwebAPI {
-  constructor(host='', defaultUI=true, parentId="main_body"){
+class HEGwebAPI { //Create HEG sessions, define custom data stream params as needed.
+  constructor(host='', header=["us","Red","IR","Ratio","Ambient","Vel","Accel"], delimiter="|", uIdx=0, rIdx=3, defaultUI=true, parentId="main_body"){
     
-    this.startTime=0;
-
     this.alloutput = [];
     this.raw = [];
     this.filtered = [];
     this.us= [];
     this.ratio=[];
 
+    this.startTime=0;
     this.slowSMA = 0;
     this.slowSMAarr = [0];
     this.fastSMA = 0;
@@ -29,14 +28,20 @@ class HEGwebAPI {
     this.source="";
 
     this.sensitivity = null;
-    
+
+    this.header = header; //Data header for incoming data
+    this.delimiter = delimiter; //Data stream delimiter
+    this.uIdx = uIdx; //Index of timing value (microseconds presumed)
+    this.rIdx = rIdx; //Index of HEG Ratio
+
     window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
     window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.msCancelAnimationFrame;
     
     this.defaultUI = defaultUI;
+    this.ui = false;
     if(defaultUI==true){
       this.parentId = parentId;
-      this.createUI(parentId);
+      this.createUI(parentId,header);
     }
     /*
     window.addEventListener('message', e => {
@@ -46,7 +51,7 @@ class HEGwebAPI {
       else {
         this.handleEventData(e); 
       }
-    }); //Generic event listener for postMessage events
+    }); //Generic event listener for postMessage events (for iframes)
     */
     this.createEventListeners(host);
   }
@@ -108,17 +113,39 @@ class HEGwebAPI {
       document.getElementById(parentId).appendChild(fragment);
   }
 
+  //Remove Element By Id
+  static removeElement(elementId) {
+    // Removes an element from the document
+    var element = document.getElementById(elementId);
+    element.parentNode.removeChild(element);
+  }
+
+  //Remove Element Parent By Element Id (for those pesky anonymous child fragment containers)
+  static removeParent(elementId) {
+    // Removes an element from the document
+    var element = document.getElementById(elementId);
+    element.parentNode.parentNode.removeChild(element.parentNode);
+  }
+
+  //Remove the parent of a parent of an element (for even more pesky anonymous nested fragment containers) 
+  static removeParentParent(elementId){
+    var element = document.getElementById(elementId);
+    element.parentNode.parentNode.parentNode.removeChild(element.parentNode.parentNode);
+
+  }
+
+  //Input data and averaging window, output array of moving averages (should be same size as input array, initial values not fully averaged due to window)
   static sma(arr, window) {
     var temp = []; //console.log(arr);
     for(var i = 0; i < arr.length; i++) {
       if((i == 0)) {
         temp.push(arr[0]);
       }
-      else if(i < window) {
+      else if(i < window) { //average partial window (prevents delays on screen)
         var arrslice = arr.slice(0,i+1);
         temp.push(arrslice.reduce((previous,current) => current += previous ) / (i+1));
       }
-      else {
+      else { //average windows
         var arrslice = arr.slice(i-window,i);
         temp.push(arrslice.reduce((previous,current) => current += previous) / window);
       }
@@ -138,10 +165,13 @@ class HEGwebAPI {
   }
 
   //Converts arrays of strings representing lines of data into CSVs
-  saveCSV(data=this.filtered, name=new Date().toISOString(), delimiter="|", header="us,Red,IR,Ratio,Ambient,Vel,Accel,Notes\n"){
-    var csvDat = header;
-    data.forEach((line) => {
+  saveCSV(data=this.filtered, name=new Date().toISOString(), delimiter=this.delimiter, header=this.header.join(",")+",Notes", saveNotes=true){
+    var csvDat = header+"\n";
+    data.forEach((line, i) => {
       csvDat += line.split(delimiter).join(",");
+      if(saveNotes == true){
+        if(this.noteIndex.indexOf(i) != -1) {csvDat+=","+[this.noteText[this.noteIndex.indexOf(i)]]}
+      }
       if(line.indexOf('\n') < 0) {csvDat+="\n";}
     });
 
@@ -201,6 +231,7 @@ class HEGwebAPI {
       this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
       if(this.us.length >= 2){
         this.handleScore();
+        this.updateStreamRow(this.csvDat[this.csvIndex]);
       }
     }
     else {
@@ -208,7 +239,7 @@ class HEGwebAPI {
       this.csvDat = [];
       this.csvIndex = 0;
     }
-    this.endOfEvent();
+    //this.endOfEvent();
     setTimeout(() => {this.replayCSV();},(this.us[this.csvIndex]-this.us[this.csvIndex-1])*0.001); //Call until end of index.
   }
   
@@ -242,35 +273,39 @@ class HEGwebAPI {
     input.click();
   }
 
-  handleEventData(data){
+  handleEventData(data, delimiter="|", uIdx=0, rIdx=3){ // Can set custom delimiters, time counters (us) index, and ratio index of incoming data.
     console.log("HEGDUINO", data);
     if(this.raw[this.raw.length - 1] != data){  //on new output
-      document.getElementById("heg").innerHTML = data;
-      var onRead = new CustomEvent('on_read', { detail: {data: data} }); //Create event for posting data from an iframe implementation of this code.
+      if(this.ui == true){
+        document.getElementById("heg").innerHTML = data;
+      }
+      //Create event for posting data from an iframe implementation of this code.
+      var onRead = new CustomEvent('on_read', { detail: {data: data} }); 
       window.parent.dispatchEvent(onRead); 
       window.parent.postMessage(data, "*");
-      if(data.includes("|")) {
+
+      if(data.includes(delimiter)) { //Checks that it's a data line of specified format
         this.raw.push(data);
-        var dataArray = data.split("|");
-        var thisRatio = parseFloat(dataArray[3]);
+        var dataArray = data.split(delimiter);
+        var thisRatio = parseFloat(dataArray[rIdx]);
         if(thisRatio > 0) { 
           if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
-          this.us.push(parseInt(dataArray[0]));
-          this.ratio.push(parseFloat(dataArray[3]));
+          this.us.push(parseInt(dataArray[uIdx]));
+          this.ratio.push(parseFloat(dataArray[rIdx]));
 
           if(this.us.length > 5) { // SMA filtering for ratio
             var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 5, this.ratio.length), 5); 
             //console.log(temp);
             if((this.ratio[this.ratio.length - 1] < temp[4] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[4] * 1.3)) {
               this.ratio[this.ratio.length - 1] = this.ratio[this.ratio.length - 2]; // Roll the ratio back if outside margin 
-              dataArray[3] = temp;
+              dataArray[rIdx] = temp;
             } 
-            this.filtered.push(dataArray.join("|"));
+            this.filtered.push(dataArray.join(delimiter));
           }
           //handle new data
           this.handleScore();
           if(this.defaultUI == true){
-            this.updateTable(dataArray);
+            this.updateRow(dataArray);
           }
         } 
       }
@@ -308,9 +343,9 @@ class HEGwebAPI {
     //document.getElementById("message").innerHTML = e.data;
   }
 
+  //Event with incoming data
   hegEvent = (e) => {
-    //this.raw.push(e.data);
-    this.handleEventData(e.data);
+    this.handleEventData(e.data,this.delimiter,this.uIdx,this.rIdx);
   }
 
   createEventListeners(host='') { //Set custom hostname (e.g. http://192.168.4.1). Leave blank for local hosted sessions (i.e. served from the board)
@@ -332,15 +367,30 @@ class HEGwebAPI {
     this.source.removeEventListener('heg', this.hegEvent, false);
     }
   }
- 
-  updateTable(dataArray){
+
+  updateStreamHeader(header=this.header){
     var HTMLtoAppend = '<tr>';
-    dataArray.forEach((value)=>{HTMLtoAppend += '<th>'+value+'</th>'});
+    header.forEach((value)=>{HTMLtoAppend += '<th>'+value+'</th>'});
+    HTMLtoAppend += '</tr>'
+    document.getElementById("dataNames").innerHTML = HTMLtoAppend;
+  }
+
+  updateStreamRow(dataArray){
+    var HTMLtoAppend = '<tr>';
+    dataArray.forEach((value)=>{HTMLtoAppend += '<td>'+value+'</td>'});
     HTMLtoAppend += '</tr>'
     document.getElementById("dataTable").innerHTML = HTMLtoAppend;
   }
 
-  createUI(parentId) {
+  makeStreamTable(header=this.header){
+    var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"></table></div>';
+    var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><td>Awaiting Data...</td></tr></table></div>';
+    HEGwebAPI.appendFragment(tableHeadHTML,"sTableContainer");
+    HEGwebAPI.appendFragment(tableDatHTML,"sTableContainer");
+    this.updateStreamHeader(header);
+  }
+
+  createUI(parentId,header=this.header) {
     var hegapiHTML = '<div id="hegapi" class="hegapi"> \
       <table> \
       <tr><td><button id="startbutton" class="button startbutton">Start HEG</button></td> \
@@ -357,7 +407,7 @@ class HEGwebAPI {
       <tr id="timerow"><td><div id="timestamp">Get Current Time</div></td><td><button id="getTime" class="button">Get Time</button></td></tr> \
       <tr id="noterow"><td colspan="2"><textarea id="noteText" placeholder="Point of Interest"></textarea></td></tr>\
       <tr id-"savenoterow"><td colspan="2"><button id="saveNote" class="button">Annotate</button></td></tr> \
-      <tr><td colspan="2"><hr></td></tr>\
+      <tr><td colspan="2"><hr></td></tr> \
       <tr id="csvrow"><td ><input type="text" id="csvname" name="csvname" placeholder="session_data"></input></td> \
         <td><button class="button saveLoadButtons" id="savecsv">Save CSV</button></td></tr> \
       <tr><td colspan="2"><button class="button saveLoadButtons" id="replaycsv">Replay CSV</button></td></tr> \
@@ -370,20 +420,18 @@ class HEGwebAPI {
       ';
 
     var dataDivHTML = '<dataDiv id="dataDiv"></dataDiv>';
-    var containerHTML = '<div id="container"></div>';
+    var tableHTML = '<div id="rawDiv"><div id="sTableContainer"></div></div>';
     var messageHTML = '<msgDiv id="message">Output:</div>';
     var eventHTML = '<eventDiv id="heg">Not connected...</eventDiv>';
-    var tableHeadHTML = '<div id="tableHead"><table class="dattable" id="dataNames"><tr><th>us</th><th>Red</th><th>IR</th><th>Ratio</th><th>Ambient</th><th>Velocity</th><th>Accel</th></tr></table></div>';
-    var tableDatHTML = '<div id="tableDat"><table class="dattable" id="dataTable"><tr><th>Awaiting Data...</th></tr></table></div>';
 
-    HEGwebAPI.appendFragment(dataDivHTML,parentId);
+    HEGwebAPI.appendFragment(dataDivHTML, parentId);
     HEGwebAPI.appendFragment(hegapiHTML, "dataDiv");
-    HEGwebAPI.appendFragment(containerHTML, "dataDiv");
-    HEGwebAPI.appendFragment(messageHTML,"container");
-    HEGwebAPI.appendFragment(eventHTML,"container");
-    HEGwebAPI.appendFragment(tableHeadHTML,"container");
-    HEGwebAPI.appendFragment(tableDatHTML,"container");
+    HEGwebAPI.appendFragment(tableHTML, "dataDiv");
+    HEGwebAPI.appendFragment(messageHTML,"rawDiv");
+    HEGwebAPI.appendFragment(eventHTML,"rawDiv");
 
+    this.makeStreamTable(header);
+    
     document.getElementById("getTime").onclick = () => {
       this.curIndex = this.us.length - 1;
       document.getElementById("timestamp").innerHTML = (this.us[this.us.length - 1] * 0.000001).toFixed(2) + "s";
@@ -478,6 +526,8 @@ class HEGwebAPI {
       //this.createUI(thisNode.id);
       console.log("Attempting connection at " + this.host);
     }
+
+    this.ui = true;
   }
 }
 
@@ -831,12 +881,14 @@ class graphJS {
 }
     
 class circleJS {
-  constructor(bgColor="#34baeb", cColor="#ff3a17", res=[window.innerWidth,"440"], parentId="main_body", canvasId="circlecanvas", defaultUI=true){
+  constructor(bgColor="#34baeb", cColor="#ff3a17", res=[window.innerWidth,"440"], parentId="main_body", canvasId="circlecanvas", defaultUI=true, canvasmenuId="circlecanvasmenu"){
     
     this.createCanvas(parentId, canvasId, res);
     this.c = document.getElementById(canvasId);
     this.ctx = this.c.getContext('2d');
     this.parentId = parentId;
+    this.canvasId = canvasId;
+    this.canvasmenuId = canvasmenuId;
     this.soundFX = null;
     
     this.defaultUI = defaultUI;
@@ -864,7 +916,7 @@ class circleJS {
   }
 
   createUI(parentId) {
-    var uiHTML = '<div id="'+parentId+'menu" class="circleapi"> \
+    var uiHTML = '<div id="'+this.canvasmenuId+'" class="circleapi"> \
     <table id="circletable" class="circletable"> \
     <tr><td><button class="button" id="circleAudiobutton">Audio</button></td></tr> \
     </table> \
@@ -968,7 +1020,7 @@ class circleJS {
 }
 
   class videoJS {
-      constructor(res=["700","440"], vidapiId="vidapi", vidContainerId="vidbox", defaultUI=true, parentId="main_body"){
+      constructor(res=["700","440"], parentId="main_body", vidapiId="vidapi", vidContainerId="vidbox", defaultUI=true){
         this.playRate = 1;
         this.alpha = 0;
         this.volume = 0.5;
@@ -984,6 +1036,7 @@ class circleJS {
         
 
         this.enableControls = false;
+        this.parentId = parentId;
         this.vidapiId = vidapiId
         this.vidContainerId = vidContainerId;
         this.animationId = null;
@@ -1291,7 +1344,7 @@ class circleJS {
  }
  
  class audioJS { //Heavily modified from: https://codepen.io/jackfuchs/pen/yOqzEW
-  constructor(res=[window.innerWidth,"800"], audioId="audio", audmenuId="audmenu", defaultUI=true, parentId="main_body") {
+  constructor(res=[window.innerWidth,"800"], parentId="main_body", audioId="audio", audmenuId="audmenu", defaultUI=true) {
     this.audioId = audioId;
     this.audmenuId = audmenuId;
     
@@ -1742,12 +1795,12 @@ class circleJS {
  }
 
  class hillJS {
-  constructor(res=["1400","500"], updateInterval=2000, hillsId="hillscanvas", hillsmenuId="hillsmenu", defaultUI=true, parentId="main_body") {
-   this.hillsId = hillsId;
-   this.hillsmenuId = hillsmenuId;
+  constructor(res=["1400","500"], updateInterval=2000, parentId="main_body", canvasId="hillscanvas", defaultUI=true, canvasmenuId="hillsmenu") {
+   this.canvasId = canvasId;
+   this.canvasmenuId = canvasmenuId;
 
    var canvasHTML = '<div id="canvasContainer" class="canvasContainer"> \
-      <canvas class="hillcss" id="'+this.hillsId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
+      <canvas class="hillcss" id="'+this.canvasId+'" width="'+res[0]+'" height="'+res[1]+'"></canvas> \
       ';
 
    HEGwebAPI.appendFragment(canvasHTML,parentId);
@@ -1756,10 +1809,10 @@ class circleJS {
    
    if(defaultUI == true){
     this.initUI(parentId);
-    this.menu = document.getElementById(this.hillsmenuId);
+    this.menu = document.getElementById(this.canvasmenuId);
    }
    
-   this.c = document.getElementById(this.hillsId);
+   this.c = document.getElementById(this.canvasId);
    this.ctx = this.c.getContext("2d");
    this.hidden = false;
 
@@ -1803,7 +1856,7 @@ class circleJS {
   }
 
   initUI(parentId){
-    var menuHTML = '<div id="'+this.hillsmenuId+'" class="hillapi"> \
+    var menuHTML = '<div id="'+this.canvasmenuId+'" class="hillapi"> \
     <table class="hilltable"> \
     <tr><td><button class="button" id="hillsRbutton">Reset</button></td></tr> \
     <tr><td><button class="button" id="hillsModebutton">Mode</button></td></tr> \
@@ -1957,12 +2010,13 @@ class circleJS {
  }
 
  class textReaderJS {
-  constructor(text="this is a test", res=["800","400"], textId="textcanvas", parentId="main_body", defaultUI=true) {
+  constructor(text="this is a test", res=["800","400"], parentId="main_body", canvasId="textcanvas", defaultUI=true, canvasmenuId="textcanvasmenu") {
     this.text = text;
-    this.textId = textId;
+    this.canvasId = canvasId;
+    this.canvasmenuId = canvasmenuId;
     this.parentId = parentId;
 
-    var textReaderHTML = "<div id='"+this.textId+"container' class='canvasContainer'><canvas id='"+this.textId+"' class='textreadercss' width='"+res[0]+"' height='"+res[1]+"'></canvas></div>"
+    var textReaderHTML = "<div id='"+this.canvasId+"container' class='canvasContainer'><canvas id='"+this.canvasId+"' class='textreadercss' width='"+res[0]+"' height='"+res[1]+"'></canvas></div>"
 
     HEGwebAPI.appendFragment(textReaderHTML, parentId);
 
@@ -1979,7 +2033,7 @@ class circleJS {
       this.initUI();
     }
 
-    this.c = document.getElementById(this.textId);
+    this.c = document.getElementById(this.canvasId);
     this.ctx = this.c.getContext("2d");
     this.pxf = 0.5; //Pixels per frame;
     this.lastpxf = this.pxf; //Store last pxf when paused or whatever
@@ -1999,14 +2053,14 @@ class circleJS {
   }
 
   initUI() {
-    var uiHTML = "<div id='"+this.textId+"menu' class='textmenu'> \
-    <textarea id='"+this.textId+"Textarea'>Breathe in, Breathe out, Breathe in, Breathe out...</textarea><br> \
-    <button id='"+this.textId+"submittext' class='button'>Submit</button> \
+    var uiHTML = "<div id='"+this.canvasmenuId+"' class='textmenu'> \
+    <textarea id='"+this.canvasId+"Textarea'>Breathe in, Breathe out, Breathe in, Breathe out...</textarea><br> \
+    <button id='"+this.canvasId+"submittext' class='button'>Submit</button> \
     </div><button id='showhide' name='showhide' class='showhide'>Hide UI</button>";
 
     HEGwebAPI.appendFragment(uiHTML, this.parentId);
 
-    document.getElementById(this.textId+'submittext').onclick = () => {
+    document.getElementById(this.canvasId+'submittext').onclick = () => {
       this.text = document.getElementById(this.textId+'Textarea').value;
       this.textXPos = 0;
     }
@@ -2015,12 +2069,12 @@ class circleJS {
       if(this.hidden == false) {
         this.hidden = true;
         document.getElementById("showhide").innerHTML = "Show UI";
-        document.getElementById(this.textId+'menu').style.display = "none";
+        document.getElementById(this.canvasId+'menu').style.display = "none";
       }
       else{
         this.hidden = false;
         document.getElementById("showhide").innerHTML = "Hide UI";
-        document.getElementById(this.textId+'menu').style.display = "";
+        document.getElementById(this.canvasId+'menu').style.display = "";
       }
     }
 
@@ -2387,7 +2441,7 @@ class circleJS {
 
  }
 
-
+ 
  class geolocateJS {
     constructor(){
       if(navigator.geolocation){
@@ -2409,5 +2463,92 @@ class circleJS {
       navigator.geolocation.getCurrentPosition(this.showPosition);
     }
 
+ }
+
+
+ class bleUtils { //This is formatted for the way the HEG sends/receives information. Other BLE devices will likely need changes to this to be interactive.
+   constructor(serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
+    this.serviceUUID = serviceUUID;
+    this.rxUUID      = rxUUID; //characteristic that can receive input from this device
+    this.txUUID      = txUUID; //characteristic that can transmit input to this device
+    this.encoder     = new TextEncoder("utf-8");
+    this.decoder     = new TextDecoder("utf-8");
+
+    this.device  = null;
+    this.server  = null;
+    this.service = null;
+    this.rxchar  = null; //receiver on the BLE device (write to this)
+    this.txchar  = null; //transmitter on the BLE device (read from this)
+
+    this.parentId = parentId;
+    this.buttonId = buttonId;
+
+    if(defaultUI = true){
+      this.initUI(parentId, buttonId);
+    }
+    
+   }
+
+   initUI(parentId, buttonId) {
+    if(this.device != null){
+      if (this.device.gatt.connected) {
+        this.device.gatt.disconnect();
+        console.log("device disconnected")
+      }
+    }
+    var HTMLtoAppend = '<button id="'+buttonId+'">BLE Connect</button>';
+    HEGwebAPI.appendFragment(HTMLtoAppend,parentId);
+    document.getElementById(buttonId).onclick = () => {this.initBLE(this.serviceUUID,this.rxUUID,this.txUUID)};
+   }
+
+   initBLE = (serviceUUID, rxUUID, txUUID) => { //Must be run by button press or user-initiated call
+    navigator.bluetooth.requestDevice({   
+      acceptAllDevices: true,
+      optionalServices: [serviceUUID] 
+      })
+      .then(device => {
+          //document.getElementById("device").innerHTML += device.name+ "/"+ device.id +"/"+ device.gatt.connected+"<br>";
+          this.device = device;
+          return device.gatt.connect(); //Connect to HEG
+      })
+      .then(sleeper(100)).then(server => server.getPrimaryService(serviceUUID))
+      .then(sleeper(100)).then(service => { 
+        this.service = service;
+          service.getCharacteristic(rxUUID).then(sleeper(100)).then(tx => {
+            this.rxchar = tx;
+            return tx.writeValue(this.encoder.encode("t")); // Send command to start HEG automatically (if not already started)
+          });
+          return service.getCharacteristic(txUUID) // Get stream source
+      })
+      .then(sleeper(100)).then(characteristic=>{
+          this.txchar = characteristic;
+          return characteristic.startNotifications(); // Subscribe to stream
+      })
+      .then(sleeper(100)).then(characteristic => {
+          characteristic.addEventListener('characteristicvaluechanged',
+                                          this.onNotificationCallback) //Update page with each notification
+      }).then(sleeper(100)).then(this.onConnectedCallback())
+      .catch(err => {console.error(err);});
+      
+      function sleeper(ms) {
+          return function(x) {
+              return new Promise(resolve => setTimeout(() => resolve(x), ms));
+          };
+      }
+   }
+
+  onNotificationCallback = (e) => { //Customize this with the UI (e.g. have it call the handleScore function)
+    var val = this.decoder.decode(e.target.value);
+    console.log("BLE MSG: ",val);
+  }
+
+
+   onConnectedCallback = () => {
+      //Use this to set up the front end UI once connected here
+   }
+
+   sendMessage = (msg) => {
+     this.rxchar.writeValue(this.encoder.encode(msg));
+   }
  }
 )=====";

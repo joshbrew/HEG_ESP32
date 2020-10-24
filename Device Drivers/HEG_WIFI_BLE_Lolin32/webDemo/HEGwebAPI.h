@@ -51,7 +51,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
       else {
         this.handleEventData(e); 
       }
-    }); //Generic event listener for postMessage events
+    }); //Generic event listener for postMessage events (for iframes)
     */
     this.createEventListeners(host);
   }
@@ -2463,5 +2463,92 @@ class circleJS {
       navigator.geolocation.getCurrentPosition(this.showPosition);
     }
 
+ }
+
+
+ class bleUtils { //This is formatted for the way the HEG sends/receives information. Other BLE devices will likely need changes to this to be interactive.
+   constructor(serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
+    this.serviceUUID = serviceUUID;
+    this.rxUUID      = rxUUID; //characteristic that can receive input from this device
+    this.txUUID      = txUUID; //characteristic that can transmit input to this device
+    this.encoder     = new TextEncoder("utf-8");
+    this.decoder     = new TextDecoder("utf-8");
+
+    this.device  = null;
+    this.server  = null;
+    this.service = null;
+    this.rxchar  = null; //receiver on the BLE device (write to this)
+    this.txchar  = null; //transmitter on the BLE device (read from this)
+
+    this.parentId = parentId;
+    this.buttonId = buttonId;
+
+    if(defaultUI = true){
+      this.initUI(parentId, buttonId);
+    }
+    
+   }
+
+   initUI(parentId, buttonId) {
+    if(this.device != null){
+      if (this.device.gatt.connected) {
+        this.device.gatt.disconnect();
+        console.log("device disconnected")
+      }
+    }
+    var HTMLtoAppend = '<button id="'+buttonId+'">BLE Connect</button>';
+    HEGwebAPI.appendFragment(HTMLtoAppend,parentId);
+    document.getElementById(buttonId).onclick = () => {this.initBLE(this.serviceUUID,this.rxUUID,this.txUUID)};
+   }
+
+   initBLE = (serviceUUID, rxUUID, txUUID) => { //Must be run by button press or user-initiated call
+    navigator.bluetooth.requestDevice({   
+      acceptAllDevices: true,
+      optionalServices: [serviceUUID] 
+      })
+      .then(device => {
+          //document.getElementById("device").innerHTML += device.name+ "/"+ device.id +"/"+ device.gatt.connected+"<br>";
+          this.device = device;
+          return device.gatt.connect(); //Connect to HEG
+      })
+      .then(sleeper(100)).then(server => server.getPrimaryService(serviceUUID))
+      .then(sleeper(100)).then(service => { 
+        this.service = service;
+          service.getCharacteristic(rxUUID).then(sleeper(100)).then(tx => {
+            this.rxchar = tx;
+            return tx.writeValue(this.encoder.encode("t")); // Send command to start HEG automatically (if not already started)
+          });
+          return service.getCharacteristic(txUUID) // Get stream source
+      })
+      .then(sleeper(100)).then(characteristic=>{
+          this.txchar = characteristic;
+          return characteristic.startNotifications(); // Subscribe to stream
+      })
+      .then(sleeper(100)).then(characteristic => {
+          characteristic.addEventListener('characteristicvaluechanged',
+                                          this.onNotificationCallback) //Update page with each notification
+      }).then(sleeper(100)).then(this.onConnectedCallback())
+      .catch(err => {console.error(err);});
+      
+      function sleeper(ms) {
+          return function(x) {
+              return new Promise(resolve => setTimeout(() => resolve(x), ms));
+          };
+      }
+   }
+
+  onNotificationCallback = (e) => { //Customize this with the UI (e.g. have it call the handleScore function)
+    var val = this.decoder.decode(e.target.value);
+    console.log("BLE MSG: ",val);
+  }
+
+
+   onConnectedCallback = () => {
+      //Use this to set up the front end UI once connected here
+   }
+
+   sendMessage = (msg) => {
+     this.rxchar.writeValue(this.encoder.encode(msg));
+   }
  }
 )=====";

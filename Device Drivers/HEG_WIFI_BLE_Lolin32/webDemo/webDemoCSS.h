@@ -2,6 +2,21 @@ const char webDemoCSS[] PROGMEM = R"=====(
 #gtext {
   z-index: 999;
 }
+
+#blebutton {
+  display: none;
+  position: absolute;
+  top: 1px;
+  right: 35%;
+  height: 30px;
+  opacity: 0.3;
+}
+
+#blebutton:hover {
+  opacity: 1.0;
+}
+
+
 body{
   min-width: 700px;
 }

@@ -2,6 +2,16 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/23/20
+------
+- Convenience update! Device now flashes on boot (LOLIN32 only) and lets you toggle different things just with the reset button. The first flashes are in rapid succession. 2 flashes = BLE mode, 3 flashes = WiFi mode, 4 flashes = BT Serial (classic) mode. Then the device will give 3 slow blinks (once per second) after that.
+- If you press the reset button again within the first 3 seconds (1 flash per second) that triggers different things.
+- Press after rapid flashes and before first slow flash (first second): places device in deep sleep mode.
+- Press after first slow flash, before second slow flash: (2nd second: change the communication mode (rotates between BLE, WiFi, and BT Serial)
+- Press after second slow flash, before third slow flash (3rd second): wipes saved wifi credentials in case there is some issue.
+
+- BLE connectivity added to extension. Now developing progressive webapp for mobile. 
+
 7/16/20
 ------
 - Generalization: One-liners and commands to control device stream format compatibility e.g. different delimiters and ratio or timer positions, this auto propagates to the CSV recording as well.

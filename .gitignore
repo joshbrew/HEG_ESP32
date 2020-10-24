@@ -56,3 +56,19 @@ Software/hardware/boards/HEGduinoV1/CAMOutputs/Assembly/ESP32_ADC_HUB.txt
 Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
 Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
 Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI_centroid.csv
+Software/hardware/boards/MAX30112HEG/docs/1102W_Series.pdf
+Software/hardware/boards/MAX30112HEG/docs/AP2127.pdf
+Software/hardware/boards/MAX30112HEG/docs/BOM.pdf
+Software/hardware/boards/MAX30112HEG/docs/BPW 34 S_EN.pdf
+Software/hardware/boards/MAX30112HEG/docs/lolin32_schematics_opensource.pdf
+Software/hardware/boards/MAX30112HEG/docs/lsf0102.pdf
+Software/hardware/boards/MAX30112HEG/docs/MAX30112.pdf
+Software/hardware/boards/MAX30112HEG/docs/MAX30112_AssemblyGuide.pdf
+Software/hardware/boards/MAX30112HEG/libraries/AP2127K.lbr
+Software/hardware/boards/MAX30112HEG/libraries/LSF0102YZTR.lbr
+Software/hardware/boards/MAX30112HEG/libraries/MAX30112.lbr
+Software/hardware/boards/MAX30112HEG/MAX30112HEG.brd
+Software/hardware/boards/MAX30112HEG/MAX30112HEG.sch
+Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI.b#1
+Software/hardware/boards/MAX86141HEG/MAX86141_HEG_MINI.b#2
+Software/ChromeExtension.zip

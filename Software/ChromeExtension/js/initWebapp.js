@@ -448,7 +448,43 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     makeTooltip("threemode",[300,10],"Turn the Earth! More coming!");
   }
 
+//------------------------------------------------------------------------
+//------------------------Bluetooth LE Additions--------------------------
+//------------------------------------------------------------------------
+
+var ble = new bleUtils()
+
+ble.onNotificationCallback = (e) => {
+  var line = ble.decoder.decode(e.target.value);
   
+  //pass to data handler
+  if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
+    s.handleEventData(line); 
+    //console.log("Passing BLE Data...", Date.now())
+  }
+  else {
+    console.log("BLE MSG: ", line);
+  }
+}
+
+ble.onConnectedCallback = () => {
+  s.removeEventListeners();
+
+  document.getElementById("startbutton").onclick = () => {
+    ble.sendMessage('t');
+  }
+  document.getElementById("stopbutton").onclick = () => {
+    ble.sendMessage('f');
+  }
+  document.getElementById("sendbutton").onclick = () => {
+    ble.sendMessage(document.getElementById('command').value);
+  }
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+
 //------------------------------------------------------------------------
 //----------------------Chrome Extension Additions------------------------
 //------------------------------------------------------------------------
@@ -494,3 +530,4 @@ makeTooltip("serialContainer",[-220,10],"Click 'Get' to get available Serial dev
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+
