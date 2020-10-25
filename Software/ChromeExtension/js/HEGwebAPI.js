@@ -305,7 +305,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
           //handle new data
           this.handleScore();
           if(this.defaultUI == true){
-            this.updateRow(dataArray);
+            this.updateStreamRow(dataArray);
           }
         } 
       }

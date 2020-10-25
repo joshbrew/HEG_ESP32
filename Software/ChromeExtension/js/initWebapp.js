@@ -485,6 +485,7 @@ ble.onReadAsyncCallback = (data) => {
 ble.onConnectedCallback = () => {
   s.removeEventListeners();
   s.header=["ms","Red","IR","Ratio"];
+  s.updateStreamHeader();
   g.usems = true;
 
   document.getElementById("startbutton").onclick = () => {
@@ -500,6 +501,7 @@ ble.onConnectedCallback = () => {
 
 ble.onDisconnected = () => {
   s.header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"]; //try to reset the header in case of reconnecting through a different protocol
+  s.updateStreamHeader()
   console.log("BLE Device disconnected!");
 }
 
