@@ -2490,7 +2490,7 @@ class circleJS {
     
    }
 
-   initUI(parentId, buttonId) {
+   initUI(parentId, buttonId, async=false) {
     if(this.device != null){
       if (this.device.gatt.connected) {
         this.device.gatt.disconnect();
@@ -2499,7 +2499,7 @@ class circleJS {
     }
     var HTMLtoAppend = '<button id="'+buttonId+'">BLE Connect</button>';
     HEGwebAPI.appendFragment(HTMLtoAppend,parentId);
-    document.getElementById(buttonId).onclick = () => { this.initBLE(); }//this.initBLE()};
+    document.getElementById(buttonId).onclick = () => { if(async === false) {this.initBLE();} else{this.initBLEasync();} }//this.initBLE()};
    }
 
    //Typical web BLE calls
@@ -2567,7 +2567,7 @@ class circleJS {
         this.server = btServer;
 
         const service = await this.server.getPrimaryService(this.serviceUUID);
-
+        
         // Send command to start HEG automatically (if not already started)
         const tx = await service.getCharacteristic(this.rxUUID);
         await tx.writeValue(this.encoder.encode("t"));

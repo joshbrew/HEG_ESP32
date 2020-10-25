@@ -469,7 +469,7 @@ ble.onNotificationCallback = (e) => {
   }
 }
 
-ble.onReadasyncCallback = (data) => {
+ble.onReadAsyncCallback = (data) => {
 
   var line = data;
 
