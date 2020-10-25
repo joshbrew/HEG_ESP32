@@ -4,7 +4,10 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
     this.alloutput = [];
     this.raw = [];
     this.filtered = [];
-    this.us= [];
+    
+    this.clock = [];
+    this.useMs = false;
+
     this.ratio=[];
 
     this.startTime=0;
@@ -62,7 +65,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
     this.alloutput = [];
     this.raw = [];
     this.filtered = [];
-    this.us = [];
+    this.clock = [];
     this.ratio = [];
     
     this.slowSMA = 0;
@@ -221,15 +224,15 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
   replayCSV() {
     if(this.csvIndex < 2){
       if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
-      this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
+      this.clock.push(parseInt(this.csvDat[this.csvIndex][0]));
       this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
     }
     this.csvIndex++;
     if(this.csvIndex < this.csvDat.length - 1){
       if(this.startTime == 0) { this.startTime = this.csvDat[this.csvIndex][0]}
-      this.us.push(parseInt(this.csvDat[this.csvIndex][0]));
+      this.clock.push(parseInt(this.csvDat[this.csvIndex][0]));
       this.ratio.push(parseFloat(this.csvDat[this.csvIndex][3]));
-      if(this.us.length >= 2){
+      if(this.clock.length >= 2){
         this.handleScore();
         this.updateStreamRow(this.csvDat[this.csvIndex]);
       }
@@ -240,7 +243,8 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
       this.csvIndex = 0;
     }
     //this.endOfEvent();
-    setTimeout(() => {this.replayCSV();},(this.us[this.csvIndex]-this.us[this.csvIndex-1])*0.001); //Call until end of index.
+    if(this.useMs == true){ setTimeout(() => {this.replayCSV();},(this.clock[this.csvIndex]-this.clock[this.csvIndex-1])); } //Call until end of index.
+    else{ setTimeout(() => {this.replayCSV();},(this.clock[this.csvIndex]-this.clock[this.csvIndex-1])*0.001); } //Call until end of index.
   }
   
   openCSV() {
@@ -289,11 +293,11 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
         var dataArray = data.split(delimiter);
         var thisRatio = parseFloat(dataArray[rIdx]);
         if(thisRatio > 0) { 
-          if(this.startTime == 0) { this.startTime = parseInt(dataArray[0])}
-          this.us.push(parseInt(dataArray[uIdx]));
+          if(this.startTime == 0) { this.startTime = parseInt(dataArray[0]); }
+          this.clock.push(parseInt(dataArray[uIdx]));
           this.ratio.push(parseFloat(dataArray[rIdx]));
 
-          if(this.us.length > 5) { // SMA filtering for ratio
+          if(this.clock.length > 5) { // SMA filtering for ratio
             var temp = HEGwebAPI.sma(this.ratio.slice(this.ratio.length - 5, this.ratio.length), 5); 
             //console.log(temp);
             if((this.ratio[this.ratio.length - 1] < temp[4] * 0.7) || (this.ratio[this.ratio.length - 1] > temp[4] * 1.3)) {
@@ -433,8 +437,9 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
     this.makeStreamTable(header);
     
     document.getElementById("getTime").onclick = () => {
-      this.curIndex = this.us.length - 1;
-      document.getElementById("timestamp").innerHTML = (this.us[this.us.length - 1] * 0.000001).toFixed(2) + "s";
+      this.curIndex = this.clock.length - 1;
+      if(this.clockeMs == true) { this.clock[this.clock.length - 1] * 0.001).toFixed(2) + "s"; }
+      else { document.getElementById("timestamp").innerHTML = (this.clock[this.clock.length - 1] * 0.000001).toFixed(2) + "s"; }
     }
 
     document.getElementById("saveNote").onclick = () => {
@@ -548,7 +553,7 @@ class graphJS {
           
     this.sampleRate = null;
     this.clock = 0;
-    this.usems = false; //Get input in microseconds instead
+    this.useMs = false; //Get input in microseconds instead
     this.ratio = 0;
     this.score = 0;
     this.viewing = 0;
@@ -842,11 +847,11 @@ class graphJS {
     this.graphtext.font = "2em Arial";
 
     var seconds = 0;
-    if(this.usems == false){
-      seconds = Math.floor(this.clock*0.000001);
-    }
-    else{
+    if(this.useMs == true){
       seconds = Math.floor(this.clock*0.001);
+    }
+    else {
+      seconds = Math.floor(this.clock*0.000001);
     }
     var minutes = Math.floor(seconds*0.01667);
     seconds = seconds - minutes * 60
@@ -1026,7 +1031,7 @@ class circleJS {
   }
 }
 
-  class videoJS {
+class videoJS {
       constructor(res=["700","440"], parentId="main_body", vidapiId="vidapi", vidContainerId="vidbox", defaultUI=true){
         this.playRate = 1;
         this.alpha = 0;
@@ -1350,7 +1355,7 @@ class circleJS {
      }
  }
  
- class audioJS { //Heavily modified from: https://codepen.io/jackfuchs/pen/yOqzEW
+class audioJS { //Heavily modified from: https://codepen.io/jackfuchs/pen/yOqzEW
   constructor(res=[window.innerWidth,"800"], parentId="main_body", audioId="audio", audmenuId="audmenu", defaultUI=true) {
     this.audioId = audioId;
     this.audmenuId = audmenuId;
@@ -1801,7 +1806,7 @@ class circleJS {
     }
  }
 
- class hillJS {
+class hillJS {
   constructor(res=["1400","500"], updateInterval=2000, parentId="main_body", canvasId="hillscanvas", defaultUI=true, canvasmenuId="hillsmenu") {
    this.canvasId = canvasId;
    this.canvasmenuId = canvasmenuId;
@@ -2016,7 +2021,7 @@ class circleJS {
   }
  }
 
- class textReaderJS {
+class textReaderJS {
   constructor(text="this is a test", res=["800","400"], parentId="main_body", canvasId="textcanvas", defaultUI=true, canvasmenuId="textcanvasmenu") {
     this.text = text;
     this.canvasId = canvasId;
@@ -2217,7 +2222,7 @@ class circleJS {
   
 }
 
- class SoundJS { //Only one Audio context at a time!
+class SoundJS { //Only one Audio context at a time!
   constructor(){
     window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
     
@@ -2449,7 +2454,7 @@ class circleJS {
  }
 
  
- class geolocateJS {
+class geolocateJS {
     constructor(){
       if(navigator.geolocation){
         
@@ -2473,8 +2478,8 @@ class circleJS {
  }
 
 
- class bleUtils { //This is formatted for the way the HEG sends/receives information. Other BLE devices will likely need changes to this to be interactive.
-  constructor(async = false, serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
+class bleUtils { //This is formatted for the way the HEG sends/receives information. Other BLE devices will likely need changes to this to be interactive.
+   constructor(async = false, serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
     this.serviceUUID = serviceUUID;
     this.rxUUID      = rxUUID; //characteristic that can receive input from this device
     this.txUUID      = txUUID; //characteristic that can transmit input to this device
@@ -2535,18 +2540,18 @@ class circleJS {
       .then(sleeper(100)).then(server => server.getPrimaryService(serviceUUID))
       .then(sleeper(100)).then(service => { 
         this.service = service;
+        service.getCharacteristic(rxUUID).then(sleeper(100)).then(tx => {
+          this.rxchar = tx;
+          return tx.writeValue(this.encoder.encode("t")); // Send command to start HEG automatically (if not already started)
+        });
         if(this.android == true){
-          service.getCharacteristic(rxUUID).then(sleeper(100)).then(tx => {
-            return tx.writeValue(this.encoder.encode("o")); // Fast output mode for android (20 byte/pkt MTU limit)
+          service.getCharacteristic(rxUUID).then(sleeper(1000)).then(tx => {
+            return tx.writeValue(this.encoder.encode("o")); // Fast output mode for android
           });
         }
-          service.getCharacteristic(rxUUID).then(sleeper(500)).then(tx => {
-            this.rxchar = tx;
-            return tx.writeValue(this.encoder.encode("t")); // Send command to start HEG automatically (if not already started)
-          });
-          return service.getCharacteristic(txUUID) // Get stream source
+        return service.getCharacteristic(txUUID) // Get stream source
       })
-      .then(sleeper(500)).then(characteristic=>{
+      .then(sleeper(1100)).then(characteristic=>{
           this.txchar = characteristic;
           return characteristic.startNotifications(); // Subscribe to stream
       })
@@ -2562,7 +2567,6 @@ class circleJS {
           };
       }
    }
-
 
    onNotificationCallback = (e) => { //Customize this with the UI (e.g. have it call the handleScore function)
      var val = this.decoder.decode(e.target.value);
@@ -2597,16 +2601,16 @@ class circleJS {
         
         // Send command to start HEG automatically (if not already started)
         const tx = await service.getCharacteristic(this.rxUUID);
+        await tx.writeValue(this.encoder.encode("t"));
+
         if(this.android == true){
           await tx.writeValue(this.encoder.encode("o"));
         }
-        await tx.writeValue(this.encoder.encode("t"));
         
         this.characteristic = await service.getCharacteristic(this.txUUID);
          this.onConnectedCallback();
         return true;
     }
-
 
     disconnect = () => this.server?.disconnect();
 
