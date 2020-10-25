@@ -189,10 +189,11 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   // Customize session functions
   s.handleScore = function() {
-    g.us = this.us[this.us.length - 1] - this.startTime;
+    g.clock = this.clock[this.clock.length - 1] - this.startTime;
     if(this.ratio.length > 40){
       if(g.sampleRate == null) {
-        g.sampleRate = (this.us[this.us.length - 1] - this.us[0]) * 0.000001 / this.us.length // Seconds / Sample
+        if(s.useMs == true){ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.000001 / this.clock.length; } // Seconds / Sample
+        else{ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.000001 / this.clock.length; } // Seconds / Sample
       }
       this.smaScore(this.ratio);
       var score = this.smaSlope*this.sensitivity.value*0.01;
@@ -428,7 +429,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   makeTooltip("timerow",[10,340],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
   makeTooltip("csvrow",[10,520],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
   makeTooltip("replaycsv",[10,575],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
-  makeTooltip("hostrow",[10,600],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB and Bluetooth connectivity require our free Chrome Extension.")
+  makeTooltip("hostrow",[10,575],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB serial connectivity requires our free Chrome Extension. Alternate Bluetooth LE mode or BT serial connectivity also available.")
   
   // Graph options
   makeTooltip("xoffsettd",[10,40],"Scroll back and forth through your data if it is longer than the graph.");
@@ -452,10 +453,14 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
 //------------------------Bluetooth LE Additions--------------------------
 //------------------------------------------------------------------------
 
-var ble = new bleUtils()
-
+var ble = new bleUtils(false)
 ble.onNotificationCallback = (e) => {
+
+  //console.log(e.target.readValue());
   var line = ble.decoder.decode(e.target.value);
+  if(ble.android == true){
+    line = Date.now()+"|"+line;
+  }
   
   //pass to data handler
   if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
@@ -467,9 +472,31 @@ ble.onNotificationCallback = (e) => {
   }
 }
 
-ble.onConnectedCallback = () => {
-  s.removeEventListeners();
+ble.onReadAsyncCallback = (data) => {
 
+  var line = data;
+  if(ble.android == true){
+    line = Date.now()+"|"+line;
+  }
+
+   //pass to data handler
+   if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
+    s.handleEventData(line); 
+    //console.log("Passing BLE Data...", Date.now())
+  }
+  else {
+    console.log("BLE MSG: ", line);
+  }
+}
+
+ble.onConnectedCallback = () => {
+  
+  s.removeEventListeners();
+  if(ble.android === true){
+    s.header=["ms","Red","IR","Ratio"];
+    s.updateStreamHeader();
+    g.usems = true;
+  }
   document.getElementById("startbutton").onclick = () => {
     ble.sendMessage('t');
   }
@@ -481,13 +508,23 @@ ble.onConnectedCallback = () => {
   }
 }
 
+ble.onDisconnected = () => {
+  if(ble.android == true){
+    s.header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"]; //try to reset the header in case of reconnecting through a different protocol
+    s.updateStreamHeader()
+  }
+  console.log("BLE Device disconnected!");
+}
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-/*
+
 //------------------------------------------------------------------------
 //----------------------Chrome Extension Additions------------------------
 //------------------------------------------------------------------------
+/*
+var serialHTML = '<div id="serialContainer" class="serialContainer"><h3>Serial Devices:</h3><div id="serialmenu" class="serialmenu"></div></div>';
+HEGwebAPI.appendFragment(serialHTML,"main_body");
 
 var serialMonitor = new chromeSerial();
 serialMonitor.finalCallback = () => { //Set this so USB devices bind to the interface once connected.
@@ -526,9 +563,8 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
 }
 
 makeTooltip("serialContainer",[-220,10],"Click 'Get' to get available Serial devices and 'Set' to pair it with the interface. Right click and press 'Inspect' to see debug output in the Console");
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-
 */
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+

@@ -2,6 +2,12 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/25/20
+------
+- BLE fixes for android, found one error in the command module causing it to reset. Testing installable PWA implementation (see it at: https://hegalomania.netlify.app).
+- new "o" command puts the HEG in fast output mode, so it gets under the android 20 byte/packet MTU limit. This is implemented in the pwa to make it a bluetooth app.
+
+
 10/23/20
 ------
 - Convenience update! Device now flashes on boot (LOLIN32 only) and lets you toggle different things just with the reset button. The first flashes are in rapid succession. 2 flashes = BLE mode, 3 flashes = WiFi mode, 4 flashes = BT Serial (classic) mode. Then the device will give 3 slow blinks (once per second) after that.
