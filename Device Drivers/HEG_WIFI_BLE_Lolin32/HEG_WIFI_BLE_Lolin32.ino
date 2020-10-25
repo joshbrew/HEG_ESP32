@@ -141,6 +141,30 @@ void toggleCheck(){ //Checks toggles on initialization
   }
 }
 
+void checkInput()
+{
+  if (USE_BT == true)
+  {
+    while (SerialBT.available())
+    {
+      received = SerialBT.read();
+      SerialBT.println(received);
+      commandESP32(received);
+      SerialBT.read(); //Flush endline for single char response
+    }
+  }
+  if (USE_USB == true)
+  {
+    while (Serial.available())
+    {
+      received = Serial.read();
+      Serial.println(received);
+      commandESP32(received);
+      Serial.read();
+    }
+  }
+}
+
 void loop(void){
   currentMicros = esp_timer_get_time();
 

@@ -235,6 +235,14 @@ void commandESP32(char received)
   if (received == 'W') { //Reset wifi mode.
     saveWiFiLogin(true,false,false,true);
   }
+  if (received == 'o') {
+    if(outputMode == "fast"){
+      outputMode = "full";
+    }
+    if(outputMode == "full"){
+      outputMode = "fast";
+    }
+  }
   if (received == 's')
   { //Reset baseline and readings
     reset = true;
@@ -629,29 +637,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   }
 }
 
-void checkInput()
-{
-  if (USE_BT == true)
-  {
-    while (SerialBT.available())
-    {
-      received = SerialBT.read();
-      SerialBT.println(received);
-      commandESP32(received);
-      SerialBT.read(); //Flush endline for single char response
-    }
-  }
-  if (USE_USB == true)
-  {
-    while (Serial.available())
-    {
-      received = Serial.read();
-      Serial.println(received);
-      commandESP32(received);
-      Serial.read();
-    }
-  }
-}
+
 
 void setupWiFi(){
 

@@ -77,6 +77,7 @@ bool reset = false;
 
 String output = "";
 char outputarr[64];
+char * outputMode = "full"; //full, fast
 
 int16_t adc0 = 0; // Resulting 15 bit integer.
 int16_t lastRead = 0;
@@ -260,6 +261,7 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
         USE_2_3 = true;
       }
     }
+    
       }
     }
   };
@@ -885,8 +887,14 @@ void updateHEG()
         //outputValue = ratioAvg;
         //output = "NO DATA";
         //output = String(currentMicros) + "|" + String(redAvg) + "|" + String(irAvg) + "|" + String(ratioAvg, 4) + "|" + String(rawAvg) + "|" + String(velAvg, 4) + "|" + String(accelAvg, 4) + "\r\n";
-        sprintf(outputarr, "%lu|%0.1f|%0.1f|%0.4f|%0.1f|%0.4f|%0.4f\r\n",
+        if(outputMode == "full"){
+           sprintf(outputarr, "%lu|%0.0f|%0.0f|%0.4f|%0.0f|%0.4f|%0.4f\r\n",
                 currentMicros, redAvg, irAvg, ratioAvg, rawAvg, velAvg, accelAvg);
+        }
+        else if(outputMode == "fast"){ //Only prints the red, ir, and ratio (all ambient corrected
+           sprintf(outputarr, "%0.0f|%0.0f|%0.3f\r\n",
+                redAvg, irAvg, ratioAvg);
+        }
         if (USE_USB == true)
         {
           //Serial.flush();
@@ -902,7 +910,7 @@ void updateHEG()
           }
         }
         if (deviceConnected == true) // BLE
-        { // could just use output.c_str(); // Need to clean this up
+        { 
           pCharacteristic->setValue(outputarr);
           pCharacteristic->notify();
           delay(10); // bluetooth stack will go into congestion, if too many packets are sent

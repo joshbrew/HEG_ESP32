@@ -2466,7 +2466,7 @@ class circleJS {
 
 
  class bleUtils { //This is formatted for the way the HEG sends/receives information. Other BLE devices will likely need changes to this to be interactive.
-   constructor(serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
+   constructor(async = false, serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
     this.serviceUUID = serviceUUID;
     this.rxUUID      = rxUUID; //characteristic that can receive input from this device
     this.txUUID      = txUUID; //characteristic that can transmit input to this device
@@ -2485,7 +2485,7 @@ class circleJS {
     this.n; //nsamples
 
     if(defaultUI = true){
-      this.initUI(parentId, buttonId);
+      this.initUI(parentId, buttonId, async);
     }
     
    }
@@ -2499,7 +2499,10 @@ class circleJS {
     }
     var HTMLtoAppend = '<button id="'+buttonId+'">BLE Connect</button>';
     HEGwebAPI.appendFragment(HTMLtoAppend,parentId);
-    document.getElementById(buttonId).onclick = () => { if(async === false) {this.initBLE();} else{this.initBLEasync();} }//this.initBLE()};
+    document.getElementById(buttonId).onclick = () => { 
+      if(async === false) {this.initBLE();} 
+      else{this.initBLEasync();} 
+    }
    }
 
    //Typical web BLE calls
