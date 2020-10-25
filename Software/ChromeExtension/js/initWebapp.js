@@ -189,10 +189,11 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   // Customize session functions
   s.handleScore = function() {
-    g.clock = this.clock[this.us.length - 1] - this.startTime;
+    g.clock = this.clock[this.clock.length - 1] - this.startTime;
     if(this.ratio.length > 40){
       if(g.sampleRate == null) {
-        g.sampleRate = (this.us[this.us.length - 1] - this.us[0]) * 0.000001 / this.us.length // Seconds / Sample
+        if(s.useMs == true){ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.000001 / this.clock.length; } // Seconds / Sample
+        else{ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.000001 / this.clock.length; } // Seconds / Sample
       }
       this.smaScore(this.ratio);
       var score = this.smaSlope*this.sensitivity.value*0.01;

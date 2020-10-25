@@ -392,6 +392,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
     HEGwebAPI.appendFragment(tableHeadHTML,"sTableContainer");
     HEGwebAPI.appendFragment(tableDatHTML,"sTableContainer");
     this.updateStreamHeader(header);
+    this.defaultUI = true; //sets defaultUI to true for streaming
   }
 
   createUI(parentId,header=this.header) {
