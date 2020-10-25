@@ -189,7 +189,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   // Customize session functions
   s.handleScore = function() {
-    g.us = this.us[this.us.length - 1] - this.startTime;
+    g.clock = this.clock[this.us.length - 1] - this.startTime;
     if(this.ratio.length > 40){
       if(g.sampleRate == null) {
         g.sampleRate = (this.us[this.us.length - 1] - this.us[0]) * 0.000001 / this.us.length // Seconds / Sample
@@ -452,7 +452,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
 //------------------------Bluetooth LE Additions--------------------------
 //------------------------------------------------------------------------
 
-var ble = new bleUtils()
+var ble = new bleUtils(false)
 
 ble.onNotificationCallback = (e) => {
 
@@ -471,8 +471,7 @@ ble.onNotificationCallback = (e) => {
 
 ble.onReadAsyncCallback = (data) => {
 
-  var line = data;
-
+  var line = Date.now()+"|"+line;
    //pass to data handler
    if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
     s.handleEventData(line); 
@@ -485,6 +484,8 @@ ble.onReadAsyncCallback = (data) => {
 
 ble.onConnectedCallback = () => {
   s.removeEventListeners();
+  s.header=["ms","Red","IR","Ratio"];
+  g.usems = true;
 
   document.getElementById("startbutton").onclick = () => {
     ble.sendMessage('t');
@@ -495,6 +496,11 @@ ble.onConnectedCallback = () => {
   document.getElementById("sendbutton").onclick = () => {
     ble.sendMessage(document.getElementById('command').value);
   }
+}
+
+ble.onDisconnected = () => {
+  s.header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"]; //try to reset the header in case of reconnecting through a different protocol
+  console.log("BLE Device disconnected!");
 }
 
 //------------------------------------------------------------------------

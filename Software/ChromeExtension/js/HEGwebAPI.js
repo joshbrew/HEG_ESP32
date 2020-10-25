@@ -1,5 +1,5 @@
 class HEGwebAPI { //Create HEG sessions, define custom data stream params as needed.
-  constructor(host='', header=["us","Red","IR","Ratio","Ambient","Vel","Accel"], delimiter="|", uIdx=0, rIdx=3, defaultUI=true, parentId="main_body"){
+  constructor(host='', header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"], delimiter="|", uIdx=0, rIdx=3, defaultUI=true, parentId="main_body"){
     
     this.alloutput = [];
     this.raw = [];
@@ -25,6 +25,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
 
     this.host = host;
     this.source="";
+    this.platform = navigator.userAgent.toLowerCase();
 
     this.sensitivity = null;
 
@@ -546,7 +547,8 @@ class graphJS {
     this.res = res;
           
     this.sampleRate = null;
-    this.us = 0;
+    this.clock = 0;
+    this.usems = false; //Get input in microseconds instead
     this.ratio = 0;
     this.score = 0;
     this.viewing = 0;
@@ -631,7 +633,7 @@ class graphJS {
 
   resetVars() {
     this.startTime = null;
-    this.us = 0;
+    this.clock = 0;
     this.ratio = 0;
     this.score = 0;
     this.viewing = 0;
@@ -839,7 +841,13 @@ class graphJS {
     this.graphtext.canvas.width = this.canvas.width*1.3;
     this.graphtext.font = "2em Arial";
 
-    var seconds = Math.floor(this.us*0.000001);
+    var seconds = 0;
+    if(this.usems == false){
+      seconds = Math.floor(this.clock*0.000001);
+    }
+    else{
+      seconds = Math.floor(this.clock*0.001);
+    }
     var minutes = Math.floor(seconds*0.01667);
     seconds = seconds - minutes * 60
     if(seconds < 10){seconds = "0"+seconds}
@@ -852,7 +860,7 @@ class graphJS {
     }
     if(this.viewing == 1) {
       this.graphtext.fillStyle = "#00ff00";
-      this.graphtext.fillText("  Time: " + (this.us*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("  Time: " + (this.clock*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
       this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2) + "  ",this.graphtext.canvas.width - 720,50);
       this.graphtext.fillStyle = "#99ffbb";
       this.graphtext.fillText("   Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);
@@ -2466,7 +2474,7 @@ class circleJS {
 
 
  class bleUtils { //This is formatted for the way the HEG sends/receives information. Other BLE devices will likely need changes to this to be interactive.
-   constructor(async = false, serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
+  constructor(async = false, serviceUUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e', rxUUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e', txUUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e', defaultUI = true, parentId="main_body" , buttonId = "blebutton"){
     this.serviceUUID = serviceUUID;
     this.rxUUID      = rxUUID; //characteristic that can receive input from this device
     this.txUUID      = txUUID; //characteristic that can transmit input to this device
@@ -2482,15 +2490,19 @@ class circleJS {
     this.parentId = parentId;
     this.buttonId = buttonId;
 
+    this.async = async;
+
+    this.android = navigator.userAgent.toLowerCase().indexOf("android") > -1; //Use fast mode on android (lower MTU throughput)
+
     this.n; //nsamples
 
     if(defaultUI = true){
-      this.initUI(parentId, buttonId, async);
+      this.initUI(parentId, buttonId);
     }
     
    }
 
-   initUI(parentId, buttonId, async=false) {
+   initUI(parentId, buttonId) {
     if(this.device != null){
       if (this.device.gatt.connected) {
         this.device.gatt.disconnect();
@@ -2500,8 +2512,12 @@ class circleJS {
     var HTMLtoAppend = '<button id="'+buttonId+'">BLE Connect</button>';
     HEGwebAPI.appendFragment(HTMLtoAppend,parentId);
     document.getElementById(buttonId).onclick = () => { 
-      if(async === false) {this.initBLE();} 
-      else{this.initBLEasync();} 
+      if(this.async === false) {
+        this.initBLE();
+      } 
+      else{
+        this.initBLEasync();
+      } 
     }
    }
 
@@ -2521,6 +2537,9 @@ class circleJS {
         this.service = service;
           service.getCharacteristic(rxUUID).then(sleeper(100)).then(tx => {
             this.rxchar = tx;
+            if(this.android == true){
+              tx.writeValue(this.encoder.encode("o"));
+            }
             return tx.writeValue(this.encoder.encode("t")); // Send command to start HEG automatically (if not already started)
           });
           return service.getCharacteristic(txUUID) // Get stream source
@@ -2556,7 +2575,7 @@ class circleJS {
      this.rxchar.writeValue(this.encoder.encode(msg));
    }
 
-   //Async solution fix for slower devices. This is slower than the other method on PC. Credit Dovydas Stirpeika
+   //Async solution fix for slower devices (android). This is slower than the other method on PC. Credit Dovydas Stirpeika
    async connectAsync() {
         this.device = await navigator.bluetooth.requestDevice({
             filters: [{ namePrefix: 'HEG' }],
@@ -2567,21 +2586,30 @@ class circleJS {
         
         const btServer = await this.device.gatt?.connect();
         if (!btServer) throw 'no connection';
+        this.device.addEventListener('gattserverdisconnected', onDisconnected);
+        
         this.server = btServer;
-
+        
         const service = await this.server.getPrimaryService(this.serviceUUID);
         
         // Send command to start HEG automatically (if not already started)
         const tx = await service.getCharacteristic(this.rxUUID);
+        if(this.android == true){
+          await tx.writeValue(this.encoder.encode("o"));
+        }
         await tx.writeValue(this.encoder.encode("t"));
         
         this.characteristic = await service.getCharacteristic(this.txUUID);
-        
-        this.onConnectedCallback();
+         this.onConnectedCallback();
         return true;
     }
 
+
     disconnect = () => this.server?.disconnect();
+
+    onDisconnected = () => {
+      console.log("BLE device disconnected!");
+    }
 
     async readDeviceAsync () {
         if (!this.characteristic) {
