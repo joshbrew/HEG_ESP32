@@ -2535,11 +2535,13 @@ class circleJS {
       .then(sleeper(100)).then(server => server.getPrimaryService(serviceUUID))
       .then(sleeper(100)).then(service => { 
         this.service = service;
+        if(this.android == true){
+          service.getCharaacteristic(rxUUID).then(sleeper(100)).then(tx => {
+            return tx.writeValue(this.encoder.encode("o")); // Fast output mode for android (20 byte/pkt MTU limit)
+          });
+        }
           service.getCharacteristic(rxUUID).then(sleeper(100)).then(tx => {
             this.rxchar = tx;
-            if(this.android == true){
-              tx.writeValue(this.encoder.encode("o"));
-            }
             return tx.writeValue(this.encoder.encode("t")); // Send command to start HEG automatically (if not already started)
           });
           return service.getCharacteristic(txUUID) // Get stream source
@@ -2560,6 +2562,7 @@ class circleJS {
           };
       }
    }
+
 
    onNotificationCallback = (e) => { //Customize this with the UI (e.g. have it call the handleScore function)
      var val = this.decoder.decode(e.target.value);

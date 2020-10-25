@@ -428,7 +428,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   makeTooltip("timerow",[10,340],"Press 'Get Time' at any given time in your session then write a note and press 'Annotate' and it will be added to the CSV when you click 'Save CSV'");
   makeTooltip("csvrow",[10,520],"Name your CSV and save it after your session is complete to have a record of your data. Automatically stores in your default Downloads folder.")
   makeTooltip("replaycsv",[10,575],"Replay saved CSV files (in our format) as if they are live sessions. For charting see our Data Charter applet on our repo or website.")
-  makeTooltip("hostrow",[10,600],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB and Bluetooth connectivity require our free Chrome Extension.")
+  makeTooltip("hostrow",[10,575],"Connect to your device's WiFi IP manually from here to access the Event Source, it is automatically set when accessing this interface on the device. USB serial connectivity requires our free Chrome Extension. Alternate Bluetooth LE mode or BT serial connectivity also available.")
   
   // Graph options
   makeTooltip("xoffsettd",[10,40],"Scroll back and forth through your data if it is longer than the graph.");
