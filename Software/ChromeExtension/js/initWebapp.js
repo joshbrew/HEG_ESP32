@@ -505,6 +505,9 @@ ble.onConnectedCallback = () => {
 //----------------------Chrome Extension Additions------------------------
 //------------------------------------------------------------------------
 
+var serialHTML = '<div id="serialContainer" class="serialContainer"><h3>Serial Devices:</h3><div id="serialmenu" class="serialmenu"></div></div>';
+HEGwebAPI.appendFragment(serialHTML,"main_body");
+
 var serialMonitor = new chromeSerial();
 serialMonitor.finalCallback = () => { //Set this so USB devices bind to the interface once connected.
   s.removeEventListeners();
