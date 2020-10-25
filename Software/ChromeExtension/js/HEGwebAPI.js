@@ -438,7 +438,7 @@ class HEGwebAPI { //Create HEG sessions, define custom data stream params as nee
     
     document.getElementById("getTime").onclick = () => {
       this.curIndex = this.clock.length - 1;
-      if(this.clockeMs == true) { this.clock[this.clock.length - 1] * 0.001).toFixed(2) + "s"; }
+      if(this.useMs == true) { document.getElementById("timestamp").innerHTML = (this.clock[this.clock.length - 1] * 0.001).toFixed(2) + "s"; }
       else { document.getElementById("timestamp").innerHTML = (this.clock[this.clock.length - 1] * 0.000001).toFixed(2) + "s"; }
     }
 
