@@ -19,7 +19,6 @@
 #include "webDemo/update.h" //Update page
 #include "webDemo/ws.h" // Websocket client page
 #include "webDemo/connect.h" // Wifi connect page
-#include "webDemo/sc.h" // State Changer page
 #include "webDemo/HEGwebAPI.h" //HEG web javascript
 #include "webDemo/initWebapp.h" //Web app custom javascript
 #include "webDemo/webDemo.h" // Web app page
@@ -47,7 +46,6 @@ char received;
 unsigned long eventMicros = 0;
 unsigned long inputMicros = 0;
 char eventarr[64];
-
 
 size_t content_len;
 unsigned long t_start,t_stop;
@@ -197,13 +195,13 @@ void commandESP32(char received)
   { //Enable Sensor
     coreProgramEnabled = true;
     reset=true;
-    //digitalWrite(LED, LOW); // LOLIN32 Indicator LED
+    digitalWrite(LED, LOW); // LOLIN32 Indicator LED
   }
   if (received == 'f')
   { //Disable sensor, reset.
     coreProgramEnabled = false;
     delay(300);
-    //digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+    digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
     no_led = true;
@@ -236,6 +234,14 @@ void commandESP32(char received)
   }
   if (received == 'W') { //Reset wifi mode.
     saveWiFiLogin(true,false,false,true);
+  }
+  if (received == 'o') {
+    if(outputMode == "fast"){
+      outputMode = "full";
+    }
+    if(outputMode == "full"){
+      outputMode = "fast";
+    }
   }
   if (received == 's')
   { //Reset baseline and readings
@@ -631,29 +637,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   }
 }
 
-void checkInput()
-{
-  if (USE_BT == true)
-  {
-    while (SerialBT.available())
-    {
-      received = SerialBT.read();
-      SerialBT.println(received);
-      commandESP32(received);
-      SerialBT.read(); //Flush endline for single char response
-    }
-  }
-  if (USE_USB == true)
-  {
-    while (Serial.available())
-    {
-      received = Serial.read();
-      Serial.println(received);
-      commandESP32(received);
-      Serial.read();
-    }
-  }
-}
+
 
 void setupWiFi(){
 
@@ -730,17 +714,12 @@ void setupWiFi(){
   //  response->addHeader("Access-Control-Allow-Origin", "*");  
   //  request->send(response);
   //});
-  server.on("/sc", HTTP_GET,[](AsyncWebServerRequest *request){
+    server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request)
+  {
     coreNotEnabledMicros = currentMicros;
-    AsyncWebServerResponse *response = request->beginResponse(200,"text/html",sc_page);
-    //response->addHeader("Access-Control-Allow-Origin", "*");
-    request->send(response);
+    request->send_P(200,"text/html", help_page);
   });
-  server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request)
-	{
-    coreNotEnabledMicros = currentMicros;
-		request->send_P(200,"text/html", help_page);
-	});
+
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
     coreNotEnabledMicros = currentMicros;
     //AsyncWebServerResponse *response = request->beginResponse(200,"text/html",ws_page);
@@ -863,7 +842,6 @@ void setupWiFi(){
   server.on("/initWebapp.js", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/javascript", initWebapp);
   });
-  
   
   server.on("/webDemoCSS.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/css", webDemoCSS);

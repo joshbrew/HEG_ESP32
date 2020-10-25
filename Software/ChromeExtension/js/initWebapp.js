@@ -453,11 +453,13 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
 //------------------------------------------------------------------------
 
 var ble = new bleUtils(false)
-
 ble.onNotificationCallback = (e) => {
 
   //console.log(e.target.readValue());
   var line = ble.decoder.decode(e.target.value);
+  if(ble.android == true){
+    line = Date.now()+"|"+line;
+  }
   
   //pass to data handler
   if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
@@ -471,7 +473,11 @@ ble.onNotificationCallback = (e) => {
 
 ble.onReadAsyncCallback = (data) => {
 
-  var line = Date.now()+"|"+line;
+  var line = data;
+  if(ble.android == true){
+    line = Date.now()+"|"+line;
+  }
+
    //pass to data handler
    if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
     s.handleEventData(line); 
@@ -483,11 +489,13 @@ ble.onReadAsyncCallback = (data) => {
 }
 
 ble.onConnectedCallback = () => {
+  
   s.removeEventListeners();
-  s.header=["ms","Red","IR","Ratio"];
-  s.updateStreamHeader();
-  g.usems = true;
-
+  if(ble.android === true){
+    s.header=["ms","Red","IR","Ratio"];
+    s.updateStreamHeader();
+    g.usems = true;
+  }
   document.getElementById("startbutton").onclick = () => {
     ble.sendMessage('t');
   }
@@ -500,11 +508,12 @@ ble.onConnectedCallback = () => {
 }
 
 ble.onDisconnected = () => {
-  s.header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"]; //try to reset the header in case of reconnecting through a different protocol
-  s.updateStreamHeader()
+  if(ble.android == true){
+    s.header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"]; //try to reset the header in case of reconnecting through a different protocol
+    s.updateStreamHeader()
+  }
   console.log("BLE Device disconnected!");
 }
-
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

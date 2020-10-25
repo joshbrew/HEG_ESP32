@@ -156,7 +156,15 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
         ir_led = false;
         reset = true;
       }
-      else if (rxValue.find("B"))
+      else if (rxValue.find("o") != -1) {
+        if(outputMode == "fast"){
+          outputMode = "full";
+        }
+        if(outputMode == "full"){
+          outputMode = "fast";
+        }
+      }
+      else if (rxValue.find("B") != -1)
       { //Bluetooth Serial Toggle
         EEPROM.begin(512);
         if (EEPROM.read(0) != 2)
