@@ -455,10 +455,26 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
 var ble = new bleUtils()
 
 ble.onNotificationCallback = (e) => {
+
+  //console.log(e.target.readValue());
   var line = ble.decoder.decode(e.target.value);
   
   //pass to data handler
   if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
+    s.handleEventData(line); 
+    //console.log("Passing BLE Data...", Date.now())
+  }
+  else {
+    console.log("BLE MSG: ", line);
+  }
+}
+
+ble.onReadasyncCallback = (data) => {
+
+  var line = data;
+
+   //pass to data handler
+   if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
     s.handleEventData(line); 
     //console.log("Passing BLE Data...", Date.now())
   }

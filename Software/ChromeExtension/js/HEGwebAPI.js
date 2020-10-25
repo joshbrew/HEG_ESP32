@@ -2482,6 +2482,8 @@ class circleJS {
     this.parentId = parentId;
     this.buttonId = buttonId;
 
+    this.n; //nsamples
+
     if(defaultUI = true){
       this.initUI(parentId, buttonId);
     }
@@ -2497,10 +2499,11 @@ class circleJS {
     }
     var HTMLtoAppend = '<button id="'+buttonId+'">BLE Connect</button>';
     HEGwebAPI.appendFragment(HTMLtoAppend,parentId);
-    document.getElementById(buttonId).onclick = () => {this.initBLE(this.serviceUUID,this.rxUUID,this.txUUID)};
+    document.getElementById(buttonId).onclick = () => { this.initBLE(); }//this.initBLE()};
    }
 
-   initBLE = (serviceUUID, rxUUID, txUUID) => { //Must be run by button press or user-initiated call
+   //Typical web BLE calls
+   initBLE = (serviceUUID = this.serviceUUID, rxUUID = this.rxUUID, txUUID = this.txUUID) => { //Must be run by button press or user-initiated call
     navigator.bluetooth.requestDevice({   
       acceptAllDevices: true,
       optionalServices: [serviceUUID] 
@@ -2536,10 +2539,10 @@ class circleJS {
       }
    }
 
-  onNotificationCallback = (e) => { //Customize this with the UI (e.g. have it call the handleScore function)
-    var val = this.decoder.decode(e.target.value);
-    console.log("BLE MSG: ",val);
-  }
+   onNotificationCallback = (e) => { //Customize this with the UI (e.g. have it call the handleScore function)
+     var val = this.decoder.decode(e.target.value);
+     console.log("BLE MSG: ",val);
+   }
 
 
    onConnectedCallback = () => {
@@ -2549,4 +2552,78 @@ class circleJS {
    sendMessage = (msg) => {
      this.rxchar.writeValue(this.encoder.encode(msg));
    }
+
+   //Async solution fix for slower devices. This is slower than the other method on PC. Credit Dovydas Stirpeika
+   async connectAsync() {
+        this.device = await navigator.bluetooth.requestDevice({
+            filters: [{ namePrefix: 'HEG' }],
+            optionalServices: [this.serviceUUID]
+        });
+
+        console.log("BLE Device: ", this.device);
+        
+        const btServer = await this.device.gatt?.connect();
+        if (!btServer) throw 'no connection';
+        this.server = btServer;
+
+        const service = await this.server.getPrimaryService(this.serviceUUID);
+
+        // Send command to start HEG automatically (if not already started)
+        const tx = await service.getCharacteristic(this.rxUUID);
+        await tx.writeValue(this.encoder.encode("t"));
+        
+        this.characteristic = await service.getCharacteristic(this.txUUID);
+        
+        this.onConnectedCallback();
+        return true;
+    }
+
+    disconnect = () => this.server?.disconnect();
+
+    async readDeviceAsync () {
+        if (!this.characteristic) {
+            console.log("HEG not connected");
+            throw "error";
+        }
+
+        // await this.characteristic.startNotifications();
+        this.doReadHeg = true;
+        
+        var data = ""
+        while (this.doReadHeg) {
+            const val = this.decoder.decode(await this.characteristic.readValue());
+            if (val !== this.data) {
+                data = val;
+                console.log(data);
+                //data = data[data.length - 1];
+                //const arr = data.replace(/[\n\r]+/g, '')
+                this.n += 1;
+                this.onReadAsyncCallback(data);
+            }
+        }
+    }
+
+    onReadAsyncCallback = (data) => {
+      console.log("BLE Data: ",data)
+    }
+
+    stopReadAsync = () => {
+        this.doReadHeg = false;
+        tx.writeValue(this.encoder.encode("f"));
+    }
+
+    spsinterval = () => {
+      setTimeout(() => {
+        console.log("SPS", this.n + '');
+        this.n = 0;
+        this.spsinterval();
+      }, 1000);
+    }
+
+    async initBLEasync() {
+      await this.connectAsync();
+      this.readDeviceasync();
+      this.spsinterval();
+    }
+      
  }

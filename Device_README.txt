@@ -53,7 +53,7 @@ upper .../tools directory so the SPIFFs tool can find them.
 
 --DEVICE INSTRUCTIONS--
 
-HEG serial commands:
+HEG serial/ble/wifi commands:
 't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light.
 'f' - Sensor off.
 'W' - Reset WiFi to default access point mode (wipes saved credentials).

@@ -10,7 +10,7 @@
 bool BLEtoggle = false;
 bool toggleSleep = false;
 bool WIFItoggle = false;
-long long bootMicros = 0;
+unsigned long bootMicros = 0;
 
 void setup(void){
   Serial.begin(115200);
