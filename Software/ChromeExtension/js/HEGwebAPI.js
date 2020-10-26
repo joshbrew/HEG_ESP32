@@ -866,7 +866,7 @@ class graphJS {
     }
     if(this.viewing == 1) {
       this.graphtext.fillStyle = "#00ff00";
-      this.graphtext.fillText("  Time: " + (this.clock*0.000001).toFixed(2),this.graphtext.canvas.width - 300,50);
+      this.graphtext.fillText("  Time: " + minutes + ":" + seconds,this.graphtext.canvas.width - 300,50);
       this.graphtext.fillText("    Score: " + this.graphY1[this.graphY1.length - 1].toFixed(2) + "  ",this.graphtext.canvas.width - 720,50);
       this.graphtext.fillStyle = "#99ffbb";
       this.graphtext.fillText("   Ratio: " + this.ratio.toFixed(2), this.graphtext.canvas.width - 500,50);

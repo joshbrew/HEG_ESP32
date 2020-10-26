@@ -192,7 +192,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     g.clock = this.clock[this.clock.length - 1] - this.startTime;
     if(this.ratio.length > 40){
       if(g.sampleRate == null) {
-        if(s.useMs == true){ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.000001 / this.clock.length; } // Seconds / Sample
+        if(s.useMs == true){ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.001 / this.clock.length; } // Seconds / Sample
         else{ g.sampleRate = (this.clock[this.clock.length - 1] - this.clock[0]) * 0.000001 / this.clock.length; } // Seconds / Sample
       }
       this.smaScore(this.ratio);
