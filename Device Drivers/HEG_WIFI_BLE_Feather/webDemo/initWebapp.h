@@ -496,7 +496,8 @@ ble.onConnectedCallback = () => {
   if(ble.android === true){
     s.header=["ms","Red","IR","Ratio"];
     s.updateStreamHeader();
-    g.usems = true;
+    s.useMs = true;
+    g.useMs = true;
   }
   document.getElementById("startbutton").onclick = () => {
     ble.sendMessage('t');
@@ -512,7 +513,9 @@ ble.onConnectedCallback = () => {
 ble.onDisconnected = () => {
   if(ble.android == true){
     s.header=["us","Red","IR","Ratio","Ambient","drdt","ddrdt"]; //try to reset the header in case of reconnecting through a different protocol
-    s.updateStreamHeader()
+    s.updateStreamHeader();
+    s.useMs = false;
+    g.useMs = false;
   }
   console.log("BLE Device disconnected!");
 }
