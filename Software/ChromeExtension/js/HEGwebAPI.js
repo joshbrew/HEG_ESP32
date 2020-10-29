@@ -961,12 +961,12 @@ class circleJS {
 
     document.getElementById("showhide").onclick = () => {
       if(this.hidden == false){
-        document.getElementById(parentId+"menu").style.display = 'none';
+        document.getElementById(canvasmenuId).style.display = 'none';
         document.getElementById("showhide").innerHTML = "Show UI";
         this.hidden = true;
       }
       else{
-        document.getElementById(parentId+"menu").style.display = '';
+        document.getElementById(canvasmenuId).style.display = '';
         document.getElementById("showhide").innerHTML = "Hide UI";
         this.hidden = false;
       }
@@ -1918,12 +1918,12 @@ class hillJS {
       if(this.hidden == false) {
         this.hidden = true;
         document.getElementById("showhide").innerHTML = "Show UI";
-        document.getElementById(this.hillsmenuId).style.display = "none";
+        document.getElementById(this.canvasmenuId).style.display = "none";
       }
       else{
         this.hidden = false;
         document.getElementById("showhide").innerHTML = "Hide UI";
-        document.getElementById(this.hillsmenuId).style.display = "";
+        document.getElementById(this.canvasmenuId).style.display = "";
       }
     }
   }
@@ -2279,18 +2279,25 @@ class textReaderJS {
   }
 
   onData(score){
-    this.boidsMul += score*0.01;
-    if(this.boidsMul < 0) {
-      this.boidsMul = 0;
+    this.swirlMul += score*0.00001;
+    if(this.swirlMul < 0) {
+      this.swirlMul = 0;
     }
-    else if(this.boidsMul > 1){
-      this.boidsMul = 1;
+    else if(this.swirlMul > 0.001){
+      this.swirlMul = 0.001;
     }
   }
 
   draw = () => {
     var success = this.calcBoids();
     if(success == true){
+          //Moving anchor
+      var anchorTick = performance.now()*0.0001;
+      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.2+this.renderer.canvas.width*0.25, Math.cos(anchorTick)*this.renderer.canvas.height*0.1+this.renderer.canvas.height*0.5, 0];
+    
+      this.swirlAnchor = newAnchor;
+      this.attractorAnchor = newAnchor;
+
       this.lastFrame = this.thisFrame;
       this.thisFrame = performance.now();
       this.frameRate = (this.thisFrame - this.lastFrame) * 0.001; //Framerate in seconds

@@ -6,6 +6,7 @@
     top: 0px;
     opacity: 0.3;
     z-index: 9999;
+    transition: all 0.2s ease-in-out;
 }
 .serialContainer:hover {
     opacity: 1.0;
@@ -18,22 +19,48 @@
 }
 .serialmenu select{
     position: absolute;
+    background-color:black;
+    color: white;
     width: 200px;
     left: 100px;
     height: 30px;
     cursor: pointer;
 }
+
+.serialmenu select:hover{
+    position: absolute;
+    background-color:gray;
+    color: white;
+    width: 200px;
+    left: 100px;
+    height: 30px;
+    cursor: pointer;
+}
+
 #refreshSerial {
     position: absolute;
     width: 50px;
     left: 300px;
     height: 30px;
     cursor: pointer;
+    background-color: black;
+    color: white;
 }
+
+#refreshSerial:hover {
+    background-color: gray;
+}
+
 #connectSerial {
     position: absolute;
     width: 50px;
     left: 350px;
     height: 30px;
     cursor: pointer;
+    background-color: black;
+    color: white;
+}
+
+#connectSerial:hover {
+    background-color: gray;
 }
