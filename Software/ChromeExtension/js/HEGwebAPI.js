@@ -2122,7 +2122,7 @@ class textReaderJS {
 
 
  class boidsJS { //Birdoids Swarm AI. https://en.wikipedia.org/wiki/Boids 
-    constructor(boidsCount = 100, res=[window.innerWidth,"440"], parentId="main_body", canvasId="boidscanvas", defaultUI=true, canvasmenuId="boidscanvasmenu") {
+    constructor(boidsCount = 200, res=[window.innerWidth,"440"], parentId="main_body", canvasId="boidscanvas", defaultUI=true, canvasmenuId="boidscanvasmenu") {
 
       this.parentId = parentId;
       this.res = res;
@@ -2135,7 +2135,7 @@ class textReaderJS {
       this.boidsPos = []; //vec3 list
       this.boidsVel = [];
       
-      this.groupingSize = 30; //Max # that a boid will reference.
+      this.groupingSize = 10; //Max # that a boid will reference.
       this.groupingRadius = 10000; //Max radius for a boid to check for flocking
 
       this.boidsMul = 1; // Global modifier on boids velocity change for particles. 
@@ -2143,7 +2143,7 @@ class textReaderJS {
       this.dragMul = 0.1;
       this.cohesionMul = 0.01; //Force toward mean position of group
       this.alignmentMul = 0.1; //Force perpendicular to mean direction of group
-      this.separationMul = 0.02; //Force away from other boids group members, multiplied by closeness.
+      this.separationMul = 0.04; //Force away from other boids group members, multiplied by closeness.
       this.swirlMul = 0.0005; //Positive = Clockwise rotation about an anchor point
       this.attractorMul = 0.003;
 
@@ -2160,7 +2160,7 @@ class textReaderJS {
       this.thisFrame = 0;
       this.frameRate = 0;
 
-      this.renderer = new Particles(false, this.boidsCount, this.res, this.parentId, this.canvasId, this.defaultUI, this.canvasmenuId);
+      this.renderer = new Particles(false, this.boidsCount, this.res, this.parentId, this.canvasId, this.defaultUI, this.canvasmenuId); //Commandeer the particle renderer
 
       var waitForRenderer = () => { //wait for renderer to load all the particles before beginning the boids algo
         setTimeout(() => {
@@ -2215,8 +2215,8 @@ class textReaderJS {
         cohesionVec   = [cohesionVec[0] + this.boidsPos[randj][0], cohesionVec[1] + this.boidsPos[randj][1], cohesionVec[2] + this.boidsPos[randj][2]];
         
         separationVec = [separationVec[0] + 1/(this.boidsPos[i][0]-this.boidsPos[randj][0] + 1), separationVec[1] + 1/(this.boidsPos[i][1]-this.boidsPos[randj][1] + 1), separationVec[2] + 1/(this.boidsPos[i][2]-this.boidsPos[randj][2] + 1)];
-        if((separationVec[0] == Infinity) || (separationVec[0] == -Infinity) || (separationVec[1] == Infinity) || (separationVec[1] == -Infinity) || (separationVec[2] == Infinity) || (separationVec[2] == -Infinity)) {
-          separationVec = [10,10,10]; //Special case for when particles overlap and cause infinities
+        if((separationVec[0] == Infinity) || (separationVec[0] == -Infinity) || (separationVec[0] > 3) || (separationVec[0] < -3) || (separationVec[1] == Infinity) || (separationVec[1] == -Infinity) || (separationVec[1] > 3) || (separationVec[1] < -3) || (separationVec[2] == Infinity) || (separationVec[2] == -Infinity) || (separationVec[2] > 3) || (separationVec[2] < -3) ) {
+          separationVec = [Math.random()*4-2,Math.random()*4-2,Math.random()*4-2]; //Special case for when particles overlap and cause infinities
           //console.log("Infinity!")
         }
         //console.log(separationVec);
@@ -2284,7 +2284,7 @@ class textReaderJS {
       this.swirlMul = 0;
     }
     else if(this.swirlMul > 0.001){
-      this.swirlMul = 0.001;
+      this.swirlMul = 0.01;
     }
   }
 
@@ -2293,7 +2293,7 @@ class textReaderJS {
     if(success == true){
           //Moving anchor
       var anchorTick = performance.now()*0.0001;
-      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.2+this.renderer.canvas.width*0.25, Math.cos(anchorTick)*this.renderer.canvas.height*0.1+this.renderer.canvas.height*0.5, 0];
+      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.2+this.renderer.canvas.width*0.25, Math.cos(anchorTick)*this.renderer.canvas.height*0.1+this.renderer.canvas.height*0.4, 0];
     
       this.swirlAnchor = newAnchor;
       this.attractorAnchor = newAnchor;

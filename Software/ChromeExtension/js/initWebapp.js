@@ -22,7 +22,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   var connectHTML = '<button id="wifibutton">WiFi Device</button>';
   
   var tabHTML = '<div id="tabContainer"> \
-    <button class="tablink" id="modal_opener">Data</button> \
+    <button class="tablink" id="modal_opener1">Data</button> \
     <button class="tablink" id="modal_opener2">Graph</button> \
     <button class="tablink" id="modal_opener3">Feedback</button> \
     </div> \
@@ -68,7 +68,11 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     document.getElementById(closemodal).onclick = function() {toggleModal(modalElm, closemodal, overlay)};
     document.getElementById(overlay).onclick = function() {toggleModal(modalelm, closemodal, overlay)};
   }
-  
+
+  var modal = document.getElementById('modal');
+  var modal2 = document.getElementById('modal2');
+  var modal3 = document.getElementById('modal3');
+
   function toggleModal(modalElm, closemodal, overlay) {
     var currentState = modalElm.style.display;
     // If modal is visible, hide it. Else, display it.
@@ -83,11 +87,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     }
   }
   
-  var modal = document.getElementById('modal');
-  var modal2 = document.getElementById('modal2');
-  var modal3 = document.getElementById('modal3');
-  
-  document.getElementById('modal_opener').onclick = function() {toggleModal(modal,'close_modal','overlay')};
+  document.getElementById('modal_opener1').onclick = function() {toggleModal(modal,'close_modal','overlay')};
   document.getElementById('modal_opener2').onclick = function() {toggleModal(modal2,'close_modal2','overlay2')};
   document.getElementById('modal_opener3').onclick = function() {toggleModal(modal3,'close_modal3','overlay3')};
   
@@ -104,6 +104,30 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   document.getElementById("wifibutton").onclick = () => {
     document.getElementById("submithost").click();
   }
+
+  window.tgtclicked = null;
+  window.textclicked = null;
+  document.addEventListener('click', function(e) { //Reports which element was clicked on
+      e = e || window.event;
+      var target = e.target || e.srcElement,
+          text = target.textContent || target.innerText;
+      window.tgtclicked = target;
+      window.textclicked = text;
+      //console.log(target);
+      //console.log(text);   
+
+      //if ((target.id !== "button1menuinner") && (target.id !== "button1") && (document.getElementById("button1menuouter").className == "button1menuouter button1menuouterfocus")) {
+      //  document.getElementById("button1menuouter").className = "button1menuouter button1menuouterhover";
+      //  document.getElementById("button1menumiddle").className = "button1menumiddle button1menumiddlehover";
+      //}
+
+  }, false);
+
+
+  //document.getElementById("button1").onclick = () => {
+  //    document.getElementById("button1menuouter").className = "button1menuouter button1menuouterfocus";
+  //    document.getElementById("button1menumiddle").className = "button1menumiddle button1menumiddlefocus";
+  //}
 
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
@@ -453,7 +477,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   }
   
   // Menu tabs
-  makeTooltip("modal_opener",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
+  makeTooltip("modal_opener1",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
   makeTooltip("modal_opener2",[10,70],"Graph perspective controls");
   makeTooltip("modal_opener3",[10,90],"Various feedback modes. Change the scoring sensitivity settings in the Data menu to change the reactiveness.");
   

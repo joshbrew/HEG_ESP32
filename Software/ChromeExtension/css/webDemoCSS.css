@@ -44,8 +44,6 @@
   opacity: 1.0; 
 }
 
-
-
 body{
   min-width: 700px;
 }
@@ -90,7 +88,7 @@ h1 {
   font-family: 'Ibarra Real Nova', serif;
   animation: headerfade 3s;
   animation-fill-mode: forwards;
-  z-index: 999;
+  z-index: 900;
   pointer-events: none;
 }
 
@@ -156,7 +154,7 @@ h1 {
    top:90px;
    left:10px;
    width:100px;
-   z-index: 999;
+   z-index: 900;
  }
  .circleapi button{
    width:100%;
@@ -367,7 +365,7 @@ h1 {
       width: 100%;
       height: 100%;
       z-index: 990;
-
+      transition: all 0.5s ease-in-out;
       }
     .overlay {
         position: absolute;
@@ -377,6 +375,7 @@ h1 {
         height: 100%;
         z-index: 995;
         background: rgba(0, 0, 0, 0);
+        transition: all 0.5s ease-in-out;
   
       }
 
@@ -386,7 +385,8 @@ h1 {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 1.5em;
             font-weight: 200;
-            text-align: center;
+            text-align: center;      
+            transition: all 0.5s ease-in-out;
         }
 
       .close_modal {
@@ -551,16 +551,17 @@ body, html {
     font-size: 1.3em;
     width: 20%;
     background-color: black;
+    z-index: 995;
 }
 
   .tablink:hover {
-    background-color: rgba(0, 189, 157, 0.644);
+    background-color: rgba(0, 189, 157, 1);
     border-right: 4px solid rgb(85, 85, 85);
     border-bottom: 4px solid rgb(85, 85, 85);
     animation-name: hover;
     animation-duration: 100ms;
     animation-timing-function: ease-in;
-    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
   }
 
   @keyframes hover{
