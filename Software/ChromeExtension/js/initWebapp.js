@@ -289,6 +289,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     if(boids != null){
       boids.deInit();
       HEGwebAPI.removeParentParent(boids.canvasId);
+      boids = null;
     }
     if(useAdvanced) { // Score handling for advanced scripts
       if(threeApp != null) {
