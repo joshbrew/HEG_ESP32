@@ -260,6 +260,11 @@ h1 {
     width:    100%;
   }
 
+  .boidscss {
+   width: 100%;
+   max-height: 430px;
+  }
+
  .hillcss {
    width: 80%;
    left: 10%;
@@ -473,25 +478,48 @@ body, html {
 .tablink {
     position: relative;
     z-index: 100;
-    font-family: 'Arial', serif;
+    font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     color: white;
     float: left;
-    border: 1px solid rgb(85, 85, 85);
+    border: none;
+    border-style: outset;
+    border-color: gray;
+    transition: all 300ms ease-in-out;
     outline: none;
     cursor: pointer;
     padding: 10px;
     font-size: 1.3em;
-    width: 33.33%;
+    width: 20%;
     background-color: black;
 }
 
   .tablink:hover {
-      background-color: rgba(0, 189, 157, 0.644);
+    background-color: rgba(0, 189, 157, 0.644);
+    border-right: 4px solid rgb(85, 85, 85);
+    border-bottom: 4px solid rgb(85, 85, 85);
+    animation-name: hover;
+    animation-duration: 100ms;
+    animation-timing-function: ease-in;
+    -webkit-animation-fill-mode: forwards;
+  }
+
+  @keyframes hover{
+    0% {
+      border-style: outset;
+    }
+    50% {
+      border-style: ridge;
+    }
+    100% {
+      border-style: inset;
+    }
   }
 
   .tablink:active {
     background-color: rgba(0, 121, 101, 0.644);
+    border-right: 0px solid rgb(85, 85, 85);
+    border-bottom: 0px solid rgb(85, 85, 85);
   }
 
   .tabcontent {
