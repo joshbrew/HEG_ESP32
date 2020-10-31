@@ -2292,8 +2292,8 @@ class textReaderJS {
     var success = this.calcBoids();
     if(success == true){
           //Moving anchor
-      var anchorTick = performance.now()*0.00001;
-      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.3+this.renderer.canvas.width*0.45, this.renderer.canvas.height*0.5, 0];
+      var anchorTick = performance.now()*0.00005;
+      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.3+this.renderer.canvas.width*0.2, this.renderer.canvas.height*0.3, 0];
     
       this.swirlAnchor = newAnchor;
       this.attractorAnchor = newAnchor;
