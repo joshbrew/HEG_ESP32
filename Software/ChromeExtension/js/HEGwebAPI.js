@@ -2279,7 +2279,7 @@ class textReaderJS {
   }
 
   onData(score){
-    this.swirlMul += score*0.00001;
+    this.swirlMul += score*0.0003;
     if(this.swirlMul < 0) {
       this.swirlMul = 0;
     }
@@ -2292,8 +2292,8 @@ class textReaderJS {
     var success = this.calcBoids();
     if(success == true){
           //Moving anchor
-      var anchorTick = performance.now()*0.0001;
-      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.2+this.renderer.canvas.width*0.25, Math.cos(anchorTick)*this.renderer.canvas.height*0.1+this.renderer.canvas.height*0.4, 0];
+      var anchorTick = performance.now()*0.00001;
+      var newAnchor = [Math.sin(anchorTick)*Math.sin(anchorTick)*this.renderer.canvas.width*0.3+this.renderer.canvas.width*0.45, this.renderer.canvas.height*0.5, 0];
     
       this.swirlAnchor = newAnchor;
       this.attractorAnchor = newAnchor;
