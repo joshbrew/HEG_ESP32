@@ -2142,7 +2142,7 @@ class textReaderJS {
 
       this.dragMul = 0.1;
       this.cohesionMul = 0.01; //Force toward mean position of group
-      this.alignmentMul = 0.1; //Force perpendicular to mean direction of group
+      this.alignmentMul = 0.5; //Force perpendicular to mean direction of group
       this.separationMul = 3; //Force away from other boids group members, multiplied by closeness.
       this.swirlMul = 0.0005; //Positive = Clockwise rotation about an anchor point
       this.attractorMul = 0.003;
