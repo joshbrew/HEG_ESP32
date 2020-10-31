@@ -2,6 +2,11 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+10/31/20
+------
+- Boids update, new feedback mode with flocking sim.
+- Some CSS updates
+
 10/25/20
 ------
 - BLE fixes for android, found one error in the command module causing it to reset. Testing installable PWA implementation (see it at: https://hegalomania.netlify.app).

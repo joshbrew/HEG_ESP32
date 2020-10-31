@@ -19,9 +19,11 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   // ------------------------------------------------------------------------
   
   var switchHTML = '<label class="switch"><input type="checkbox" id="togBtn"><div class="startslider round"></div></label>';
+
+  var connectHTML = '<button id="wifibutton">WiFi Device</button>';
   
   var tabHTML = '<div id="tabContainer"> \
-    <button class="tablink" id="modal_opener">Data</button> \
+    <button class="tablink" id="modal_opener1">Data</button> \
     <button class="tablink" id="modal_opener2">Graph</button> \
     <button class="tablink" id="modal_opener3">Feedback</button> \
     </div> \
@@ -56,6 +58,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   HEGwebAPI.appendFragment(switchHTML, "main_body");
   HEGwebAPI.appendFragment(tabHTML, "main_body");
+  HEGwebAPI.appendFragment(connectHTML, "main_body");
   
   function attachModalListeners(modalElm, closemodal, overlay) {
     document.getElementById(closemodal).onclick = function() {toggleModal(modalElm, closemodal, overlay)};
@@ -66,24 +69,26 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     document.getElementById(closemodal).onclick = function() {toggleModal(modalElm, closemodal, overlay)};
     document.getElementById(overlay).onclick = function() {toggleModal(modalelm, closemodal, overlay)};
   }
-  
+
+  var modal = document.getElementById('modal');
+  var modal2 = document.getElementById('modal2');
+  var modal3 = document.getElementById('modal3');
+
   function toggleModal(modalElm, closemodal, overlay) {
     var currentState = modalElm.style.display;
     // If modal is visible, hide it. Else, display it.
     if (currentState === 'none') {
       modalElm.style.display = 'block';
+      modalElm.style.opacity = '1.0';
       attachModalListeners(modalElm, closemodal, overlay);
     } else {
-      modalElm.style.display = 'none';  
+      modalElm.style.display = 'none';
+      modalElm.style.opacity = '0.0';  
       detachModalListeners(modalElm, closemodal, overlay);
     }
   }
   
-  var modal = document.getElementById('modal');
-  var modal2 = document.getElementById('modal2');
-  var modal3 = document.getElementById('modal3');
-  
-  document.getElementById('modal_opener').onclick = function() {toggleModal(modal,'close_modal','overlay')};
+  document.getElementById('modal_opener1').onclick = function() {toggleModal(modal,'close_modal','overlay')};
   document.getElementById('modal_opener2').onclick = function() {toggleModal(modal2,'close_modal2','overlay2')};
   document.getElementById('modal_opener3').onclick = function() {toggleModal(modal3,'close_modal3','overlay3')};
   
@@ -94,8 +99,37 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
       document.getElementById('stopbutton').click();
     }
   }
+
   document.getElementById("togBtn").onchange = function(){toggleHEG(document.getElementById("togBtn"))};
-  
+
+  document.getElementById("wifibutton").onclick = () => {
+    document.getElementById("submithost").click();
+  }
+
+  window.tgtclicked = null;
+  window.textclicked = null;
+  document.addEventListener('click', function(e) { //Reports which element was clicked on
+      e = e || window.event;
+      var target = e.target || e.srcElement,
+          text = target.textContent || target.innerText;
+      window.tgtclicked = target;
+      window.textclicked = text;
+      //console.log(target);
+      //console.log(text);   
+
+      //if ((target.id !== "button1menuinner") && (target.id !== "button1") && (document.getElementById("button1menuouter").className == "button1menuouter button1menuouterfocus")) {
+      //  document.getElementById("button1menuouter").className = "button1menuouter button1menuouterhover";
+      //  document.getElementById("button1menumiddle").className = "button1menumiddle button1menumiddlehover";
+      //}
+
+  }, false);
+
+
+  //document.getElementById("button1").onclick = () => {
+  //    document.getElementById("button1menuouter").className = "button1menuouter button1menuouterfocus";
+  //    document.getElementById("button1menumiddle").className = "button1menumiddle button1menumiddlefocus";
+  //}
+
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
@@ -112,15 +146,17 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   var a = null;
   var h = null;
   var txt = null;
+  var boids = null;
   
   
   var modeHTML = '<div class="menudiv" id="menudiv"> \
     Modes:<br> \
     <button class="button" id="canvasmode">Circle</button> \
-    <button class="button" id="videomode">Video</button> \
-    <button class="button" id="audiomode">Audio</button><br> \
-    <button class="button" id="hillmode">Hill Climb</button> \
+    <button class="button" id="videomode">Video</button><br> \
+    <button class="button" id="audiomode">Audio</button> \
+    <button class="button" id="hillmode">Hill Climb</button><br> \
     <button class="button" id="txtmode">Text Reader</button> \
+    <button class="button" id="boidsmode">Birdoids</button> \
     </div>';
 
   HEGwebAPI.appendFragment(modeHTML,"visualBox");
@@ -159,6 +195,13 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
       txt = new textReaderJS();
     }
   }
+
+  document.getElementById("boidsmode").onclick = function() {
+    if(boids == null){
+      deInitMode();
+      boids = new boidsJS();
+    }
+  }
   
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
@@ -170,7 +213,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
     var threeApp = null;
   
-    var threeModeHTML = '<button class="button" id="threemode">ThreeJS</button>';
+    var threeModeHTML = '<button class="button" id="threemode">Sunrise</button>';
     HEGwebAPI.appendFragment(threeModeHTML,"menudiv");
   
     document.getElementById("threemode").onclick = function() {
@@ -213,6 +256,9 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
       if(txt != null) {
         txt.onData(score);
       }
+      if(boids != null) {
+        boids.onData(score);
+      }
       if(useAdvanced) { // Score handling for advanced scripts
         if(threeApp != null) {
           threeApp.onData(score);
@@ -235,6 +281,9 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   }
   
   s.endOfEvent = function() {
+    if(document.getElementById("togBtn").checked == false){
+      document.getElementById("togBtn").checked = true;
+    }
     if(g.xoffsetSlider.max < this.scoreArr.length){
       if(this.scoreArr.length % 20 == 0) { 
         g.xoffsetSlider.max = this.scoreArr.length - 3; // Need 2 vertices minimum
@@ -274,6 +323,11 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
       HEGwebAPI.removeParent(txt.canvasmenuId);
       txt = null;
     }
+    if(boids != null){
+      boids.deInit();
+      HEGwebAPI.removeParentParent(boids.canvasId);
+      boids = null;
+    }
     if(useAdvanced) { // Score handling for advanced scripts
       if(threeApp != null) {
         threeApp.destroyThreeApp();
@@ -306,6 +360,10 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
     if(txt != null) {
       deInitMode();
       txt = new textReaderJS();
+    }
+    if(boids != null){
+      deInitMode();
+      boids = new boidsJS();
     }
     if(useAdvanced){
       if(threeApp != null) {
@@ -420,7 +478,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   }
   
   // Menu tabs
-  makeTooltip("modal_opener",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
+  makeTooltip("modal_opener1",[150,70],"Session controls, timestamped annotating, save & replay data, host-changing, and an output table");
   makeTooltip("modal_opener2",[10,70],"Graph perspective controls");
   makeTooltip("modal_opener3",[10,90],"Various feedback modes. Change the scoring sensitivity settings in the Data menu to change the reactiveness.");
   
@@ -437,7 +495,7 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   makeTooltip("xscaletd",[10,80],"Shrink or grow the graph on the x-axis");
   makeTooltip("yoffsettd",[10,110],"Scroll up or down on the y-axis of the graph.");
   makeTooltip("yscaletd",[10,160],"Shrink or grow the graph on the y-axis.");
-  makeTooltip("autoscaletd",[10,220],"Uncheck to manually scale the graph on the y-axis.");
+  makeTooltip("autoscaletd",[10,160],"Uncheck to manually scale the graph on the y-axis.");
   
   // Feedback options
   makeTooltip("canvasmode",[10,10],"Grow the circle and keep it big!");
@@ -445,16 +503,21 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   makeTooltip("txtmode",[10,10],"Scroll the text to the right to keep reading!");
   makeTooltip("videomode",[300,10],"Control a video through various means! Use MP4 files.");
   makeTooltip("hillmode",[300,10],"Climb the mountain!");
+  makeTooltip("boidsmode",[300,10],"Make the boids swirl together!");
   
   if(useAdvanced == true){
     makeTooltip("threemode",[300,10],"Turn the Earth! More coming!");
   }
 
+  makeTooltip("wifibutton",[-150,40],"Connect to a device via WiFi, make sure you are connected to its local server or enter its IP in the Data menu if it's on a host network.")
+/*
 //------------------------------------------------------------------------
 //------------------------Bluetooth LE Additions--------------------------
 //------------------------------------------------------------------------
 
-var ble = new bleUtils(false)
+var ble = new bleUtils(false);
+makeTooltip("blebutton",[-150,40],"Connect to a device via Bluetooth LE!")
+
 ble.onNotificationCallback = (e) => {
 
   //console.log(e.target.readValue());
@@ -497,7 +560,7 @@ ble.onConnectedCallback = () => {
     s.header=["ms","Red","IR","Ratio"];
     s.updateStreamHeader();
     s.useMs = true;
-    g.useMs = true;
+    g.usems = true;
   }
   document.getElementById("startbutton").onclick = () => {
     ble.sendMessage('t');
@@ -522,11 +585,12 @@ ble.onDisconnected = () => {
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-
+*/
+/*
 //------------------------------------------------------------------------
 //----------------------Chrome Extension Additions------------------------
 //------------------------------------------------------------------------
-/*
+
 var serialHTML = '<div id="serialContainer" class="serialContainer"><h3>Serial Devices:</h3><div id="serialmenu" class="serialmenu"></div></div>';
 HEGwebAPI.appendFragment(serialHTML,"main_body");
 
@@ -567,8 +631,10 @@ serialMonitor.finalCallback = () => { //Set this so USB devices bind to the inte
 }
 
 makeTooltip("serialContainer",[-220,10],"Click 'Get' to get available Serial devices and 'Set' to pair it with the interface. Right click and press 'Inspect' to see debug output in the Console");
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+
 */
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
 )=====";

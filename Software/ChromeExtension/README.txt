@@ -1,10 +1,12 @@
-To add this chrome extension, you must find your Extensions page (chrome://extensions/), enable Developer Mode (top right
-corner slider usually), then select "Load Unpacked" and select this folder (ChromeExtension). To find the extensions after
-they're loaded, type in chrome://apps in your address bar. You can then right click the icon and create
-desktop shortcuts. I recommend this plugin to make a nice button to find the menu: 
-https://chrome.google.com/webstore/detail/chrome-apps-shortcut/eobiahopcndogkgfjedmneomoghnpjpp
+To add this chrome extension: 
 
-This extension enables Serial USB or Bluetooth connectivity to your devices on top of the WiFi, as well 
+* Find your Extensions page (chrome://extensions/)
+* Enable Developer Mode (top right corner slider usually)
+* Select "Load Unpacked" and select this folder (ChromeExtension). 
+* To find the extensions after they're loaded, type in chrome://apps in your address bar. 
+* You can then right click the icon and create desktop shortcuts. 
+
+This extension enables Serial USB or Bluetooth Serial connectivity to your devices on top of the WiFi features, as well 
 as more interactive features (e.g. threeJS) when offline. Pretty cool!
 
 To use the USB connection, click "Get" in the top right of the page if you don't see the "Silicon Labs" 

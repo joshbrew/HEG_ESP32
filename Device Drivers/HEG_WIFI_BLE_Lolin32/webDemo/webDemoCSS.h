@@ -4,22 +4,51 @@ const char webDemoCSS[] PROGMEM = R"=====(
 }
 
 #blebutton {
-  display: none;
   position: absolute;
-  top: 1px;
-  right: 35%;
-  height: 30px;
+  cursor: pointer;
+  top: 35px;
+  right: 120px;
+  height: 34px;
   opacity: 0.3;
+  background-color: black;
+  color: white;
+  border: 2px ridge gray;
+  transition: all 0.2s ease-in-out;
 }
+
+#blebutton:active {
+  background-color: darkblue;
+} 
 
 #blebutton:hover {
-  opacity: 1.0;
+  opacity: 1.0; 
 }
 
+#wifibutton {
+  position: absolute;
+  cursor: pointer;
+  top: 35px;
+  right: 230px;
+  height: 34px;
+  opacity: 0.3;
+  background-color: black;
+  color: white;
+  border: 2px ridge gray;
+  transition: all 0.2s ease-in-out;
+}
+
+#wifibutton:active {
+  background-color: darkblue;
+} 
+
+#wifibutton:hover {
+  opacity: 1.0; 
+}
 
 body{
   min-width: 700px;
 }
+
 h1 {
   font-family: Console, Lucida, monospace;
   height:20px;
@@ -28,32 +57,48 @@ h1 {
 .button {
   font-family: Console, Lucida, monospace;
   color: black;
-  float: left;
   border: 1px solid gray;
   outline: none;
   cursor: pointer;
   padding: 14px 12px;
   border-radius: 4px;
   font-size: 1.6em;
-  width: 50%;
+  width: 49%;
   background-color: white;
+  transition: all 0.2s ease-in-out;
 } 
 
 .button:hover {
-    background-color: rgba(0, 189, 157, 0.644);
+    background-color: rgba(0, 189, 157, 1);
 }
 
 .button:active {
-    background-color: rgba(0, 107, 89, 0.644)
+    background-color: rgba(83, 255, 226, 1);
+    padding: 14px 9px;
 }
 
+
 .header {
+  position: fixed;
+  top: 0px;
+  float: left;
   width: 50%;
   color: white;
   font-size: .5em;
   text-align: left;
   font-family: 'Ibarra Real Nova', serif;
+  animation: headerfade 3s;
+  animation-fill-mode: forwards;
+  z-index: 900;
+  pointer-events: none;
 }
+
+@keyframes headerfade {
+  0% { opacity: 1.0;}
+  100% { opacity: 0.0;
+          display: none; }
+} 
+
 .dummy {
     width:0;
     height:0;
@@ -110,7 +155,7 @@ h1 {
    top:90px;
    left:10px;
    width:100px;
-   z-index: 999;
+   z-index: 900;
  }
  .circleapi button{
    width:100%;
@@ -263,6 +308,11 @@ h1 {
     width:    100%;
   }
 
+  .boidscss {
+   width: 100%;
+   max-height: 430px;
+  }
+
  .hillcss {
    width: 80%;
    left: 10%;
@@ -288,6 +338,7 @@ h1 {
 .hilltable button {
   width: 100%;
 }
+
  .textreadercss {
   top: 100px;
   width: 90%;
@@ -296,6 +347,7 @@ h1 {
   min-width: 600px;
   z-index: 0;
  }
+
  .textmenu {
    position: absolute;
    top: 110px;
@@ -314,7 +366,7 @@ h1 {
       width: 100%;
       height: 100%;
       z-index: 990;
-
+      transition: all 0.5s ease-in-out;
       }
     .overlay {
         position: absolute;
@@ -324,6 +376,7 @@ h1 {
         height: 100%;
         z-index: 995;
         background: rgba(0, 0, 0, 0);
+        transition: all 0.5s ease-in-out;
   
       }
 
@@ -333,7 +386,8 @@ h1 {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 1.5em;
             font-weight: 200;
-            text-align: center;
+            text-align: center;      
+            transition: all 0.5s ease-in-out;
         }
 
       .close_modal {
@@ -385,18 +439,25 @@ h1 {
     }
     
     .feedbackboxmodal {
-      top: 200px;
+      top: 110px;
+      width: 500px;
     }
 
 /**Toggle Switch**/
 .switch {
     position: absolute;
     right: 16px;
-    top: 95px;
+    top: 35px;
     display: inline-block;
     width: 90px;
     height: 34px;
     z-index: 990;
+    opacity: 0.2;
+    transition: all 0.5s ease-in-out;
+}
+
+.switch:hover{
+  opacity:1.0;
 }
 
     .switch input {
@@ -476,25 +537,50 @@ body, html {
 .tablink {
     position: relative;
     z-index: 100;
-    font-family: 'Arial', serif;
+    font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     color: white;
+    top: 20px;
     float: left;
-    border: 1px solid rgb(85, 85, 85);
+    border: none;
+    border-style: outset;
+    border-color: gray;
+    transition: all 300ms ease-in-out;
     outline: none;
     cursor: pointer;
     padding: 10px;
     font-size: 1.3em;
-    width: 33.33%;
+    width: 12.5%;
     background-color: black;
+    z-index: 995;
 }
 
   .tablink:hover {
-      background-color: rgba(0, 189, 157, 0.644);
+    background-color: rgba(0, 189, 157, 1);
+    border-right: 4px solid rgb(85, 85, 85);
+    border-bottom: 4px solid rgb(85, 85, 85);
+    animation-name: hover;
+    animation-duration: 100ms;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes hover{
+    0% {
+      border-style: outset;
+    }
+    50% {
+      border-style: ridge;
+    }
+    100% {
+      border-style: inset;
+    }
   }
 
   .tablink:active {
     background-color: rgba(0, 121, 101, 0.644);
+    border-right: 0px solid rgb(85, 85, 85);
+    border-bottom: 0px solid rgb(85, 85, 85);
   }
 
   .tabcontent {
