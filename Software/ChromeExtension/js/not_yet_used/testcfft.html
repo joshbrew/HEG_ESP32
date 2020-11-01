@@ -102,23 +102,24 @@
             var sigList2D = [sineWave,sineWave,sineWave];
             
             
-            var sigList1D = [...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave];
+            var sigList1D = [...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave];
             //console.log(sigList1D);
             console.time("gpuListDFT");
             gpuClass.listdft1D.setOutput([sigList1D.length]); //Set output to length of list of signals
             gpuClass.listdft1D.setLoopMaxIterations(sineWave.length); //Set loop size to the length of one signal (assuming all are uniform length)
             //var gpuresult2 = gpuClass.listdft2D(sigList2D);
             var gpuresult3 = gpuClass.listdft1D(sigList1D,sineWave.length);
+
             console.timeEnd("gpuListDFT");
         ;
             
             orderedMagsList = [];
             for(var i = 0; i < gpuresult3.length; i+=sineWave.length){
-                console.log(i);
+                //console.log(i);
                 orderedMagsList.push([...gpuresult3.slice(Math.ceil(sineWave.length*.5+i),sineWave.length+i),...gpuresult3.slice(i,Math.ceil(sineWave.length*.5+i))]);
             }
-            console.log(gpuresult3.length)
-            console.log(orderedMagsList);
+            //console.log(gpuresult3.length)
+            //console.log(orderedMagsList);
 
             //tf.setBackend('webgl');
             //console.time("tflowjs");
