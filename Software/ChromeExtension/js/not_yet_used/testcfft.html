@@ -15,12 +15,13 @@
         Homebrew cfft.js result - it's whack at some sample rates and OK at others, but also really fast.
         <div id="homebrewcfft"></div>
         <!--- DSP.JS result.
-        <div id="dspchart"></div> --->
-        <script src="homebrew-cfft.js"></script>
-        <script src="https://d3js.org/d3.v5.min.js"></script>
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <script src="fft.js"></script>
+        <div id="dspchart"></div>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.15.1/dist/tf.min.js"></script>
+         --->
+        <script src="homebrew-cfft.js"></script>
+        <script src="d3.v5.min.js"></script>
+        <script src="plotly-latest.min.js"></script>
+        <script src="fft.js"></script>
         <script src="gpu-browser.min.js" charset="UTF-8"></script>
         <script src="gpuJSUtils.js"></script>
         <script>
@@ -96,15 +97,28 @@
             console.timeEnd("gpuDFT");
             console.log("GPU.js performance can vary");
 
-            var orderedMags = [...gpuresult.slice(Math.ceil(gpuresult.length/2),gpuresult.length),...gpuresult.slice(0,Math.ceil(gpuresult.length/2))];
+            var orderedMags = [...gpuresult.slice(Math.ceil(gpuresult.length*.5),gpuresult.length),...gpuresult.slice(0,Math.ceil(gpuresult.length*.5))];
+            console.log(orderedMags.length);
+            var sigList2D = [sineWave,sineWave,sineWave];
             
-            var sigList = [sineWave,sineWave,sineWave];
             
+            var sigList1D = [...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave,...sineWave];
+            //console.log(sigList1D);
             console.time("gpuListDFT");
-            gpuClass.listdft.setOutput([sineWave.length,3])
-            gpuClass.listdft.setLoopMaxIterations(sineWave.length);
-            var gpuresult2 = gpuClass.listdft(sigList,sineWave.length);
-            console.timeEnd("gpuListDFT")
+            gpuClass.listdft1D.setOutput([sigList1D.length]); //Set output to length of list of signals
+            gpuClass.listdft1D.setLoopMaxIterations(sineWave.length); //Set loop size to the length of one signal (assuming all are uniform length)
+            //var gpuresult2 = gpuClass.listdft2D(sigList2D);
+            var gpuresult3 = gpuClass.listdft1D(sigList1D,sineWave.length);
+            console.timeEnd("gpuListDFT");
+        ;
+            
+            orderedMagsList = [];
+            for(var i = 0; i < gpuresult3.length; i+=sineWave.length){
+                console.log(i);
+                orderedMagsList.push([...gpuresult3.slice(Math.ceil(sineWave.length*.5+i),sineWave.length+i),...gpuresult3.slice(i,Math.ceil(sineWave.length*.5+i))]);
+            }
+            console.log(gpuresult3.length)
+            console.log(orderedMagsList);
 
             //tf.setBackend('webgl');
             //console.time("tflowjs");
@@ -137,7 +151,7 @@
                 xbins: {  size: 1  }
             }],[{
                 x:freqDom[0],
-                y:orderedMags,
+                y:orderedMagsList[0],
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"
@@ -146,7 +160,7 @@
                 xbins: {  size: 1  }
             }],[{
                 x:freqDom[0],
-                y:orderedPhaseSpectrum, //dspdata.spectrum,
+                y:orderedMagsList[2], //dspdata.spectrum,
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"
@@ -156,7 +170,7 @@
             }],
             [{
                 x:freqDom[0],
-                y:freqDom[1],
+                y:orderedMagsList[3],
                 type: 'line',
                 marker: {
                     color: "rgba(100,255,100, 1)"

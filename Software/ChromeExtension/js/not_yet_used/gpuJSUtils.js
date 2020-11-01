@@ -79,6 +79,18 @@ class gpuUtils {
         return [real,imag]; //mag(real,imag)
       });
 
+      this.gpu.addFunction(function DFTlist(signals,len,freq,n){ //Extract a particular frequency
+        var real = 0;
+        var imag = 0;
+        for(var i = 0; i<len; i++){
+          var shared = 6.28318530718*freq*i/len; //this.thread.x is the target frequency
+          real = real+signals[i+len*n]*Math.cos(shared);
+          imag = imag-signals[i+len*n]*Math.sin(shared);
+        }
+        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
+        return [real,imag]; //mag(real,imag)
+      });
+
       //Return frequency domain based on DFT
       this.dft = this.gpu.createKernel(function (signal,len){
         var result = DFT(signal,len,this.thread.x);
@@ -89,13 +101,30 @@ class gpuUtils {
       //.setOutput([signal.length]) //Call before running the kernel
       //.setLoopMaxIterations(signal.length);
 
-      this.listdft = this.gpu.createKernel(function (signals,len){
+      // Takes a 2D array input [signal1[],signal2[],signal3[]]; does not work atm
+      this.listdft2D = this.gpu.createKernel(function (signals){
+        var len = this.output.x;
         var result = DFT(signals[this.thread.y],len,this.thread.x);
         //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
         return mag(result[0],result[1]); //mag(real,imag)
       })
       .setDynamicOutput(true)
       .setDynamicArguments(true);
+
+      //More like a vertex buffer list to chunk through lists of signals
+      this.listdft1D = this.gpu.createKernel(function(signals,len){
+        var result = [0,0];
+        if(this.thread.x <= len){
+          result = DFT(signals,len,this.thread.x);
+        }
+        else{
+          var n = Math.floor(this.thread.x/len);
+          result = DFTlist(signals,len,this.thread.x-n*len,n);
+        }
+        return mag(result[0],result[1]);
+      })
+      .setDynamicOutput(true)
+      .setDynamicArguments(true)
 
       //TO DO
       //BitReverseIndex(index,n)
