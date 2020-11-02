@@ -84,8 +84,8 @@ class gpuUtils {
         var imag = 0;
         for(var i = 0; i<len; i++){
           var shared = 6.28318530718*freq*i/len; //this.thread.x is the target frequency
-          real = real+signals[i+len*n]*Math.cos(shared);
-          imag = imag-signals[i+len*n]*Math.sin(shared);
+          real = real+signals[i+(len-1)*n]*Math.cos(shared);
+          imag = imag-signals[i+(len-1)*n]*Math.sin(shared);  
         }
         //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
         return [real,imag]; //mag(real,imag)
@@ -97,7 +97,9 @@ class gpuUtils {
           return mag(result[0],result[1]);
       })
       .setDynamicOutput(true)
-      .setDynamicArguments(true);
+      .setDynamicArguments(true)
+      .setPipeline(true)
+      .setImmutable(true);
       //.setOutput([signal.length]) //Call before running the kernel
       //.setLoopMaxIterations(signal.length);
 
@@ -109,7 +111,9 @@ class gpuUtils {
         return mag(result[0],result[1]); //mag(real,imag)
       })
       .setDynamicOutput(true)
-      .setDynamicArguments(true);
+      .setDynamicArguments(true)
+      .setPipeline(true)
+      .setImmutable(true);
 
       //More like a vertex buffer list to chunk through lists of signals
       this.listdft1D = this.gpu.createKernel(function(signals,len){
@@ -125,231 +129,119 @@ class gpuUtils {
       })
       .setDynamicOutput(true)
       .setDynamicArguments(true)
+      .setPipeline(true)
+      .setImmutable(true);
 
-      //TO DO
-      //BitReverseIndex(index,n)
-      //BitReverseComplexArray(array)
-
-      /*
-        function BitReverseIndex(index, n) {
-          let bitreversed_index = 0;
-
-          while (n > 1) {
-            bitreversed_index <<= 1;
-            bitreversed_index += index & 1;
-            index >>= 1;
-            n >>= 1;
-          }
-          return bitreversed_index;
-        }
-
-        function BitReverseComplexArray(array) {
-          const n = array.length;
-          const flips = new Set();
-
-          for(let i = 0; i < n; i++) {
-            const r_i = BitReverseIndex(i, n);
-
-            if (flips.has(i)) continue;
-
-            [array.real[i], array.real[r_i]] = [array.real[r_i], array.real[i]];
-            [array.imag[i], array.imag[r_i]] = [array.imag[r_i], array.imag[i]];
-
-            flips.add(r_i);
-          }
-
-          return array;
-        }
-      */
-      /*
-      this.getRecursive = this.gpu.createKernel(function (input,p){ //Not sure about this yet.
-        var recursive_result = new Array(2);
-        recursive_result[0] = input[0][this.thread.x*p + this.thread.y]; //this.thread.y does not work on a 1D output. Need to solve this
-        recursive_result[1] = input[1][this.thread.x*p + this.thread.y];
-        return recursive_result
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true); //setDynamic output allows setOutput to be called for different sized arrays
-      //.setOutput([100])
-      //.setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
-      
-
-      //UNFINISHED. This needs to be broken up properly in separate kernels then combined. Reference fft.js
-      this.FFT_Recursive = this.gpu.createKernel(function(input, len, inverse){ //This needs to be done with a combined kernel so that getRecursive can be called
-        */
-        /* OG CODE
-          const n = input.length;
-
-          if (n === 1) {
-            return input;
-          }
-
-          const output = new ComplexArray(n, input.ArrayType);
-
-          // Use the lowest odd factor, so we are able to use FFT_2_Iterative in the
-          // recursive transforms optimally.
-          const p = LowestOddFactor(n);
-          const m = n / p;
-          const normalisation = 1 / Math.sqrt(p);
-          let recursive_result = new ComplexArray(m, input.ArrayType);
-
-        */
-        /*
-        if(len === 1){
-          return input;
-        }
-
-        const p = lof(len);
-        const m = en/p;
-        const normalize = 1 / Math.sqrt(p);
-        var recursive_result = [];
-        */
-        /* OG CODE
-          // Loops go like O(n Σ p_i), where p_i are the prime factors of n.
-          // for a power of a prime, p, this reduces to O(n p log_p n)
-          for(let j = 0; j < p; j++) { //this.thread.y
-            for(let i = 0; i < m; i++) { //this.thread.x
-              recursive_result.real[i] = input.real[i * p + j];
-              recursive_result.imag[i] = input.imag[i * p + j];
-            }
-            // Don't go deeper unless necessary to save allocs.
-            if (m > 1) {
-              recursive_result = fft(recursive_result, inverse);
-            }
-
-        */
-
-        /*
-        //Get Recursive Result
-        //Need to put this into a combined kernel
-        this.getRecursive.setOutput([len]);
-        recursive_result = this.getRecursive(input,p);
-
-        if(m > 1){
-          recursive_result = this.fft(recursive_result,len,inverse); //This is a scoping issue, need to do this in the combined kernel and have it call itself to not pass things between CPU and GPU at all unless absolutely necessary (only for input and output ideally)
-        }
-        */
-        /*
-        
-            const del_f_r = Math.cos(2*PI*j/n);
-            const del_f_i = (inverse ? -1 : 1) * Math.sin(2*PI*j/n);
-            let f_r = 1;
-            let f_i = 0;
-
-            for(let i = 0; i < n; i++) { //this.thread.y
-              const _real = recursive_result.real[i % m];
-              const _imag = recursive_result.imag[i % m];
-
-              output.real[i] += f_r * _real - f_i * _imag;
-              output.imag[i] += f_r * _imag + f_i * _real;
-
-              [f_r, f_i] = [
-                f_r * del_f_r - f_i * del_f_i,
-                f_i = f_r * del_f_i + f_i * del_f_r,
-              ];
-            }
-          }
-        */
-
-        /*
-        //This section should be scoped into its own kernel as it is its own loop
-        const del_f_r = Math.cos(2*PI*this.thread.y/len);
-        var del_f_i = 0;
-        if(inverse === true){
-          del_f_i = -1*Math.sin(2*PI*this.thread.y/len);
+      this.listdft1D_windowed = this.gpu.createKernel(function(signals,len,freqStart,freqEnd){ //Will make a higher resolution DFT for a smaller frequency window.
+        var result = [0,0];
+        if(this.thread.x <= len){
+          var freq = ( (this.thread.x/len) * ( freqEnd - freqStart ) ) + freqStart;
+          result = DFT(signals,len,freq);
         }
         else{
-          del_f_i = Math.sin(2*PI*this.thread.y/len);
+          var n = Math.floor(this.thread.x/len);
+          var freq = ( ( ( this.thread.x - n * len ) / len ) * ( freqEnd - freqStart ) ) + freqStart;
+          result = DFTlist(signals,len,freq-n*len,n);
         }
-        var f_r = 1;
-        var f_i = 0;
-
-        var output = new Array(2);
-        
-        var real = recursive_result[0][this.thread.x % m];
-        var imag = recursive_result[1][this.thread.x % m];
-
-        output[0] += f_r * output[0] - f_i * output[1];
-        output[1] += f_r * output[1] + f_i * output[0];
-
-        f_r = f_r * del_f_r - f_i * del_f_i;
-        f_i = f_r * del_f_i + f_i * del_f_r;
-
-        return output;
-
-      }).setOutput([100]) // Output array of vec2's representing real and complex components. Call setOutput with input array size.
-      .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
+        return mag(result[0],result[1]);
+      })
       .setDynamicOutput(true)
-      .setDynamicArguments(true); //setDynamic output allows setOutput to be called for different sized arrays
-      */
-      //WIP
-      /*
-      this.FFT_Iterative = this.gpu.createKernel(function(input, len, inverse){
-        var output = new Array(2);
-      
-          const n = len;
-
-          const noutput = BitReverseComplexArray(input);
-          const output_r = noutput[0];
-          const output_i = noutput[1];
-
-
-          /*
-          // Loops go like O(n log n):
-          //   width ~ log n; i,j ~ n
-          let width = 1;
-          while (width < n) {
-            const del_f_r = Math.cos(PI/width);
-            const del_f_i = (inverse ? -1 : 1) * Math.sin(PI/width);
-            for (let i = 0; i < n/(2*width); i++) {
-              let f_r = 1;
-              let f_i = 0;
-              for (let j = 0; j < width; j++) {
-                const l_index = 2*i*width + j;
-                const r_index = l_index + width;
-
-                const left_r = output_r[l_index];
-                const left_i = output_i[l_index];
-                const right_r = f_r * output_r[r_index] - f_i * output_i[r_index];
-                const right_i = f_i * output_r[r_index] + f_r * output_i[r_index];
-
-                output_r[l_index] = SQRT1_2 * (left_r + right_r);
-                output_i[l_index] = SQRT1_2 * (left_i + right_i);
-                output_r[r_index] = SQRT1_2 * (left_r - right_r);
-                output_i[r_index] = SQRT1_2 * (left_i - right_i);
-
-                [f_r, f_i] = [
-                  f_r * del_f_r - f_i * del_f_i,
-                  f_r * del_f_i + f_i * del_f_r,
-                ];
-              }
-            }
-            width <<= 1;
-          }
-
-          return output;
-        */
-       /*
-       return noutput;
-
-
-      }).setOutput([100])
-      .setLoopMaxIterations(1000) //Set to input length if greater than 1000 (default)
-      .setDynamicOutput(true)
-      .setDynamicArguments(true);
-      */
-      /*
-      this.fft = this.gpu.combineKernels(this.getRecursive,this.FFT_Recursive,this.FFT_Iterative, function(input,len){
-        if (len & (len - 1)) {
-          return FFT_Recursive(input, inverse); // Faster
-        } else {
-          return FFT_2_Iterative(input, inverse); // Slower
-        }
-      }).setOutput([100])
       .setDynamicArguments(true)
-      .setDynamicOutput(true)
-      */
-      //TODO, abstract this to handle 2D input, i.e. each row is one channel of data, so the whole input stream will be decoded one one kernel and results outputted altogether. Saves memory big time
+      .setPipeline(true)
+      .setImmutable(true);
+
+    }
+
+    MultiChannelDFT(signalBuffer,nSeconds, texOut = false) {
+      
+      var signalBufferProcessed = [];
+        
+      signalBuffer.forEach((row) => {
+        signalBufferProcessed.push(...row);
+      });
+      //console.log(signalBufferProcessed);
+    
+      var nSamplesPerChannel = signalBuffer[0].length;
+      var sampleRate = nSamplesPerChannel/nSeconds
+
+      this.listdft1D.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
+      this.listdft1D.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
+          
+      var outputTex = this.listdft1D(signalBufferProcessed,sampleRate);
+      if(texOut === false){
+        signalBufferProcessed = outputTex.toArray();
+        outputTex.delete();
+        return signalBufferProcessed;
+      }
+      else {
+        var tex = outputTex; 
+        outputTex.delete(); 
+        return tex;
+      }
+    }
+
+      
+    //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
+    MultiChannelDFT_BandPass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
+      
+      var signalBufferProcessed = [];
+        
+      signalBuffer.forEach((row) => {
+        signalBufferProcessed.push(...row);
+      });
+      //console.log(signalBufferProcessed);
+    
+      var freqEnd_nyquist = freqEnd*2;
+      var nSamplesPerChannel = signalBuffer[0].length;
+      var sampleRate = nSamplesPerChannel/nSeconds
+
+      this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
+      this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
+          
+      var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist);
+      if(texOut === true) { return outputTex; }
+      signalBufferProcessed = outputTex.toArray();
+      outputTex.delete();
+
+      //TODO: Optimize for SPEEEEEEED.. or just pass it str8 to a shader
+
+      var posMagsList = [];
+      //var orderedMagsList = [];
+      var summedMags = [];
+      for(var i = 0; i < signalBufferProcessed.length; i+=nSamplesPerChannel){
+        posMagsList.push([...signalBufferProcessed.slice(i,Math.ceil(nSamplesPerChannel*.5+i))]);
+        //orderedMagsList.push([...signalBufferProcessed.slice(Math.ceil(nSamplesPerChannel*.5+i),nSamplesPerChannel+i),...signalBufferProcessed.slice(i,Math.ceil(nSamplesPerChannel*.5+i))]);
+      }
+      //console.log(posMagsList);
+      
+      if(nSeconds > 1) { //Need to sum results when sample time > 1 sec
+        posMagsList.forEach((row, k) => {
+          summedMags.push([]);
+          for(var i = 0; i < row.length; i++ ){
+            if(i < sampleRate){
+                summedMags[k].push(row[i]);
+            }
+            else {
+                var j = i-Math.floor(Math.floor(i/sampleRate)*sampleRate)-1; //console.log(j);
+                summedMags[k][j] = (summedMags[k][j] * row[i-1]/sampleRate);
+            }
+          }
+          summedMags[k] = [...summedMags[k].slice(0,Math.ceil(summedMags[k].length*0.5))]
+        })
+        //console.log(summedMags);
+        return summedMags;  
+      }
+      else {return posMagsList;}
+  }
+
+  //Returns the x axis (frequencies) for the bandpass filter amplitudes
+  bandPassWindow(freqStart,freqEnd,sampleRate) {
+    var freqEnd_nyquist = freqEnd*2;
+    var fftwindow = [];
+      for (var i = 0; i < Math.ceil(0.5*sampleRate); i++){
+          fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(sampleRate));
+      }
+    return fftwindow;
   }
 }
 
