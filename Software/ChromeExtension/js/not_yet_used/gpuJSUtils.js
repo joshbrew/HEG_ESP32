@@ -116,14 +116,14 @@ class gpuUtils {
       .setImmutable(true);
 
       //More like a vertex buffer list to chunk through lists of signals
-      this.listdft1D = this.gpu.createKernel(function(signals,len){
+      this.listdft1D = this.gpu.createKernel(function(signals,sampleRate){
         var result = [0,0];
-        if(this.thread.x <= len){
-          result = DFT(signals,len,this.thread.x);
+        if(this.thread.x <= sampleRate){
+          result = DFT(signals,sampleRate,this.thread.x);
         }
         else{
-          var n = Math.floor(this.thread.x/len);
-          result = DFTlist(signals,len,this.thread.x-n*len,n);
+          var n = Math.floor(this.thread.x/sampleRate);
+          result = DFTlist(signals,sampleRate,this.thread.x-n*sampleRate,n);
         }
         return mag(result[0],result[1]);
       })
@@ -132,25 +132,30 @@ class gpuUtils {
       .setPipeline(true)
       .setImmutable(true);
 
-      this.listdft1D_windowed = this.gpu.createKernel(function(signals,len,freqStart,freqEnd){ //Will make a higher resolution DFT for a smaller frequency window.
+      this.listdft1D_windowed = this.gpu.createKernel(function(signals,sampleRate,freqStart,freqEnd){ //Will make a higher resolution DFT for a smaller frequency window.
         var result = [0,0];
-        if(this.thread.x <= len){
-          var freq = ( (this.thread.x/len) * ( freqEnd - freqStart ) ) + freqStart;
-          result = DFT(signals,len,freq);
+        if(this.thread.x <= sampleRate){
+          var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
+          result = DFT(signals,sampleRate,freq);
         }
         else{
-          var n = Math.floor(this.thread.x/len);
-          var freq = ( ( ( this.thread.x - n * len ) / len ) * ( freqEnd - freqStart ) ) + freqStart;
-          result = DFTlist(signals,len,freq-n*len,n);
+          var n = Math.floor(this.thread.x/sampleRate);
+          var freq = ( ( ( this.thread.x - n * sampleRate ) / sampleRate ) * ( freqEnd - freqStart ) ) + freqStart;
+          result = DFTlist(signals,sampleRate,freq-n*sampleRate,n);
+          
         }
+        //var mags = mag(result[0],result[1]);
+
         return mag(result[0],result[1]);
       })
       .setDynamicOutput(true)
       .setDynamicArguments(true)
       .setPipeline(true)
       .setImmutable(true);
-
+   
     }
+
+   
 
     MultiChannelDFT(signalBuffer,nSeconds, texOut = false) {
       
@@ -218,8 +223,9 @@ class gpuUtils {
         posMagsList.forEach((row, k) => {
           summedMags.push([]);
           for(var i = 0; i < row.length; i++ ){
-            if(i < sampleRate){
-                summedMags[k].push(row[i]);
+            if(i == 0){
+                summedMags[k]=row.slice(i,Math.floor(sampleRate));
+                i = Math.floor(sampleRate);
             }
             else {
                 var j = i-Math.floor(Math.floor(i/sampleRate)*sampleRate)-1; //console.log(j);

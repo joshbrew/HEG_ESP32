@@ -588,48 +588,49 @@ ble.onDisconnected = () => {
 //------------------------------------------------------------------------
 //----------------------Chrome Extension Additions------------------------
 //------------------------------------------------------------------------
+if (chrome.serial) {
 
-var serialHTML = '<div id="serialContainer" class="serialContainer"><h3>Serial Devices:</h3><div id="serialmenu" class="serialmenu"></div></div>';
-HEGwebAPI.appendFragment(serialHTML,"main_body");
+  var serialHTML = '<div id="serialContainer" class="serialContainer"><h3>Serial Devices:</h3><div id="serialmenu" class="serialmenu"></div></div>';
+  HEGwebAPI.appendFragment(serialHTML,"main_body");
 
-var serialMonitor = new chromeSerial();
-serialMonitor.finalCallback = () => { //Set this so USB devices bind to the interface once connected.
+  var serialMonitor = new chromeSerial(); //new chromeSerial();
+  serialMonitor.finalCallback = () => { //Set this so USB devices bind to the interface once connected.
   s.removeEventListeners();
 
   document.getElementById("startbutton").onclick = () => {
     serialMonitor.sendMessage('t');
-  }
-  document.getElementById("stopbutton").onclick = () => {
-    serialMonitor.sendMessage('f');
-  }
-  document.getElementById("sendbutton").onclick = () => {
-    serialMonitor.sendMessage(document.getElementById('command').value);
+    }
+    document.getElementById("stopbutton").onclick = () => {
+      serialMonitor.sendMessage('f');
+    }
+    document.getElementById("sendbutton").onclick = () => {
+      serialMonitor.sendMessage(document.getElementById('command').value);
+    }
+
+    if(window.PEANUT){
+      serialMonitor.sendMessage("protocol 3");
+      serialMonitor.onReadLine = (line) => {
+        console.log(line);
+        //var timeus = Date.now() * 1000;
+        //s.handleEventData(timeus+","+line);
+      }
+    }
+    else{
+      serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
+        //pass to data handler
+        if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
+          s.handleEventData(line); 
+          //console.log("Passing Serial Data...", Date.now())
+        }
+        else{
+          console.log("RECEIVED: ", line);
+        }
+      }
+    }
   }
 
-  if(window.PEANUT){
-    serialMonitor.sendMessage("protocol 3");
-    serialMonitor.onReadLine = (line) => {
-      console.log(line);
-      //var timeus = Date.now() * 1000;
-      //s.handleEventData(timeus+","+line);
-    }
-  }
-  else{
-    serialMonitor.onReadLine = (line) => { //Connect the serial monitor data to the session handler
-      //pass to data handler
-      if(line.split(s.delimiter).length == s.header.length) { //Most likely a data line based on our stream header formatting
-        s.handleEventData(line); 
-        //console.log("Passing Serial Data...", Date.now())
-      }
-      else{
-        console.log("RECEIVED: ", line);
-      }
-    }
-  }
+  makeTooltip("serialContainer",[-220,10],"Click 'Get' to get available Serial devices and 'Set' to pair it with the interface. Right click and press 'Inspect' to see debug output in the Console");
 }
-
-makeTooltip("serialContainer",[-220,10],"Click 'Get' to get available Serial devices and 'Set' to pair it with the interface. Right click and press 'Inspect' to see debug output in the Console");
-
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

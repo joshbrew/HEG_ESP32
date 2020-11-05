@@ -78,6 +78,7 @@ bool reset = false;
 String output = "";
 char outputarr[64];
 char * outputMode = "full"; //full, fast
+bool newEvent = false; //Flag for wifi events
 
 int16_t adc0 = 0; // Resulting 15 bit integer.
 int16_t lastRead = 0;
@@ -903,6 +904,8 @@ void updateHEG()
            sprintf(outputarr, "%0.0f|%0.0f|%0.3f\r\n",
                 redAvg, irAvg, ratioAvg);
         }
+        newEvent = true; //WiFi Event flag
+        
         if (USE_USB == true)
         {
           //Serial.flush();

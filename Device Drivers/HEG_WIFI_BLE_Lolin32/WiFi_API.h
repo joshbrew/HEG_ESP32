@@ -597,9 +597,10 @@ void printProgress(size_t prg, size_t sz) {
 void eventTask(void * param) {
   while(true) {
     eventMicros = currentMicros;
-    if(eventarr != outputarr) { //Prevents sending the same thing twice if the output is not updated
+    if(newEvent == true) { //Prevents sending the same thing twice if the output is not updated
       events.send(outputarr,"heg",esp_timer_get_time());
-      memcpy(eventarr,outputarr,64);
+      newEvent = false;
+      Serial.println("New Event");
     }
     //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
     vTaskDelay(50 / portTICK_PERIOD_MS);

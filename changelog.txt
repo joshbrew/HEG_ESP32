@@ -2,6 +2,11 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+11/5/20
+------
+- Now the indicator flashes happen on the Red LED, I don't know why this didn't occur to me earlier.
+- Fixed event source spitting out repeat data
+
 10/31/20
 ------
 - Boids update, new feedback mode with flocking sim.

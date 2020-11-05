@@ -12,6 +12,7 @@ bool toggleSleep = false;
 bool WIFItoggle = false;
 unsigned long bootMicros = 0;
 
+
 void setup(void){
   Serial.begin(115200);
   Serial.println();
@@ -59,35 +60,36 @@ void setup(void){
   //Now set up the communication protocols (Only 1 active at a time for best results!)
   if(ComMode == 1) {
      setupBLE();
-     /*
-     digitalWrite(5,LOW);
+
+     digitalWrite(13,HIGH);
      delay(100);
-     digitalWrite(5,HIGH);
+     digitalWrite(13,LOW);
      delay(100);
-     digitalWrite(5,LOW);
+     digitalWrite(13,HIGH);
      delay(100);
-     digitalWrite(5,HIGH);
-    */
+     digitalWrite(13,LOW);
   }
   else if(ComMode == 2) {
      setupBTSerial();
-     /*
-     digitalWrite(5,LOW);
+     
+     
+     digitalWrite(13,HIGH);
      delay(100);
-     digitalWrite(5,HIGH);
+     digitalWrite(13,LOW);
      delay(100);
-     digitalWrite(5,LOW);
+     digitalWrite(13,HIGH);
      delay(100);
-     digitalWrite(5,HIGH);
+     digitalWrite(13,LOW);
      delay(100);
-     digitalWrite(5,LOW);
+     digitalWrite(13,HIGH);
      delay(100);
-     digitalWrite(5,HIGH);
+     digitalWrite(13,LOW);
      delay(100);
-     digitalWrite(5,LOW);
+     digitalWrite(13,HIGH);
      delay(100);
-     digitalWrite(5,HIGH);
-    */
+     digitalWrite(13,LOW);
+    
+    
   }
   else if(ComMode == 3) {
     Serial.println("USB Only configuration.");
@@ -95,19 +97,19 @@ void setup(void){
   }
   else {
     setupWiFi();
-    /*
-    digitalWrite(5,LOW);
+    
+    digitalWrite(13,HIGH);
     delay(100);
-    digitalWrite(5,HIGH);
+    digitalWrite(13,LOW);
     delay(100);
-    digitalWrite(5,LOW);
+    digitalWrite(13,HIGH);
     delay(100);
-    digitalWrite(5,HIGH);
+    digitalWrite(13,LOW);
     delay(100);
-    digitalWrite(5,LOW);
+    digitalWrite(13,HIGH);
     delay(100);
-    digitalWrite(5,HIGH);
-    */
+    digitalWrite(13,LOW);
+    
   }
   bootMicros = esp_timer_get_time();
   //xTaskCreate(HEG_core_loop, "HEG_core_loop", 16384, NULL, 1, NULL);
@@ -121,11 +123,11 @@ void toggleCheck(){ //Checks toggles on initialization
       EEPROM.write(511,1); // Now arm the BLE/WiFi toggle
       EEPROM.end();
       toggleSleep = true;
-      /*
-      digitalWrite(5,LOW);
+      
+      digitalWrite(13,HIGH);
       delay(200);
-      digitalWrite(5,HIGH);
-      */
+      digitalWrite(13,LOW);
+      
     }
     if((toggleSleep == true) && (BLEtoggle == false) && (currentMicros - bootMicros > 2000000) ){
       EEPROM.begin(512);
@@ -133,22 +135,23 @@ void toggleCheck(){ //Checks toggles on initialization
       EEPROM.write(509,1); // Now arm the Wifi reset toggle
       EEPROM.end();
       BLEtoggle = true;
-      /*
-      digitalWrite(5,LOW);
+
+      digitalWrite(13,HIGH);
       delay(200);
-      digitalWrite(5,HIGH);
-      */
+      digitalWrite(13,LOW);
+      ;
+      
     }
     if((BLEtoggle == true) && (WIFItoggle == false) && (currentMicros - bootMicros > 3000000) ){
       EEPROM.begin(512);
       EEPROM.write(509,0); //Disarm BLE/WiFi toggle
       EEPROM.end();
       WIFItoggle = true;
-      /*
-      digitalWrite(5,LOW);
+
+      digitalWrite(13,HIGH);
       delay(200);
-      digitalWrite(5,HIGH);
-      */
+      digitalWrite(13,LOW);
+      
     }
   }
 }
