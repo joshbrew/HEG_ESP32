@@ -600,7 +600,7 @@ void eventTask(void * param) {
     if(newEvent == true) { //Prevents sending the same thing twice if the output is not updated
       events.send(outputarr,"heg",esp_timer_get_time());
       newEvent = false;
-      Serial.println("New Event");
+      //Serial.println("New Event");
     }
     //adc0 = ads.readADC_SingleEnded(adcChannel); // test fix for weird data bug
     vTaskDelay(50 / portTICK_PERIOD_MS);
