@@ -62,32 +62,44 @@ void setup(void){
      setupBLE();
 
      digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
      delay(100);
      digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
      delay(100);
      digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
      delay(100);
      digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
   }
   else if(ComMode == 2) {
      setupBTSerial();
      
      
      digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
      delay(100);
      digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
      delay(100);
      digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
      delay(100);
      digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
      delay(100);
      digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
      delay(100);
      digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
      delay(100);
      digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
      delay(100);
      digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
     
     
   }
@@ -99,16 +111,22 @@ void setup(void){
     setupWiFi();
     
     digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
     delay(100);
     digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
     delay(100);
     digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
     delay(100);
     digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
     delay(100);
     digitalWrite(13,HIGH);
+     digitalWrite(5,LOW);
     delay(100);
     digitalWrite(13,LOW);
+     digitalWrite(5,HIGH);
     
   }
   bootMicros = esp_timer_get_time();
@@ -125,8 +143,10 @@ void toggleCheck(){ //Checks toggles on initialization
       toggleSleep = true;
       
       digitalWrite(13,HIGH);
+      digitalWrite(5,LOW);
       delay(200);
       digitalWrite(13,LOW);
+      digitalWrite(5,HIGH);
       
     }
     if((toggleSleep == true) && (BLEtoggle == false) && (currentMicros - bootMicros > 2000000) ){
@@ -137,9 +157,10 @@ void toggleCheck(){ //Checks toggles on initialization
       BLEtoggle = true;
 
       digitalWrite(13,HIGH);
+      digitalWrite(5,LOW);
       delay(200);
       digitalWrite(13,LOW);
-      ;
+      digitalWrite(5,HIGH);
       
     }
     if((BLEtoggle == true) && (WIFItoggle == false) && (currentMicros - bootMicros > 3000000) ){
@@ -149,8 +170,10 @@ void toggleCheck(){ //Checks toggles on initialization
       WIFItoggle = true;
 
       digitalWrite(13,HIGH);
+      digitalWrite(5,LOW);
       delay(200);
       digitalWrite(13,LOW);
+      digitalWrite(5,HIGH);
       
     }
   }
