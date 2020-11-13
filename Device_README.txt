@@ -1,7 +1,9 @@
-HEG WiFi WIP implementation. Do not follow these instructions unless you are building from scratch or intend to modify 
-the firmware yourself, otherwise use our .bin files provided and flash your respective ESP32 model via the web interface provided.
+See below the instructions for the device commands and notes on device initialization and connecting.
 
 *****TO FLASH THIS SOFTWARE ON YOUR ESP32*****
+
+HEG ESP32 WiFi/BLE implementation. Do not follow these instructions unless you are building from scratch or intend to modify 
+the firmware yourself, otherwise use our .bin files provided and flash your respective ESP32 model via the web interface provided.
 
 You need Arduino IDE: https://www.arduino.cc/en/Main/Software
 You may need the CP210x Drivers from Silicon Labs: https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
@@ -53,6 +55,19 @@ upper .../tools directory so the SPIFFs tool can find them.
 
 --DEVICE INSTRUCTIONS--
 
+When the device boots up you will see LEDs blink, first in a rapid series, then 3 times slowly. These indicate which mode you are in then pressing the reset button or pulling the plug on the device between the slow blinks will let you do different things.
+
+First set of rapid blinks indicates communication modes:
+Two blinks - Bluetooth Low Energy mode indicator
+Three blinks - WiFi mode indicator
+Four blinks - Bluetooth classic mode indicator
+
+Then resetting/unpowering the device between the indicator and slow LED blinks:
+After rapid blinks - put device to sleep
+After first slow blink - change communication mode (see above for codes)
+After second blink - Reset WiFi credentials, sometimes it does not connect to routers correctly and then kaputs the WiFi mode - or you haven't found the IP which is visible on the serial monitor or in your router settings.
+After third blink - Normal operation
+
 HEG serial/ble/wifi commands:
 't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light.
 'f' - Sensor off.
@@ -63,13 +78,13 @@ HEG serial/ble/wifi commands:
 'R' - hard resets the ESP32.
 'S' - places ESP32 in deep sleep mode, reset power (press the reset button on the device) to re-activate
 's' - soft resets the sensor data.
+'o' - fast output mode for android web BLE (20 byte max packet sizes).
 'p' - really basic pIR setting. Just turns the LEDs off as the photodiode picks up radiant heat from your body.
 '0','1','2','3' - Changes ADC channel the device reads, in the case of multiple light sensors.
 '5' - Read differential between A0 and A1 on ADS1115 to reduce noise (e.g. connect A1 to signal ground).
 '6' - Read differential between A2 and A3 on ADS1115.
 'D' - toggles ADC debugging (serial only).
 'L' - toggles LED ambient light cancellation .
-'T' - LED/PD test function. Not finished, easier to just check the 't' output real quick.
 
 With extra sensors:
 'l' - toggles sensor 0 (channel 0) and LED set 0.

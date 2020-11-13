@@ -14,16 +14,16 @@ Important HEGduino stuff you can find here:
 - [Huzzah32 Feather Firmware and Updates](https://github.com/moothyknight/HEG_ESP32/tree/master/Device%20Drivers/HEG_WIFI_BLE_Feather)
 
 ## What is it?
-Hemoencephalography is a method that allows you to measure and influence control over the bloodflow in regions your brain. It's just like any other FNIRS or pulse oximetry method, but allows for a type of physical brain exercise. HEG devices typically cost hundreds or thousands on the market, so this is a much better solution for people wanting to get their feet wet with biofeedback and do a cool DIY project to understand the extremely straightforward science better. [HEG biofeedback](https://en.wikipedia.org/wiki/Hemoencephalography) was originally developed as a safe and non-invasive method to treat ADD in the late 90s, later expanding to treating disorders like PTSD and Depression due to common stress symptoms like [Hypofrontality](https://en.wikipedia.org/wiki/Hypofrontality) being measurable with this tool. 
+Hemoencephalography is a single sensor FNIRS device meant to give a basic indication of cerebral blood flow changes in the brain.
+Users then combine this indicator - the ratio of red to infrared light returned to the photodiode from the LEDs on your scalp or forehead - with simple visualization tools to help them increase or decrease metabolic/blood flow activity in the brain. 
+This works like an odd form of physical therapy and is implicated as a powerful tool when combined in any brain health related therapies.
 
-It is implicated for much more, but there's not a whole lot of data (which this 20 dollar version could solve). HEG biofeedback is informally called "brain pushups" for how it enables one to literally work out their brain to enable better bloodflow and oxygenation, therefore cognitive functioning and self-control. It only takes 5-10 minutes in the first session to gain control of bloodflow in the targeted area. I don't recommend doing more than 10 minutes at a time with this thing. Be wary of fatigue or headaches the first few times when you start gaining control of your bloodflow. View the resources section of the [About Page] on our website (https://hegalpha.com/about) to educate yourself more deeply on this subject.
-
-![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_Arduino/master/Pics/HEGExplained.png)
+![Explanation](https://raw.githubusercontent.com/moothyknight/HEG_ESP32/master/Pictures/hegbiofeedback.png)
 
 ## Software
 
 ### Arduino Setup
-See the [Device_Readme.txt](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)  for flashing instructions as well as available USB commands and the changelog, including which dependencies are required for the Arduino IDE. We packaged the more minor dependencies in the Device_Drivers folder so you don't have to chase all of them down, just get Arduino and the ESP32 addon (github version) working.
+See the [Device_Readme.txt](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)  for flashing instructions as well as available USB/WiFi/BLE commands and the changelog, including which dependencies are required for the Arduino IDE. We packaged the more minor dependencies in the Device_Drivers folder so you don't have to chase all of them down, just get Arduino and the ESP32 addon (github version) working.
 
 Use the HEG_WIFI_BLE sketch in the arduino IDE on your respective ESP32. Pin definitions in HEG.h for the SDA/SCL and LEDs need to be adjusted according to your setup. 
 
@@ -33,7 +33,7 @@ These builds are tested on the Lolin32 and Huzzah32 Feather respectively but sho
 
 <img src="https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/platforms.PNG" alt="platforms" width="252" height="354">
 
-On the firmware you will find a WIP Async Web Server with cross-platform support, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
+On the firmware you will find a Async Web Server with a cross-platform supported javascript app, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
 You can demo it now via our Chrome Extension (via the Software folder) or right on board the firmware or a new webapp at [hegalomania.netlify.app](https://hegalomania.netlify.app). It's evolving fast. We will eventually be comparable to professional BCI software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
 
