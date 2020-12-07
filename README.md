@@ -34,7 +34,9 @@ These builds are tested on the Lolin32 and Huzzah32 Feather respectively but sho
 
 On the firmware you will find a Async Web Server with a cross-platform supported javascript app, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
-You can demo it now at a new mobile or desktop-installable webapp at [hegalomania.netlify.app](https://hegalomania.netlify.app). The USB support is chrome-only until it is out of development for default web support. Install on desktop by opening the setting dropdown in Chrome (the 3 vertical dots in the top right of the browser) and click "Install HEG Alpha." It should be kept up to date automatically and work offline. Make sure you have the Earth textures on the Sunrise mode cached to use them offline, simply load them once to do this.  
+You can demo it now at a new mobile or desktop-installable webapp at [hegalomania.netlify.app](https://hegalomania.netlify.app). 
+
+The USB support on the PWA is chrome-only until it is out of development for default web support. Install on desktop by opening the setting dropdown in Chrome (the 3 vertical dots in the top right of the browser) and click "Install HEG Alpha." It should be kept up to date automatically and work offline. Make sure you have the Earth textures on the Sunrise mode cached to use them offline, simply load them once to do this.  
 
 It's evolving fast. We will eventually be comparable to professional BCI software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
 
