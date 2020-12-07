@@ -28,7 +28,7 @@ Use the HEG_WIFI_BLE sketch in the arduino IDE on your respective ESP32. Pin def
 
 These builds are tested on the Lolin32 and Huzzah32 Feather respectively but should work on any board after modifying the pinouts in HEG.h
 
-### All Open Source Games, Tools, & APIs.
+### All Open Source Games, Tools, & APIs. See [the new PWA!](https://hegalomania.netlify.app)
 
 <img src="https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/platforms.PNG" alt="platforms" width="252" height="354">
 
