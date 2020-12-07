@@ -5,8 +5,7 @@ Join our little community at: [HEG Alpha](https://hegalpha.com)
 
 Important HEGduino stuff you can find here:
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
-- [Progressive webapp (WIP) for desktop or Android. Same features as the chrome extension so it will likely replace it.](https://hegalomania.netlify.app)
-- [Chrome Extension version of our biofeedback software with WiFi, BT Serial, & USB support](https://github.com/moothyknight/HEG_ESP32/tree/master/Software/ChromeExtension)
+- [Progressive webapp (WIP) for Desktop or Android. Chrome Extension replacement](https://hegalomania.netlify.app)
 - [HEGduino Assembly](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEGduino%20Assembly%20Guide.pdf)
 - [(For self-assembly only) Setting up Arduino to flash the ESP32 with our biofeedback software](https://github.com/moothyknight/HEG_ESP32/blob/master/Device_README.txt)
 - [Updating the firmware via the web interface](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/How%20To%20Update.pdf)
@@ -35,7 +34,7 @@ These builds are tested on the Lolin32 and Huzzah32 Feather respectively but sho
 
 On the firmware you will find a Async Web Server with a cross-platform supported javascript app, enabling plug-and-play and global networking features. We are creating an open source combined therapy and research toolset, using the perks of an online-enabled device and all of the diverse tools available for web front and backend. This is a living project so stay tuned!
 
-You can demo it now via our Chrome Extension (via the Software folder) or right on board the firmware or a new webapp at [hegalomania.netlify.app](https://hegalomania.netlify.app). It's evolving fast. We will eventually be comparable to professional BCI software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
+You can demo it now at a new mobile or desktop-installable webapp at [hegalomania.netlify.app](https://hegalomania.netlify.app). It's evolving fast. We will eventually be comparable to professional BCI software, free of charge. In the More folder, please find the DataCharting.html applet for analyzing and comparing your data with interactive charts.
 
 ![Screenshot](https://github.com/moothyknight/HEG_ESP32/blob/master/Pictures/HEGwebAPI.png?raw=true)
 
