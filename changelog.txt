@@ -2,6 +2,12 @@
 *-*-*-*-*-*-*
 Changelog:
 *-*-*-*-*-*-*
+1/21/21
+------
+- Noise B gone! Implemented notch and low pass filtering (3x 50Hz notch,3x 60Hz notch, and 3x 40Hz low pass). AC will never bother you again. I should up the output sampling rate again.
+- MASSIVE upgrade to the software incoming.
+- 'F' command toggles filters. 'X' command toggles a DC filter. 
+
 11/5/20
 ------
 - Now the indicator flashes happen on the Red LED, I don't know why this didn't occur to me earlier.

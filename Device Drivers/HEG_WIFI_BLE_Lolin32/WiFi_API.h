@@ -342,6 +342,22 @@ void commandESP32(char received)
     //setMux();
     reset = true;
   }
+  if (received == 'F'){
+    if(USE_FILTERS == true){
+      USE_FILTERS = false;
+    }
+    else {
+      USE_FILTERS = true;
+    }
+  }
+  if (received == 'X'){
+    if(USE_DC_FILTER == true){
+      USE_DC_FILTER = false;
+    }
+    else {
+      USE_DC_FILTER = true;
+    }
+  }
   if (received == '5') {
     if(USE_DIFF == false){ // read differential input on pin 0 and 1
       USE_DIFF = true;

@@ -195,13 +195,13 @@ void commandESP32(char received)
   { //Enable Sensor
     coreProgramEnabled = true;
     reset=true;
-    digitalWrite(LED, LOW); // LOLIN32 Indicator LED
+    //digitalWrite(LED, LOW); // LOLIN32 Indicator LED
   }
   if (received == 'f')
   { //Disable sensor, reset.
     coreProgramEnabled = false;
     delay(300);
-    digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
+    //digitalWrite(LED, HIGH); // LOLIN32 Indicator LED
     digitalWrite(RED, LOW);
     digitalWrite(IR, LOW);
     no_led = true;
@@ -341,6 +341,22 @@ void commandESP32(char received)
     adcChannel = received - '0';
     //setMux();
     reset = true;
+  }
+  if (received == 'F'){
+    if(USE_FILTERS == true){
+      USE_FILTERS = false;
+    }
+    else {
+      USE_FILTERS = true;
+    }
+  }
+  if (received == 'X'){
+    if(USE_DC_FILTER == true){
+      USE_DC_FILTER = false;
+    }
+    else {
+      USE_DC_FILTER = true;
+    }
   }
   if (received == '5') {
     if(USE_DIFF == false){ // read differential input on pin 0 and 1
@@ -715,11 +731,11 @@ void setupWiFi(){
   //  response->addHeader("Access-Control-Allow-Origin", "*");  
   //  request->send(response);
   //});
-    server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request)
-  {
+  	server.on("/help", HTTP_GET,[](AsyncWebServerRequest *request)
+	{
     coreNotEnabledMicros = currentMicros;
-    request->send_P(200,"text/html", help_page);
-  });
+		request->send_P(200,"text/html", help_page);
+	});
 
   server.on("/stream",HTTP_GET, [](AsyncWebServerRequest *request){
     coreNotEnabledMicros = currentMicros;

@@ -17,6 +17,54 @@
 
 #include "BLE_API.h"
 
+
+#include "IIRfilter.h"
+
+bool USE_FILTERS = true;
+bool USE_DC_FILTER = false;
+
+float sps = 19; //Samplerate per site: 
+
+IIRnotch notch50_R(50,sps,0.5);
+IIRnotch notch50_I(50,sps,0.5);
+IIRnotch notch50_A(50,sps,0.5);
+
+IIRnotch notch50_R2(50,sps,0.5);
+IIRnotch notch50_I2(50,sps,0.5);
+IIRnotch notch50_A2(50,sps,0.5);
+
+IIRnotch notch50_R3(50,sps,0.5);
+IIRnotch notch50_I3(50,sps,0.5);
+IIRnotch notch50_A3(50,sps,0.5);
+
+IIRnotch notch60_R(60,sps,0.5);
+IIRnotch notch60_I(60,sps,0.5);
+IIRnotch notch60_A(60,sps,0.5);
+
+IIRnotch notch60_R2(60,sps,0.5);
+IIRnotch notch60_I2(60,sps,0.5);
+IIRnotch notch60_A2(60,sps,0.5);
+
+IIRnotch notch60_R3(60,sps,0.5);
+IIRnotch notch60_I3(60,sps,0.5);
+IIRnotch notch60_A3(60,sps,0.5);
+
+IIRlowpass lp_R(20,sps);
+IIRlowpass lp_I(20,sps);
+IIRlowpass lp_A(20,sps);
+
+IIRlowpass lp_R2(20,sps);
+IIRlowpass lp_I2(20,sps);
+IIRlowpass lp_A2(20,sps);
+
+IIRlowpass lp_R3(20,sps);
+IIRlowpass lp_I3(20,sps);
+IIRlowpass lp_A3(20,sps);
+
+DCBlocker dc_R(0.995);
+DCBlocker dc_I(0.995);
+DCBlocker dc_A(0.995);
+
 //#include <SavLayFilter.h>
 //SavLayFilter smallFilter(&filteredRatio, 0, 5);  //Cubic smoothing with windowsize of 5
 //SavLayFilter largeFilter(&filteredRatio, 0, 25); //Cubic smoothing with windowsize of 25
@@ -78,7 +126,7 @@ bool reset = false;
 String output = "";
 char outputarr[64];
 char * outputMode = "full"; //full, fast
-bool newEvent = false; //Flag for wifi events
+bool newEvent = false;
 
 int16_t adc0 = 0; // Resulting 15 bit integer.
 int16_t lastRead = 0;
@@ -268,6 +316,22 @@ class MyCallbacks : public BLECharacteristicCallbacks //We need to set up the BL
       reset = true;
       if(USE_DIFF == true){
         USE_2_3 = true;
+      }
+    }
+    if (rxValue.find("F") != -1){
+      if(USE_FILTERS == true){
+        USE_FILTERS = false;
+      }
+      else {
+        USE_FILTERS = true;
+      }
+    }
+    if (rxValue.find("X") != -1){
+      if(USE_DC_FILTER == true){
+        USE_DC_FILTER = false;
+      }
+      else {
+        USE_DC_FILTER = true;
       }
     }
     
@@ -741,6 +805,52 @@ void get_ratio() {
     }
   }
   if ((redTicks >= samplesPerRatio) && (irTicks >= samplesPerRatio) && ((USE_AMBIENT == false) || (noLEDTicks >= samplesPerRatio))) { 
+    
+    if(USE_FILTERS == true){
+      if(USE_DC_FILTER == true){
+        redGet = dc_R.apply(redGet);
+        irGet = dc_I.apply(irGet);
+        rawValue = dc_A.apply(rawAvg);
+      }
+      
+      redGet = notch50_R.apply(redGet);
+      redGet = notch50_R2.apply(redGet);
+      redGet = notch50_R3.apply(redGet);
+      
+      redGet = notch60_R.apply(redGet);
+      redGet = notch60_R2.apply(redGet);
+      redGet = notch60_R3.apply(redGet);
+      
+      redGet = lp_R.apply(redGet);
+      redGet = lp_R2.apply(redGet);
+      redGet = lp_R3.apply(redGet);
+      
+      irGet = notch50_I.apply(irGet);
+      irGet = notch50_I2.apply(irGet);
+      irGet = notch50_I3.apply(irGet);
+      
+      irGet = notch60_I.apply(irGet);
+      irGet = notch60_I2.apply(irGet);
+      irGet = notch60_I3.apply(irGet);
+      
+      irGet = lp_I.apply(irGet);
+      irGet = lp_I2.apply(irGet);
+      irGet = lp_I3.apply(irGet);
+
+      
+      rawValue = notch50_A.apply(rawAvg);
+      rawValue = notch50_A2.apply(rawAvg);
+      rawValue = notch50_A3.apply(rawAvg);
+      
+      rawValue = notch60_A.apply(rawAvg);
+      rawValue = notch60_A2.apply(rawAvg);
+      rawValue = notch60_A3.apply(rawAvg);
+      
+      rawValue = lp_A.apply(rawAvg);
+      rawValue = lp_A2.apply(rawAvg);
+      rawValue = lp_A3.apply(rawAvg);
+    }
+    
     redGet = (redValue / redTicks); // Divide value by number of samples accumulated // Scalar multiplier to make changes more apparent
     irGet = (irValue / irTicks); // Can filter with log10() applied to each value before dividing.
     
@@ -758,6 +868,14 @@ void get_ratio() {
       lastIR = irGet;
       lastRaw = rawAvg;
     }*/
+
+
+      
+      
+
+
+
+    
     lastRatio = ratio;
     ratio = ((redGet) / (irGet)) * scaling; // Get ratio, multiply by 100 for scaling.
     //Serial.println(ratio);
@@ -904,8 +1022,7 @@ void updateHEG()
            sprintf(outputarr, "%0.0f|%0.0f|%0.3f\r\n",
                 redAvg, irAvg, ratioAvg);
         }
-        newEvent = true; //WiFi Event flag
-        
+        newEvent = true; //WiFi event task flag
         if (USE_USB == true)
         {
           //Serial.flush();

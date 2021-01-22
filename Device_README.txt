@@ -71,6 +71,8 @@ After third blink - Normal operation
 HEG serial/ble/wifi commands:
 't' - Turns sensor on, you'll see a data stream if the sensor is isolated, as in contacting your skin and not exposed to ambient light.
 'f' - Sensor off.
+'F' - toggle filters
+'X' - toggle DC filter
 'W' - Reset WiFi to default access point mode (wipes saved credentials).
 'u' - toggles USB only streaming. Toggles back to WiFi mode (default)
 'B' - Toggle Bluetooth Serial mode. Resets device to be in BTSerial mode. Enter 'B' again to swap back. Can connect to this via standard serial monitors.
