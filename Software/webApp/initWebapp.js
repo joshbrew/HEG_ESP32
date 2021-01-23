@@ -161,7 +161,8 @@ if((window.location.hostname !== '192.168.4.1') && (window.location.hostname !==
   
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
-  
+  // ------------------------------------------------------------------------
+
   if(useAdvanced) { // Setup advanced scripts now that the default app is ready.
     var link = document.createElement("script");
     link.src = "js/threeApp.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app

@@ -16,8 +16,8 @@ class ThreeGlobe {
         var rendererHTML = '<div id="threeContainer" class="canvasContainer"></div>';
             HEGwebAPI.appendFragment(rendererHTML,'main_body');
 
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 435, 0.1, 1000 );
+        this.scene    = new THREE.Scene();
+        this.camera   = new THREE.PerspectiveCamera( 75, (window.innerWidth - 20) / 435, 0.1, 1000 );
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth - 20, 435);
@@ -72,10 +72,10 @@ class ThreeGlobe {
 
         geometry.setAttribute('color', new THREE.Float32BufferAttribute( colors, 3));
 
-        var pointmat = new THREE.PointsMaterial( { 
+        var pointmat = new THREE.PointsMaterial({ 
             vertexColors: THREE.VertexColors,
             opacity:0.99
-        } );
+        });
 
         /*
         var spriteUrl = 'https://i.ibb.co/NsRgxZc/star.png';
@@ -138,7 +138,7 @@ class ThreeGlobe {
         this.scene.add( this.pointLight );
 
         this.composer = new POSTPROCESSING.EffectComposer(this.renderer);
-        this.renderPass = new POSTPROCESSING.RenderPass( this.scene, this.camera )
+        this.renderPass = new POSTPROCESSING.RenderPass( this.scene, this.camera );
         
         this.composer.addPass( this.renderPass );
 
@@ -156,7 +156,7 @@ class ThreeGlobe {
         this.godrayeffect.dithering = true;
 
         this.godraypass = new POSTPROCESSING.EffectPass(this.camera, this.godrayeffect);
-        this.composer.addPass(this.godraypass)
+        this.composer.addPass(this.godraypass);
 
         this.bloomEffect = new POSTPROCESSING.BloomEffect({
             blendFunction: POSTPROCESSING.BlendFunction.SCREEN,
@@ -165,30 +165,30 @@ class ThreeGlobe {
             luminanceSmoothing: 0.8,
             opacity: 2,
             height: 480
-        })
+        });
 
         this.bloompass = new POSTPROCESSING.EffectPass(this.camera, this.bloomEffect);
         this.composer.addPass(this.bloompass);
 
         this.renderPass.renderToScreen = false;
         this.godraypass.renderToScreen = false;
-        this.bloompass.renderToScreen = true;
+        this.bloompass.renderToScreen  = true;
 
         this.sphereMesh.rotation.z += 1;
-        this.points.rotation.z += 1;
-        this.camera.position.x = -2.3;
-        this.camera.position.y = -0.2;
-        this.camera.position.z = -0.4;
+        this.points.rotation.z     += 1;
+        this.camera.position.x     = -2.3;
+        this.camera.position.y     = -0.2;
+        this.camera.position.z     = -0.4;
 
-        this.camera.rotation.x = 0.13;
-        this.camera.rotation.y = -0.4;
-        this.camera.rotation.z = 0.32;
+        this.camera.rotation.x     = 0.13;
+        this.camera.rotation.y     = -0.4;
+        this.camera.rotation.z     = 0.32;
 
-        this.begin = 0;
-        this.ticks = 0;
-        this.change = 0.00015; //Default
+        this.begin                 = 0;
+        this.ticks                 = 0;
+        this.change                = 0.00015; //Default
         this.threeAnim;
-        this.threeWidth = window.innerWidth - 20;
+        this.threeWidth            = window.innerWidth - 20;
 
         this.render();
     }
