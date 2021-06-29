@@ -1,0 +1,5 @@
+I couldn't get this to turn on when I tried making it, but the SPI regulator was placed backwards. It should work.
+Find WIP Arduino drivers at: https://github.com/moothyknight/MAX30112_Arduino
+
+Notes: LDO and logic leveling could be lower noise. 
+

@@ -1,1 +1,0 @@
-Fully tested and working designs. Custom mount design for use with LOLIN32 breakout board for a wearable headset.
