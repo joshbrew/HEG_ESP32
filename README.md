@@ -1,7 +1,7 @@
 # HEG ESP32 - Open Source. Home of HEGduino!
 Hemoencephalography meets highly affordable IoT! Now with WiFi and bluetooth! Incoming schematics, apps, and how-to's. [New Delobotomizer repo here](https://github.com/moothyknight/HEG_ESP32_Delobotomizer) for drivers for the new hardware.
 
-Join our little community at: [HEG Alpha](https://hegalpha.com)
+Find the new, vastly easier to assembly HEGduino_V0 (3 parts, <10 dollars): https://github.com/joshbrew/hegduino_v0
 
 Important HEGduino stuff you can find here:
 - [HEG Training Quick Start Guide](https://github.com/moothyknight/HEG_ESP32/blob/master/Guides/HEG%20Training%20Quick%20Start%20Guide.pdf)
