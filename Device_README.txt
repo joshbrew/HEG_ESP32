@@ -8,8 +8,7 @@ the firmware yourself, otherwise use our .bin files provided and flash your resp
 You need Arduino IDE: https://www.arduino.cc/en/Main/Software
 You may need the CP210x Drivers from Silicon Labs: https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
 
-You need the github version of the Arduino ESP32 libraries: https://github.com/espressif/arduino-esp32
-Follow steps accordingly for your OS.
+In Arduino IDE install the espressif ESP32 libraries via the manager. You don't need to modify the source files anymore. 
 
 You need to select the correct board via the Boards menu and change the partition scheme to "Minimal SPIFFS" in the Arduino Tools menu.
 
@@ -19,22 +18,6 @@ ESPAsyncWebServer
 ADS1X15
 ArduinoJson
 
-
-*****
-IMPORTANT STEP
-In Documents/Arduino/hardware/espressif/esp32/cores/esp32, open main.cpp and change 
-xTaskCreateUniversal(loopTask, "loopTask", 8196, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-to
-xTaskCreateUniversal(loopTask, "loopTask", 16384, NULL, 1, &loopTaskHandle, CONFIG_ARDUINO_RUNNING_CORE);
-The heap memory needs to be increased as the change in wifi can be too much on for the default arduino config. 
-*****
-
-After flashing this sketch onto the ESP32, you will find the new wifi
-access point at the SSID: My_HEG with password: 12345678.
-
-After logging into the WiFi access point, access the interface at 192.168.4.1
-
-********************************
 
 **
 Optional - to have increased SPIFFs:
